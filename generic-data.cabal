@@ -18,6 +18,7 @@ library
   exposed-modules:
     Generic.Data
     Generic.Data.Enum
+    Generic.Data.Internal
     Generic.Data.Show
   build-depends:
     contravariant,
