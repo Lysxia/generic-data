@@ -21,6 +21,7 @@ library
     Generic.Data.Enum
     Generic.Data.Functions
     Generic.Data.Internal
+    Generic.Data.Meta
     Generic.Data.Show
   build-depends:
     contravariant,
