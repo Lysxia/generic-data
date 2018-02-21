@@ -21,10 +21,7 @@ import Generic.Data.Show
 -- This can be used to derive types from generic types, and get some instances
 -- for free, in particular 'Generic', 'Show', 'Enum', 'Bounded'.
 newtype Data r p = Data { unData :: r p }
-  deriving (Functor, Foldable, Traversable, Contravariant)
-
-deriving instance Eq (r p) => Eq (Data r p)
-deriving instance Ord (r p) => Ord (Data r p)
+  deriving (Functor, Foldable, Traversable, Contravariant, Eq, Ord)
 
 instance (Functor r, Contravariant r) => Generic (Data r p) where
   type Rep (Data r p) = r
