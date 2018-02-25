@@ -17,6 +17,7 @@ library
   hs-source-dirs:      src
   exposed-modules:
     Generic.Data
+    Generic.Data.Types
     Generic.Data.Internal.Data
     Generic.Data.Internal.Defun
     Generic.Data.Internal.Enum
