@@ -42,6 +42,6 @@ instance GEnum r => Enum (Data r p) where
   toEnum = Data . gToEnum
   fromEnum = gFromEnum . unData
 
-instance GEnum r => Bounded (Data r p) where
+instance GBounded r => Bounded (Data r p) where
   minBound = Data gMinBound
   maxBound = Data gMaxBound

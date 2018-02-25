@@ -1,6 +1,8 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeOperators #-}
 
 module Generic.Data.Enum where
@@ -35,18 +37,14 @@ gfromEnum = gFromEnum . from
 -- instance 'Bounded' MyType where
 --   'minBound' = 'gminBound'
 --   'maxBound' = 'gmaxBound'
-gminBound :: (Generic a, GEnum (Rep a)) => a
+gminBound :: (Generic a, GBounded (Rep a)) => a
 gminBound = to gMinBound
 
 -- | Generic 'maxBound'.
 --
 -- See also 'gminBound'.
-gmaxBound :: (Generic a, GEnum (Rep a)) => a
+gmaxBound :: (Generic a, GBounded (Rep a)) => a
 gmaxBound = to gMaxBound
-
-gMinBound, gMaxBound :: forall f p. GEnum f => f p
-gMinBound = gToEnum 0
-gMaxBound = gToEnum (gCardinality (Proxy :: Proxy f))
 
 -- | Generic representation of 'Enum' types.
 class GEnum f where
@@ -75,3 +73,22 @@ instance GEnum U1 where
   gCardinality _ = 1
   gFromEnum U1 = 0
   gToEnum _ = U1
+
+-- | Generic representation of 'Bounded' types.
+class GBounded f where
+  gMinBound :: f p
+  gMaxBound :: f p
+
+deriving instance GBounded f => GBounded (M1 i c f)
+
+instance GBounded U1 where
+  gMinBound = U1
+  gMaxBound = U1
+
+instance (GBounded f, GBounded g) => GBounded (f :+: g) where
+  gMinBound = L1 gMinBound
+  gMaxBound = R1 gMaxBound
+
+instance (GBounded f, GBounded g) => GBounded (f :*: g) where
+  gMinBound = gMinBound :*: gMinBound
+  gMaxBound = gMaxBound :*: gMaxBound
