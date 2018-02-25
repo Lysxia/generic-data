@@ -38,6 +38,9 @@ p1' = p1
 pl1 :: PTy1 [Int]
 pl1 = p1
 
+data E = E0 | E1 | E2
+  deriving (Eq, Show, Generic)
+
 main :: IO ()
 main = defaultMain test
 
@@ -78,5 +81,19 @@ test = testGroup "unit"
             traverse (\y -> [y, y+1]) (p1' [1] [2])
       , testCase "sequenceA" $
           [p1 [1] [2], p1 [2] [2]] @?= sequenceA (pl1 [[1, 2]] [[2]])
+      ]
+  , testGroup "Bounded"
+      [ testCase "minBound @E" $ E0 @?= gminBound
+      , testCase "maxBound @E" $ E2 @?= gmaxBound
+      , testCase "minBound @(P Int)" $ p' minBound minBound @?= gminBound
+      , testCase "maxBound @(P Int)" $ p' maxBound maxBound @?= gmaxBound
+      ]
+  , testGroup "Enum"
+      [ testCase "toEnum" $ [E0, E1, E2] @?= fmap gtoEnum [0, 1, 2]
+      , testCase "fromEnum" $ [0, 1, 2] @?= fmap gfromEnum [E0, E1, E2]
+      ]
+  , testGroup "Show"
+      [ testCase "show" $ "P 1 2" @?= show (p' 1 2)
+      , testCase "showsPrec" $ "(P 1 2)" @?= showsPrec 11 (p' 1 2) ""
       ]
   ]
