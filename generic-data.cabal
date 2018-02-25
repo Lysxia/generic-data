@@ -28,6 +28,9 @@ library
     contravariant,
     show-combinators,
     base >= 4.9 && < 5
+  hs-source-dirs:      orphans
+  exposed-modules:
+    Generic.Data.Orphans
   ghc-options:         -Wall
   default-language:    Haskell2010
 
