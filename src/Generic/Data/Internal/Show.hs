@@ -124,4 +124,10 @@ instance Show1 f => GShowSingle Identity (Rec1 f) where
 instance GShowSingle Identity Par1 where
   gPrecShowsSingle (Identity (showsPrec', _)) (Par1 a) = flip showsPrec' a
 
--- (:.:) TODO
+instance (GShowSingle Identity f, GShowSingle p g)
+  => GShowSingle p (f :.: g) where
+  gPrecShowsSingle p (Comp1 c) =
+    gPrecShowsSingle (Identity (showsPrec_, showList_)) c
+    where
+      showsPrec_ = flip (gPrecShowsSingle p)
+      showList_ = showListWith (showsPrec_ 0)
