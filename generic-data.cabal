@@ -1,7 +1,8 @@
 name:                generic-data
 version:             0.1.0.0
 synopsis:            Utilities for GHC.Generics
-description:         See README
+description:         This package provides common functions on generic types.
+                     See README.
 homepage:            https://github.com/Lysxia/generic-data#readme
 license:             MIT
 license-file:        LICENSE
