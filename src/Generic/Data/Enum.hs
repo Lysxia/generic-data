@@ -8,25 +8,47 @@ module Generic.Data.Enum where
 import GHC.Generics
 import Data.Proxy
 
-toEnumG :: forall a. (Generic a, GEnum (Rep a)) => Int -> a
-toEnumG n
+-- | Generic 'toEnum'.
+--
+-- @
+-- instance 'Enum' MyType where
+--   'toEnum' = 'gtoEnum'
+--   'fromEnum' = 'gfromEnum'
+-- @
+gtoEnum :: forall a. (Generic a, GEnum (Rep a)) => Int -> a
+gtoEnum n
   | 0 <= n && n < card = to (gToEnum n)
   | otherwise = error $
-      "toEnumG: out of bounds, index " ++ show n ++ ", card " ++ show card
+      "gtoEnum: out of bounds, index " ++ show n ++ ", card " ++ show card
   where
     card = gCardinality (Proxy :: Proxy (Rep a))
 
-fromEnumG :: (Generic a, GEnum (Rep a)) => a -> Int
-fromEnumG = gFromEnum . from
+-- | Generic 'fromEnum'.
+--
+-- See also 'gtoEnum'.
+gfromEnum :: (Generic a, GEnum (Rep a)) => a -> Int
+gfromEnum = gFromEnum . from
 
-minBoundG, maxBoundG :: (Generic a, GEnum (Rep a)) => a
-minBoundG = to gMinBound
-maxBoundG = to gMaxBound
+-- | Generic 'minBound'.
+--
+-- @
+-- instance 'Bounded' MyType where
+--   'minBound' = 'gminBound'
+--   'maxBound' = 'gmaxBound'
+gminBound :: (Generic a, GEnum (Rep a)) => a
+gminBound = to gMinBound
+
+-- | Generic 'maxBound'.
+--
+-- See also 'gminBound'.
+gmaxBound :: (Generic a, GEnum (Rep a)) => a
+gmaxBound = to gMaxBound
 
 gMinBound, gMaxBound :: forall f p. GEnum f => f p
 gMinBound = gToEnum 0
 gMaxBound = gToEnum (gCardinality (Proxy :: Proxy f))
 
+-- | Generic representation of 'Enum' types.
 class GEnum f where
   gCardinality :: proxy f -> Int
   gFromEnum :: f p -> Int
