@@ -43,7 +43,7 @@ gcompare = compare `on` from'
 --
 -- See also 'gmempty'.
 gmappend :: (Generic a, Semigroup (Rep a ())) => a -> a -> a
-gmappend a b = to (from' a <> from' b)
+gmappend = \a b -> to (from' a <> from' b)
 
 -- * 'Monoid'
 
@@ -62,7 +62,7 @@ gmempty = to' mempty
 -- 'Semigroup', for older versions of base where 'Semigroup' is not a
 -- superclass of 'Monoid'.
 gmappend' :: (Generic a, Monoid (Rep a ())) => a -> a -> a
-gmappend' a b = to (from' a `mappend` from' b)
+gmappend' = \a b -> to (from' a `mappend` from' b)
 
 -- * 'Functor'
 
@@ -73,13 +73,13 @@ gmappend' a b = to (from' a `mappend` from' b)
 --   'fmap' = 'gfmap'
 -- @
 gfmap :: (Generic1 f, Functor (Rep1 f)) => (a -> b) -> f a -> f b
-gfmap f = to1 . fmap f . from1
+gfmap = \f -> to1 . fmap f . from1
 
 -- | Generic @('<$')@.
 --
 -- See also 'gfmap'.
 gconstmap :: (Generic1 f, Functor (Rep1 f)) => a -> f b -> f a
-gconstmap a = to1 . (a <$) . from1
+gconstmap = \a -> to1 . (a <$) . from1
 
 -- * 'Applicative'
 
@@ -132,7 +132,7 @@ galt = liftG2 (<|>)
 --   'foldMap' = 'gfoldMap'
 -- @
 gfoldMap :: (Generic1 f, Foldable (Rep1 f), Monoid m) => (a -> m) -> f a -> m
-gfoldMap f = foldMap f . from1
+gfoldMap = \f -> foldMap f . from1
 
 -- | Generic 'foldr'.
 --
@@ -143,7 +143,7 @@ gfoldMap f = foldMap f . from1
 --
 -- See also 'gfoldMap'.
 gfoldr :: (Generic1 f, Foldable (Rep1 f)) => (a -> b -> b) -> b -> f a -> b
-gfoldr f b = foldr f b . from1
+gfoldr = \f b -> foldr f b . from1
 
 -- * 'Traversable'
 
@@ -156,7 +156,7 @@ gfoldr f b = foldr f b . from1
 gtraverse
   :: (Generic1 f, Traversable (Rep1 f), Applicative m)
   => (a -> m b) -> f a -> m (f b)
-gtraverse f = fmap to1 . traverse f . from1
+gtraverse = \f -> fmap to1 . traverse f . from1
 
 -- | Generic 'sequenceA'.
 --
@@ -175,7 +175,7 @@ gsequenceA = fmap to1 . sequenceA . from1
 
 -- | Generic 'liftEq'.
 gliftEq :: (Generic1 f, Eq1 (Rep1 f)) => (a -> b -> Bool) -> f a -> f b -> Bool
-gliftEq (==.) a b = liftEq (==.) (from1 a) (from1 b)
+gliftEq = \(==.) a b -> liftEq (==.) (from1 a) (from1 b)
 
 -- * 'Ord1'
 
@@ -183,7 +183,7 @@ gliftEq (==.) a b = liftEq (==.) (from1 a) (from1 b)
 gliftCompare
   :: (Generic1 f, Ord1 (Rep1 f))
   => (a -> b -> Ordering) -> f a -> f b -> Ordering
-gliftCompare compare' a b = liftCompare compare' (from1 a) (from1 b)
+gliftCompare = \compare' a b -> liftCompare compare' (from1 a) (from1 b)
 
 -- * Utils
 
@@ -197,4 +197,4 @@ to' = to
 
 -- | Lift binary combinators generically.
 liftG2 :: Generic1 f => (Rep1 f a -> Rep1 f b -> Rep1 f c) -> f a -> f b -> f c
-liftG2 (<?>) a b = to1 (from1 a <?> from1 b)
+liftG2 = \(<?>) a b -> to1 (from1 a <?> from1 b)
