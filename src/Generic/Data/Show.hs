@@ -7,8 +7,8 @@
 {-# LANGUAGE Safe #-}
 
 module Generic.Data.Show (
-    showsPrecG
-  , precShowsG
+    gshowsPrec
+  , gprecShows
   , GShow(..)
   ) where
 
@@ -17,11 +17,11 @@ import GHC.Generics
 import Text.Show.Combinators
 
 -- | Default definition
-showsPrecG :: (Generic a, GShow (Rep a)) => Int -> a -> ShowS
-showsPrecG = flip precShowsG
+gshowsPrec :: (Generic a, GShow (Rep a)) => Int -> a -> ShowS
+gshowsPrec = flip gprecShows
 
-precShowsG :: (Generic a, GShow (Rep a)) => a -> PrecShowS
-precShowsG = gPrecShows . from
+gprecShows :: (Generic a, GShow (Rep a)) => a -> PrecShowS
+gprecShows = gPrecShows . from
 
 -- | Internal 'Show' class
 class GShow f where
