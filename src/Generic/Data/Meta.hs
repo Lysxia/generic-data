@@ -18,6 +18,11 @@ module Generic.Data.Meta where
 import Data.Proxy
 import GHC.Generics
 
+-- | Name of the data constructor in a type as a string.
+--
+-- @
+-- 'typeName' @(Maybe AnyType) = \"Maybe\"
+-- @
 typeName :: forall a. TypeName a => String
 typeName = gTypeName @(Rep a)
 

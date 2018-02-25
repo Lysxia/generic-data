@@ -56,8 +56,12 @@ module Generic.Data
     -- ** 'Traversable'
   , gtraverse
   , gsequenceA
+
+    -- * Accessing metadata
+  , typeName
   ) where
 
 import Generic.Data.Prelude
 import Generic.Data.Enum
+import Generic.Data.Meta
 import Generic.Data.Show
