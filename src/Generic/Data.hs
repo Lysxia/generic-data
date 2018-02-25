@@ -78,7 +78,23 @@ module Generic.Data
   , Generically1(..)
 
     -- * Accessing metadata
-  , typeName
+
+    -- | Using @TypeApplications@.
+
+    -- ** Datatype
+  , gdatatypeName
+  , gmoduleName
+  , gpackageName
+  , gisNewtype
+  , GDatatype
+
+    -- ** Constructor
+  , gconName
+  , gconFixity
+  , gconIsRecord
+  , gconNum
+  , Constructors
+  , GConstructors
   ) where
 
 import Generic.Data.Internal.Prelude
