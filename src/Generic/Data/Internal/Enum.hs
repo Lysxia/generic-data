@@ -5,7 +5,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeOperators #-}
 
-module Generic.Data.Enum where
+module Generic.Data.Internal.Enum where
 
 import GHC.Generics
 import Data.Proxy

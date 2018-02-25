@@ -10,14 +10,14 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module Generic.Data.Functions where
+module Generic.Data.Internal.Functions where
 
 import Data.Kind
 import Data.Proxy
 import GHC.Generics
 import GHC.TypeLits
 
-import Generic.Data.Defun
+import Generic.Data.Internal.Defun
 
 -- | Apply a type function on every field of a type.
 type family   Map (s :: TyFun a b -> Type) (r :: k -> Type) :: k -> Type

@@ -13,7 +13,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module Generic.Data.Meta where
+module Generic.Data.Internal.Meta where
 
 import Data.Proxy
 import GHC.Generics

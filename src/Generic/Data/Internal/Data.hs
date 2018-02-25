@@ -9,13 +9,13 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module Generic.Data.Data where
+module Generic.Data.Internal.Data where
 
 import Data.Functor.Contravariant (Contravariant, phantom)
 import GHC.Generics
 
-import Generic.Data.Enum
-import Generic.Data.Show
+import Generic.Data.Internal.Enum
+import Generic.Data.Internal.Show
 
 -- | A wrapper to view a generic 'Rep' as the datatype it's supposed
 -- to represent, without needing a declaration.

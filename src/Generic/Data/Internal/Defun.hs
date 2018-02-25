@@ -12,7 +12,7 @@ not pull in too heavy dependencies.
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 
-module Generic.Data.Defun where
+module Generic.Data.Internal.Defun where
 
 import Data.Kind
 

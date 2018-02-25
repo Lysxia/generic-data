@@ -61,7 +61,7 @@ module Generic.Data
   , typeName
   ) where
 
-import Generic.Data.Prelude
-import Generic.Data.Enum
-import Generic.Data.Meta
-import Generic.Data.Show
+import Generic.Data.Internal.Prelude
+import Generic.Data.Internal.Enum
+import Generic.Data.Internal.Meta
+import Generic.Data.Internal.Show

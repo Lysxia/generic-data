@@ -2,7 +2,7 @@
 
 {-# LANGUAGE FlexibleContexts #-}
 
-module Generic.Data.Prelude where
+module Generic.Data.Internal.Prelude where
 
 import Control.Applicative (liftA2, Alternative(..))
 import Data.Function (on)

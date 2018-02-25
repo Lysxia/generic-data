@@ -17,13 +17,13 @@ library
   hs-source-dirs:      src
   exposed-modules:
     Generic.Data
-    Generic.Data.Data
-    Generic.Data.Defun
-    Generic.Data.Enum
-    Generic.Data.Functions
-    Generic.Data.Meta
-    Generic.Data.Prelude
-    Generic.Data.Show
+    Generic.Data.Internal.Data
+    Generic.Data.Internal.Defun
+    Generic.Data.Internal.Enum
+    Generic.Data.Internal.Functions
+    Generic.Data.Internal.Meta
+    Generic.Data.Internal.Prelude
+    Generic.Data.Internal.Show
   build-depends:
     contravariant,
     show-combinators,

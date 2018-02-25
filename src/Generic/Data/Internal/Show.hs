@@ -6,7 +6,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE Safe #-}
 
-module Generic.Data.Show (
+module Generic.Data.Internal.Show (
     gshowsPrec
   , gprecShows
   , GShow(..)
