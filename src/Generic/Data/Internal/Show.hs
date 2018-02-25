@@ -1,3 +1,4 @@
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE EmptyCase #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -6,13 +7,12 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE Safe #-}
 
-module Generic.Data.Internal.Show (
-    gshowsPrec
-  , gprecShows
-  , GShow(..)
-  ) where
+module Generic.Data.Internal.Show where
 
 import Data.Foldable (foldl')
+import Data.Functor.Classes (Show1(..))
+import Data.Functor.Identity
+import Data.Proxy
 import GHC.Generics
 import Text.Show.Combinators
 
@@ -22,34 +22,54 @@ import Text.Show.Combinators
 -- instance 'Show' MyType where
 --   showsPrec = gshowsPrec
 -- @
-gshowsPrec :: (Generic a, GShow (Rep a)) => Int -> a -> ShowS
+gshowsPrec :: (Generic a, GShow0 (Rep a)) => Int -> a -> ShowS
 gshowsPrec = flip gprecShows
 
-gprecShows :: (Generic a, GShow (Rep a)) => a -> PrecShowS
-gprecShows = gPrecShows . from
+gprecShows :: (Generic a, GShow0 (Rep a)) => a -> PrecShowS
+gprecShows = gPrecShows Proxy . from
 
 -- | Generic representation of 'Show' types.
-class GShow f where
-  gPrecShows :: f a -> PrecShowS
+type GShow0 = GShow Proxy
 
-instance GShow f => GShow (M1 D d f) where
-  gPrecShows (M1 x) = gPrecShows x
+gliftShowsPrec
+  :: (Generic1 f, GShow1 (Rep1 f))
+  => (Int -> a -> ShowS) -> ([a] -> ShowS)
+  -> Int -> f a -> ShowS
+gliftShowsPrec showsPrec' showList' =
+  flip (gLiftPrecShows showsPrec' showList' . from1)
 
-instance (GShow f, GShow g) => GShow (f :+: g) where
-  gPrecShows (L1 x) = gPrecShows x
-  gPrecShows (R1 y) = gPrecShows y
+gLiftPrecShows
+  :: GShow1 f
+  => (Int -> a -> ShowS) -> ([a] -> ShowS)
+  -> f a -> PrecShowS
+gLiftPrecShows = curry (gPrecShows . Identity)
 
-instance (Constructor c, GShowC c f) => GShow (M1 C c f) where
-  gPrecShows x = gPrecShowsC (conName x) (conFixity x) x
+type ShowsPrec a = (Int -> a -> ShowS, [a] -> ShowS)
 
-instance GShow V1 where
-  gPrecShows v = case v of {}
+-- | Generic representation of 'Data.Functor.Classes.Show1' types.
+type GShow1 = GShow Identity
 
-class GShowC c f where
-  gPrecShowsC :: String -> Fixity -> M1 C c f p -> PrecShowS
+class GShow p f where
+  gPrecShows :: p (ShowsPrec a) -> f a -> PrecShowS
 
-instance GShowFields f => GShowC ('MetaCons s y 'False) f where
-  gPrecShowsC name fixity (M1 x)
+instance GShow p f => GShow p (M1 D d f) where
+  gPrecShows p (M1 x) = gPrecShows p x
+
+instance (GShow p f, GShow p g) => GShow p (f :+: g) where
+  gPrecShows p (L1 x) = gPrecShows p x
+  gPrecShows p (R1 y) = gPrecShows p y
+
+instance (Constructor c, GShowC p c f) => GShow p (M1 C c f) where
+  gPrecShows p x = gPrecShowsC p (conName x) (conFixity x) x
+
+instance GShow p V1 where
+  gPrecShows _ v = case v of {}
+
+class GShowC p c f where
+  gPrecShowsC :: p (ShowsPrec a) -> String -> Fixity -> M1 C c f a -> PrecShowS
+
+instance GShowFields p f => GShowC p ('MetaCons s y 'False) f where
+  gPrecShowsC p name fixity (M1 x)
     | Infix _ fy <- fixity, k1 : k2 : ks <- fields =
       foldl' showApp (showInfix name fy k1 k2) ks
     | otherwise = foldl' showApp (showCon cname) fields
@@ -57,42 +77,51 @@ instance GShowFields f => GShowC ('MetaCons s y 'False) f where
       cname = case fixity of
         Prefix -> name
         Infix _ _ -> "(" ++ name ++ ")"
-      fields = gPrecShowsFields x
+      fields = gPrecShowsFields p x
 
-instance GShowNamed f => GShowC ('MetaCons s y 'True) f where
-  gPrecShowsC name fixity (M1 x) = showRecord cname fields
+instance GShowNamed p f => GShowC p ('MetaCons s y 'True) f where
+  gPrecShowsC p name fixity (M1 x) = showRecord cname fields
     where
       cname = case fixity of
         Prefix -> name
         Infix _ _ -> "(" ++ name ++ ")"
-      fields = gPrecShowsNamed x
+      fields = gPrecShowsNamed p x
 
-class GShowFields f where
-  gPrecShowsFields :: f p -> [PrecShowS]
+class GShowFields p f where
+  gPrecShowsFields :: p (ShowsPrec a) -> f a -> [PrecShowS]
 
-instance (GShowFields f, GShowFields g) => GShowFields (f :*: g) where
-  gPrecShowsFields (x :*: y) = gPrecShowsFields x ++ gPrecShowsFields y
+instance (GShowFields p f, GShowFields p g) => GShowFields p (f :*: g) where
+  gPrecShowsFields p (x :*: y) = gPrecShowsFields p x ++ gPrecShowsFields p y
 
-instance GShowSingle f => GShowFields (M1 S c f) where
-  gPrecShowsFields (M1 x) = [gPrecShowsSingle x]
+instance GShowSingle p f => GShowFields p (M1 S c f) where
+  gPrecShowsFields p (M1 x) = [gPrecShowsSingle p x]
 
-instance GShowFields U1 where
-  gPrecShowsFields U1 = []
+instance GShowFields p U1 where
+  gPrecShowsFields _ U1 = []
 
-class GShowNamed f where
-  gPrecShowsNamed :: f p -> ShowFields
+class GShowNamed p f where
+  gPrecShowsNamed :: p (ShowsPrec a) -> f a -> ShowFields
 
-instance (GShowNamed f, GShowNamed g) => GShowNamed (f :*: g) where
-  gPrecShowsNamed (x :*: y) = gPrecShowsNamed x &| gPrecShowsNamed y
+instance (GShowNamed p f, GShowNamed p g) => GShowNamed p (f :*: g) where
+  gPrecShowsNamed p (x :*: y) = gPrecShowsNamed p x &| gPrecShowsNamed p y
 
-instance (Selector c, GShowSingle f) => GShowNamed (M1 S c f) where
-  gPrecShowsNamed x'@(M1 x) = selName x' `showField` gPrecShowsSingle x
+instance (Selector c, GShowSingle p f) => GShowNamed p (M1 S c f) where
+  gPrecShowsNamed p x'@(M1 x) = selName x' `showField` gPrecShowsSingle p x
 
-instance GShowNamed U1 where
-  gPrecShowsNamed U1 = noFields
+instance GShowNamed p U1 where
+  gPrecShowsNamed _ U1 = noFields
 
-class GShowSingle f where
-  gPrecShowsSingle :: f p -> PrecShowS
+class GShowSingle p f where
+  gPrecShowsSingle :: p (ShowsPrec a) -> f a -> PrecShowS
 
-instance Show a => GShowSingle (K1 i a) where
-  gPrecShowsSingle (K1 x) = flip showsPrec x
+instance Show a => GShowSingle p (K1 i a) where
+  gPrecShowsSingle _ (K1 x) = flip showsPrec x
+
+instance Show1 f => GShowSingle Identity (Rec1 f) where
+  gPrecShowsSingle (Identity sp) (Rec1 r) =
+    flip (uncurry liftShowsPrec sp) r
+
+instance GShowSingle Identity Par1 where
+  gPrecShowsSingle (Identity (showsPrec', _)) (Par1 a) = flip showsPrec' a
+
+-- (:.:) TODO

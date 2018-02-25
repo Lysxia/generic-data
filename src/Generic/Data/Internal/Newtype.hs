@@ -29,7 +29,7 @@ instance (Generic a, Eq (Rep a ())) => Eq (Generically a) where
 instance (Generic a, Ord (Rep a ())) => Ord (Generically a) where
   compare = gcompare
 
-instance (Generic a, GShow (Rep a)) => Show (Generically a) where
+instance (Generic a, GShow0 (Rep a)) => Show (Generically a) where
   showsPrec = gshowsPrec
 
 instance (Generic a, Semigroup (Rep a ())) => Semigroup (Generically a) where
@@ -71,6 +71,12 @@ instance (Generic1 f, Ord1 (Rep1 f)) => Ord1 (Generically1 f) where
 
 instance (Generic1 f, Ord1 (Rep1 f), Ord a) => Ord (Generically1 f a) where
   compare = compare1
+
+instance (Generic1 f, GShow1 (Rep1 f)) => Show1 (Generically1 f) where
+  liftShowsPrec = gliftShowsPrec
+
+instance (Generic1 f, GShow1 (Rep1 f), Show a) => Show (Generically1 f a) where
+  showsPrec = showsPrec1
 
 instance (Generic1 f, Functor (Rep1 f)) => Functor (Generically1 f) where
   fmap = gfmap

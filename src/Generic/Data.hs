@@ -6,7 +6,7 @@ module Generic.Data
     -- | Classes that GHC can not derive (excluding @GeneralizedNewtypeDeriving@):
     -- 'Data.Semigroup.Semigroup', 'Monoid', 'Applicative',
     -- 'Control.Applicative.Alternative', 'Data.Functor.Classes.Eq1',
-    -- 'Data.Functor.Classes.Ord1'.
+    -- 'Data.Functor.Classes.Ord1', 'Data.Functor.Classes.Show1'.
     --
     -- On base < 4.11 (i.e., GHC < 8.6), you must import "Generic.Data.Orphans"
     -- for generic deriving of 'Data.Semigroup.Semigroup' and 'Monoid'.
@@ -33,6 +33,10 @@ module Generic.Data
     -- ** 'Data.Functor.Classes.Ord1'
   , gliftCompare
 
+    -- ** 'Data.Functor.Classes.Show1'
+  , gliftShowsPrec
+  , GShow1
+
     -- * Other classes
 
     -- | GHC can already derive these.
@@ -45,7 +49,7 @@ module Generic.Data
 
     -- ** 'Show'
   , gshowsPrec
-  , GShow()
+  , GShow0
 
     -- ** 'Enum'
   , gfromEnum
