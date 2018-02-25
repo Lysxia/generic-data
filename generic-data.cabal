@@ -1,7 +1,7 @@
 name:                generic-data
 version:             0.1.0.0
--- synopsis:
--- description:
+synopsis:            Utilities for GHC.Generics
+description:         See README
 homepage:            https://github.com/Lysxia/generic-data#readme
 license:             MIT
 license-file:        LICENSE
