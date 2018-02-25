@@ -22,6 +22,7 @@ library
     Generic.Data.Functions
     Generic.Data.Internal
     Generic.Data.Meta
+    Generic.Data.Prelude
     Generic.Data.Show
   build-depends:
     contravariant,
