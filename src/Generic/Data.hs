@@ -15,6 +15,7 @@ module Generic.Data
 
     -- ** 'Monoid'
   , gmempty
+  , gmappend'
 
     -- ** 'Applicative'
   , gpure

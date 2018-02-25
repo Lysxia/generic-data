@@ -55,6 +55,14 @@ gmappend a b = to (from' a <> from' b)
 gmempty :: (Generic a, Monoid (Rep a ())) => a
 gmempty = to' mempty
 
+-- | Generic @('<>')@ (or @'mappend'@).
+--
+-- The difference from `gmappend' is the 'Monoid' constraint instead of
+-- 'Semigroup', for older versions of base where 'Semigroup' is not a
+-- superclass of 'Monoid'.
+gmappend' :: (Generic a, Monoid (Rep a ())) => a -> a -> a
+gmappend' a b = to (from' a `mappend` from' b)
+
 -- * 'Functor'
 
 -- | Generic 'fmap'.
