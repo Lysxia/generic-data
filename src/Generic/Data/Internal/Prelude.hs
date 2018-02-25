@@ -6,6 +6,7 @@ module Generic.Data.Internal.Prelude where
 
 import Control.Applicative (liftA2, Alternative(..))
 import Data.Function (on)
+import Data.Functor.Classes
 import Data.Semigroup
 import GHC.Generics
 
@@ -169,6 +170,20 @@ gsequenceA
   :: (Generic1 f, Traversable (Rep1 f), Applicative m)
   => f (m a) -> m (f a)
 gsequenceA = fmap to1 . sequenceA . from1
+
+-- * 'Eq1'
+
+-- | Generic 'liftEq'.
+gliftEq :: (Generic1 f, Eq1 (Rep1 f)) => (a -> b -> Bool) -> f a -> f b -> Bool
+gliftEq (==.) a b = liftEq (==.) (from1 a) (from1 b)
+
+-- * 'Ord1'
+
+-- | Generic 'liftCompare'.
+gliftCompare
+  :: (Generic1 f, Ord1 (Rep1 f))
+  => (a -> b -> Ordering) -> f a -> f b -> Ordering
+gliftCompare compare' a b = liftCompare compare' (from1 a) (from1 b)
 
 -- * Utils
 

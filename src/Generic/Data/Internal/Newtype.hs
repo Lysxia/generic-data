@@ -7,6 +7,7 @@
 module Generic.Data.Internal.Newtype where
 
 import Control.Applicative
+import Data.Functor.Classes
 import Data.Semigroup
 import GHC.Generics
 
@@ -58,6 +59,18 @@ instance Generic1 f => Generic1 (Generically1 f) where
   type Rep1 (Generically1 f) = Rep1 f
   to1 = Generically1 . to1
   from1 = from1 . unGenerically1
+
+instance (Generic1 f, Eq1 (Rep1 f)) => Eq1 (Generically1 f) where
+  liftEq = gliftEq
+
+instance (Generic1 f, Eq1 (Rep1 f), Eq a) => Eq (Generically1 f a) where
+  (==) = eq1
+
+instance (Generic1 f, Ord1 (Rep1 f)) => Ord1 (Generically1 f) where
+  liftCompare = gliftCompare
+
+instance (Generic1 f, Ord1 (Rep1 f), Ord a) => Ord (Generically1 f a) where
+  compare = compare1
 
 instance (Generic1 f, Functor (Rep1 f)) => Functor (Generically1 f) where
   fmap = gfmap
