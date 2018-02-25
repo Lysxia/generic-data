@@ -16,14 +16,19 @@ import Data.Foldable (foldl')
 import GHC.Generics
 import Text.Show.Combinators
 
--- | Default definition
+-- | Generic 'showsPrec'.
+--
+-- @
+-- instance 'Show' MyType where
+--   showsPrec = gshowsPrec
+-- @
 gshowsPrec :: (Generic a, GShow (Rep a)) => Int -> a -> ShowS
 gshowsPrec = flip gprecShows
 
 gprecShows :: (Generic a, GShow (Rep a)) => a -> PrecShowS
 gprecShows = gPrecShows . from
 
--- | Internal 'Show' class
+-- | Generic representation of 'Show' types.
 class GShow f where
   gPrecShows :: f a -> PrecShowS
 

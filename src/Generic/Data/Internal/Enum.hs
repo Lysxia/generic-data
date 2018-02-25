@@ -37,6 +37,7 @@ gfromEnum = gFromEnum . from
 -- instance 'Bounded' MyType where
 --   'minBound' = 'gminBound'
 --   'maxBound' = 'gmaxBound'
+-- @
 gminBound :: (Generic a, GBounded (Rep a)) => a
 gminBound = to gMinBound
 
