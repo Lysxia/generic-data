@@ -1,3 +1,5 @@
+-- | Generic representations as data types.
+
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveFoldable #-}
 {-# LANGUAGE DeriveTraversable #-}
@@ -7,7 +9,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module Generic.Data.Internal where
+module Generic.Data.Data where
 
 import Data.Functor.Contravariant (Contravariant, phantom)
 import GHC.Generics

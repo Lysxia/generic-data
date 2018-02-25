@@ -17,10 +17,10 @@ library
   hs-source-dirs:      src
   exposed-modules:
     Generic.Data
+    Generic.Data.Data
     Generic.Data.Defun
     Generic.Data.Enum
     Generic.Data.Functions
-    Generic.Data.Internal
     Generic.Data.Meta
     Generic.Data.Prelude
     Generic.Data.Show
