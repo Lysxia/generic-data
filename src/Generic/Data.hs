@@ -58,6 +58,10 @@ module Generic.Data
   , gtraverse
   , gsequenceA
 
+    -- * Newtypes
+  , Generically(..)
+  , Generically1(..)
+
     -- * Accessing metadata
   , typeName
   ) where
@@ -66,3 +70,4 @@ import Generic.Data.Internal.Prelude
 import Generic.Data.Internal.Enum
 import Generic.Data.Internal.Meta
 import Generic.Data.Internal.Show
+import Generic.Data.Internal.Newtype

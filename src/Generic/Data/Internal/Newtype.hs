@@ -1,16 +1,20 @@
--- | Newtypes with instances implemented using "Generic.Data" combinators.
+-- | Newtypes with instances implemented using generic combinators.
 
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module Generic.Data.Newtype where
+module Generic.Data.Internal.Newtype where
 
 import Control.Applicative
 import Data.Semigroup
 import GHC.Generics
-import Generic.Data
 
+import Generic.Data.Internal.Prelude
+import Generic.Data.Internal.Enum
+import Generic.Data.Internal.Show
+
+-- | Type with instances derived via 'Generic'.
 newtype Generically a = Generically { unGenerically :: a }
 
 instance Generic a => Generic (Generically a) where
@@ -42,6 +46,7 @@ instance (Generic a, GBounded (Rep a)) => Bounded (Generically a) where
   minBound = gminBound
   maxBound = gmaxBound
 
+-- | Type with instances derived via 'Generic1'.
 newtype Generically1 f a = Generically1 { unGenerically1 :: f a }
 
 instance Generic (f a) => Generic (Generically1 f a) where
