@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE TypeApplications #-}
 
 import Control.Applicative
 import Data.Semigroup
@@ -95,5 +96,16 @@ test = testGroup "unit"
   , testGroup "Show"
       [ testCase "show" $ "P 1 2" @?= show (p' 1 2)
       , testCase "showsPrec" $ "(P 1 2)" @?= showsPrec 11 (p' 1 2) ""
+      ]
+
+  , testGroup "Meta"
+      [ testCase "datatypeName" $ "Maybe" @?= gdatatypeName @(Maybe Int)
+      , testCase "moduleName" $ "GHC.Base" @?= gmoduleName @(Maybe Int)
+      , testCase "packageName" $ "base" @?= gpackageName @(Maybe Int)
+      , testCase "isNewtype" $ False @?= gisNewtype @(Maybe Int)
+      , testCase "conName" $ "Just" @?= gconName (Just ())
+      , testCase "conFixity" $ Prefix @?= gconFixity (Just ())
+      , testCase "conIsRecord" $ False @?= gconIsRecord (Just ())
+      , testCase "conNum" $ 2 @?= gconNum @(Maybe Int)
       ]
   ]
