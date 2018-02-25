@@ -8,8 +8,8 @@ module Generic.Data
     -- 'Control.Applicative.Alternative', 'Data.Functor.Classes.Eq1',
     -- 'Data.Functor.Classes.Ord1', 'Data.Functor.Classes.Show1'.
     --
-    -- On base < 4.11 (i.e., GHC < 8.6), you must import "Generic.Data.Orphans"
-    -- for generic deriving of 'Data.Semigroup.Semigroup' and 'Monoid'.
+    -- On base < 4.12 (i.e., GHC < 8.8), you should import "Generic.Data.Orphans"
+    -- to derive those.
 
     -- ** 'Data.Semigroup.Semigroup'
     gmappend
