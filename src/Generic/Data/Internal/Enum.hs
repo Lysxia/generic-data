@@ -86,6 +86,10 @@ instance GBounded U1 where
   gMinBound = U1
   gMaxBound = U1
 
+instance Bounded c => GBounded (K1 i c) where
+  gMinBound = K1 minBound
+  gMaxBound = K1 maxBound
+
 instance (GBounded f, GBounded g) => GBounded (f :+: g) where
   gMinBound = L1 gMinBound
   gMaxBound = R1 gMaxBound
