@@ -1,5 +1,6 @@
 -- | Newtypes with instances implemented using generic combinators.
 
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -85,7 +86,9 @@ instance (Generic1 f, Functor (Rep1 f)) => Functor (Generically1 f) where
 instance (Generic1 f, Applicative (Rep1 f)) => Applicative (Generically1 f) where
   pure = gpure
   (<*>) = gap
+#if MIN_VERSION_base(4,10,0)
   liftA2 = gliftA2
+#endif
 
 instance (Generic1 f, Alternative (Rep1 f)) => Alternative (Generically1 f) where
   empty = gempty
