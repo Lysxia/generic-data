@@ -7,6 +7,8 @@ import Data.Functor.Classes
 import Data.Function (on)
 import Text.Read (Read(..))
 
+import Generic.Data.Internal.Compat(readPrec1)
+
 -- | A newtype whose instances for simple classes ('Eq', 'Ord', 'Read', 'Show')
 -- use higher-kinded class instances for @f@.
 newtype Id1 f a = Id1 { unId1 :: f a }

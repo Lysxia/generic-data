@@ -20,6 +20,7 @@ library
   exposed-modules:
     Generic.Data
     Generic.Data.Types
+    Generic.Data.Internal.Compat
     Generic.Data.Internal.Data
     Generic.Data.Internal.Defun
     Generic.Data.Internal.Enum
