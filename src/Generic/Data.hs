@@ -73,6 +73,11 @@ module Generic.Data
   , gtraverse
   , gsequenceA
 
+    -- * Fields wrappers for deriving
+  , Id1(..)
+  , Opaque(..)
+  , Opaque1(..)
+
     -- * Newtypes
   , Generically(..)
   , Generically1(..)
@@ -102,3 +107,4 @@ import Generic.Data.Internal.Enum
 import Generic.Data.Internal.Meta
 import Generic.Data.Internal.Show
 import Generic.Data.Internal.Newtype
+import Generic.Data.Internal.Resolvers

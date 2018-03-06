@@ -27,6 +27,7 @@ library
     Generic.Data.Internal.Meta
     Generic.Data.Internal.Newtype
     Generic.Data.Internal.Prelude
+    Generic.Data.Internal.Resolvers
     Generic.Data.Internal.Show
   build-depends:
     contravariant,
