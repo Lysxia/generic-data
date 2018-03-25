@@ -1,15 +1,20 @@
 -- | Generic combinators to derive type class instances.
+--
+-- Classes that GHC can not derive instances for (not using
+-- @GeneralizedNewtypeDeriving@) as of version 8.2:
+--
+-- - 'Data.Semigroup.Semigroup', 'Monoid', 'Applicative',
+--   'Control.Applicative.Alternative', 'Data.Functor.Classes.Eq1',
+--   'Data.Functor.Classes.Ord1', 'Data.Functor.Classes.Show1'.
+--
+-- On /base/ < 4.12 (i.e., GHC < 8.6), import "Generic.Data.Orphans" to obtain
+-- instances needed to derive those.
+--
+-- GHC can derive instances for other classes here, although there may be
+-- types supported by one method but not the other or vice versa.
 
 module Generic.Data
-  ( -- * Deriving instances
-
-    -- | Classes that GHC can not derive (excluding @GeneralizedNewtypeDeriving@):
-    -- 'Data.Semigroup.Semigroup', 'Monoid', 'Applicative',
-    -- 'Control.Applicative.Alternative', 'Data.Functor.Classes.Eq1',
-    -- 'Data.Functor.Classes.Ord1', 'Data.Functor.Classes.Show1'.
-    --
-    -- On base < 4.12 (i.e., GHC < 8.8), you should import "Generic.Data.Orphans"
-    -- to derive those.
+  ( -- * Regular classes
 
     -- ** 'Data.Semigroup.Semigroup'
     gmappend
@@ -17,6 +22,48 @@ module Generic.Data
     -- ** 'Monoid'
   , gmempty
   , gmappend'
+
+    -- ** 'Eq'
+    -- | Can also be derived by GHC as part of the standard.
+  , geq
+
+    -- ** 'Ord'
+    -- | Can also be derived by GHC as part of the standard.
+  , gcompare
+
+    -- ** 'Show'
+    -- | Can also be derived by GHC as part of the standard.
+  , gshowsPrec
+  , GShow0
+
+    -- ** 'Enum'
+    -- | Can also be derived by GHC as part of the standard.
+  , gfromEnum
+  , gtoEnum
+  , GEnum()
+
+    -- ** 'Bounded'
+    -- | Can also be derived by GHC as part of the standard.
+  , gminBound
+  , gmaxBound
+  , GBounded()
+
+    -- * Higher-kinded classes
+
+    -- ** 'Functor'
+    -- | Can also be derived by GHC (`DeriveFunctor` extension).
+  , gfmap
+  , gconstmap
+
+    -- ** 'Foldable'
+    -- | Can also be derived by GHC (`DeriveFoldable` extension).
+  , gfoldMap
+  , gfoldr
+
+    -- ** 'Traversable'
+    -- | Can also be derived by GHC (`DeriveTraversable` extension).
+  , gtraverse
+  , gsequenceA
 
     -- ** 'Applicative'
   , gpure
@@ -36,42 +83,6 @@ module Generic.Data
     -- ** 'Data.Functor.Classes.Show1'
   , gliftShowsPrec
   , GShow1
-
-    -- * Other classes
-
-    -- | GHC can already derive these.
-
-    -- ** 'Eq'
-  , geq
-
-    -- ** 'Ord'
-  , gcompare
-
-    -- ** 'Show'
-  , gshowsPrec
-  , GShow0
-
-    -- ** 'Enum'
-  , gfromEnum
-  , gtoEnum
-  , GEnum()
-
-    -- ** 'Bounded'
-  , gminBound
-  , gmaxBound
-  , GBounded()
-
-    -- ** 'Functor'
-  , gfmap
-  , gconstmap
-
-    -- ** 'Foldable'
-  , gfoldMap
-  , gfoldr
-
-    -- ** 'Traversable'
-  , gtraverse
-  , gsequenceA
 
     -- * Fields wrappers for deriving
   , Id1(..)
