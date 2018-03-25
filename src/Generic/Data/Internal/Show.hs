@@ -20,7 +20,7 @@ import Text.Show.Combinators
 --
 -- @
 -- instance 'Show' MyType where
---   showsPrec = gshowsPrec
+--   'showsPrec' = 'gshowsPrec'
 -- @
 gshowsPrec :: (Generic a, GShow0 (Rep a)) => Int -> a -> ShowS
 gshowsPrec = flip gprecShows
