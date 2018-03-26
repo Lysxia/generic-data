@@ -1,14 +1,13 @@
 -- | Generic combinators to derive type class instances.
 --
--- Classes that GHC can not derive instances for (not using
--- @GeneralizedNewtypeDeriving@) as of version 8.2:
+-- /base/ classes that GHC can not derive instances for, as of version 8.2:
 --
 -- - 'Data.Semigroup.Semigroup', 'Monoid', 'Applicative',
 --   'Control.Applicative.Alternative', 'Data.Functor.Classes.Eq1',
 --   'Data.Functor.Classes.Ord1', 'Data.Functor.Classes.Show1'.
 --
 -- On /base/ < 4.12 (i.e., GHC < 8.6), import "Generic.Data.Orphans" to obtain
--- instances needed to derive those.
+-- instances needed internally to derive those.
 --
 -- GHC can derive instances for other classes here, although there may be
 -- types supported by one method but not the other or vice versa.
