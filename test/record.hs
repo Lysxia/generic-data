@@ -1,3 +1,6 @@
+-- Deriving instances for a "functor-functor"-style record.
+-- (https://www.benjamin.pizza/posts/2017-12-15-functor-functors.html)
+
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
