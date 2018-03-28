@@ -50,6 +50,7 @@ gisNewtype = gIsNewtype @(Rep a)
 fromDatatype :: forall d r. Datatype d => (M1 D d Proxy () -> r) -> r
 fromDatatype f = f (M1 Proxy :: M1 D d Proxy ())
 
+-- | Generic representations that contain datatype metadata.
 class GDatatype f where
   gDatatypeName :: String
   gModuleName :: String
@@ -118,6 +119,7 @@ conId = toConId . gConId . from
 conIdMax :: forall a. Constructors a => ConId a
 conIdMax = toConId gConIdMax
 
+-- | Constraint synonym for 'Generic' and 'GConstructor'.
 class (Generic a, GConstructors (Rep a)) => Constructors a
 instance (Generic a, GConstructors (Rep a)) => Constructors a
 
@@ -139,6 +141,7 @@ reGConId (GConId i) = GConId i
 gConIdMax :: forall r. GConstructors r => GConId r
 gConIdMax = GConId (gConNum @r - 1)
 
+-- | Generic representations that contain constructor metadata.
 class GConstructors r where
   gConIdToString :: GConId r -> String
   gConId :: r p -> GConId r

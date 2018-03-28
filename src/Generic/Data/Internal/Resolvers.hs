@@ -10,7 +10,7 @@ import Text.Read (Read(..))
 import Generic.Data.Internal.Compat(readPrec1)
 
 -- | A newtype whose instances for simple classes ('Eq', 'Ord', 'Read', 'Show')
--- use higher-kinded class instances for @f@.
+-- use higher-kinded class instances for @f@ (`Eq1`, `Ord1`, `Read1`, `Show1`).
 newtype Id1 f a = Id1 { unId1 :: f a }
   deriving (Eq1, Ord1, Read1, Show1)
 
@@ -32,41 +32,53 @@ instance (Show1 f, Show a) => Show (Id1 f a) where
 -- and shows as just @"_"@.
 newtype Opaque a = Opaque { unOpaque :: a }
 
+-- | All equal.
 instance Eq (Opaque a) where
   (==) _ _ = True
 
+-- | All equal.
 instance Ord (Opaque a) where
   compare _ _ = EQ
 
+-- | Shown as @"_"@.
 instance Show (Opaque a) where
   showsPrec _ _ = showString "_"
 
+-- | All equal.
 instance Eq1 Opaque where
   liftEq _ _ _ = True
 
+-- | All equal.
 instance Ord1 Opaque where
   liftCompare _ _ _ = EQ
 
+-- | Shown as @"_"@.
 instance Show1 Opaque where
   liftShowsPrec _ _ _ _ = showString "_"
 
 -- | A higher-kinded version of 'Opaque'.
 newtype Opaque1 f a = Opaque1 { unOpaque1 :: f a }
 
+-- | All equal.
 instance Eq (Opaque1 f a) where
   (==) _ _ = True
 
+-- | All equal.
 instance Ord (Opaque1 f a) where
   compare _ _ = EQ
 
+-- | Shown as @"_"@.
 instance Show (Opaque1 f a) where
   showsPrec _ _ = showString "_"
 
+-- | All equal.
 instance Eq1 (Opaque1 f) where
   liftEq _ _ _ = True
 
+-- | All equal.
 instance Ord1 (Opaque1 f) where
   liftCompare _ _ _ = EQ
 
+-- | Shown as @"_"@.
 instance Show1 (Opaque1 f) where
   liftShowsPrec _ _ _ _ = showString "_"
