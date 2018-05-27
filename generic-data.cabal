@@ -1,5 +1,5 @@
 name:                generic-data
-version:             0.1.0.0
+version:             0.1.1.0
 synopsis:            Utilities for GHC.Generics
 description:         This package provides common functions on generic types.
                      See README.
