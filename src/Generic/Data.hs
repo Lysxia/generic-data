@@ -88,9 +88,15 @@ module Generic.Data
   , Opaque(..)
   , Opaque1(..)
 
-    -- * Newtypes
+    -- * Carriers of generic instances
   , Generically(..)
   , Generically1(..)
+
+    -- * Newtype
+    -- | Generic pack/unpack.
+  , Newtype
+  , pack
+  , unpack
 
     -- * Accessing metadata
 
@@ -114,6 +120,7 @@ module Generic.Data
 
 import Generic.Data.Internal.Prelude
 import Generic.Data.Internal.Enum
+import Generic.Data.Internal.Generically
 import Generic.Data.Internal.Meta
 import Generic.Data.Internal.Show
 import Generic.Data.Internal.Newtype

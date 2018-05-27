@@ -25,6 +25,7 @@ library
     Generic.Data.Internal.Defun
     Generic.Data.Internal.Enum
     Generic.Data.Internal.Functions
+    Generic.Data.Internal.Generically
     Generic.Data.Internal.Meta
     Generic.Data.Internal.Newtype
     Generic.Data.Internal.Prelude
