@@ -1,7 +1,8 @@
 # 0.1.1.0
 
 - Add `gconIndex`
-- Export interface for constructor tags
+- Interface for constructor tags
+- Type-level `Meta` accessors
 - Add basic `Newtype` functions
 
 # 0.1.0.0
