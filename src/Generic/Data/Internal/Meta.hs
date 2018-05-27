@@ -5,6 +5,7 @@
 {-# OPTIONS_GHC -Wno-simplifiable-class-constraints #-}
 
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE PolyKinds #-}
@@ -18,6 +19,7 @@ module Generic.Data.Internal.Meta where
 
 import Data.Proxy
 import GHC.Generics
+import GHC.TypeLits (Symbol)
 
 -- | Name of the first data constructor in a type as a string.
 --
@@ -180,3 +182,59 @@ instance Constructor c => GConstructors (M1 C c f) where
   gConNum = 1
   gConFixity = conFixity
   gConIsRecord = conIsRecord
+
+-- * Type families
+
+-- | 'Meta' field of the 'M1' type constructor.
+type family MetaOf (f :: k -> *) :: Meta where
+  MetaOf (M1 i d f) = d
+
+-- Variable names borrowed from the documentation on 'Meta'.
+
+-- | Name of the data type ('MetaData').
+type family MetaDataName (m :: Meta) :: Symbol where
+  MetaDataName ('MetaData n _m _p _nt) = n
+
+-- | Name of the module where the data type is defined ('MetaData')
+type family MetaDataModule (m :: Meta) :: Symbol where
+  MetaDataModule ('MetaData _n m _p _nt) = m
+
+-- | Name of the package where the data type is defined ('MetaData')
+type family MetaDataPackage (m :: Meta) :: Symbol where
+  MetaDataPackage ('MetaData _n _m p _nt) = p
+
+-- | @True@ if the data type is a newtype ('MetaData').
+type family MetaDataNewtype (m :: Meta) :: Bool where
+  MetaDataNewtype ('MetaData _n _m _p nt) = nt
+
+-- | Name of the constructor ('MetaCons').
+type family MetaConsName (m :: Meta) :: Symbol where
+  MetaConsName ('MetaCons n _f _s) = n
+
+-- | Fixity of the constructor ('MetaCons').
+type family MetaConsFixity (m :: Meta) :: FixityI where
+  MetaConsFixity ('MetaCons _n f s) = f
+
+-- | @True@ for a record constructor ('MetaCons').
+type family MetaConsRecord (m :: Meta) :: Bool where
+  MetaConsRecord ('MetaCons _n _f s) = s
+
+-- | @Just@ the name of the record field, if it is one ('MetaSel').
+type family MetaSelNameM (m :: Meta) :: Maybe Symbol where
+  MetaSelNameM ('MetaSel mn _su _ss _ds) = mn
+
+-- | Name of the record field; undefined for non-record fields ('MetaSel').
+type family MetaSelName (m :: Meta) :: Symbol where
+  MetaSelName ('MetaSel ('Just n) _su _ss _ds) = n
+
+-- | Unpackedness annotation of a field ('MetaSel').
+type family MetaSelUnpack (m :: Meta) :: SourceUnpackedness where
+  MetaSelUnpack ('MetaSel _mn su _ss _ds) = su
+
+-- | Strictness annotation of a field ('MetaSel').
+type family MetaSelSourceStrictness (m :: Meta) :: SourceStrictness where
+  MetaSelSourceStrictness ('MetaSel _mn _su ss _ds) = ss
+
+-- | Inferred strictness of a field ('MetaSel').
+type family MetaSelStrictness (m :: Meta) :: DecidedStrictness where
+  MetaSelStrictness ('MetaSel _mn _su _ss ds) = ds
