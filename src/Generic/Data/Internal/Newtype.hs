@@ -19,6 +19,7 @@ import GHC.TypeLits (TypeError, ErrorMessage(..))
 
 import Generic.Data.Internal.Meta (MetaDataNewtype, MetaOf)
 
+-- | Class of newtypes.
 class (Generic a, Coercible a (Old a), Newtype' a) => Newtype a
 instance (Generic a, Coercible a (Old a), Newtype' a) => Newtype a
 
@@ -34,8 +35,10 @@ type family NewtypeErr a (b :: Bool) :: Constraint where
   NewtypeErr a 'False = TypeError
     ('Text "The type " ':<>: 'ShowType a ':<>: 'Text " is not a newtype.")
 
+-- | Generic newtype destructor.
 unpack :: Newtype a => a -> Old a
 unpack = coerce
 
+-- | Generic newtype constructor.
 pack :: Newtype a => Old a -> a
 pack = coerce
