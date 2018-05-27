@@ -114,8 +114,16 @@ module Generic.Data
   , gconFixity
   , gconIsRecord
   , gconNum
+  , gconIndex
   , Constructors
   , GConstructors
+
+    -- *** Constructor tags
+  , ConId()
+  , conId
+  , conIdToInt
+  , conIdToString
+  , conIdEnum
   ) where
 
 import Generic.Data.Internal.Prelude

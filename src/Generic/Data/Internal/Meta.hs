@@ -100,24 +100,42 @@ gconIsRecord = gConIsRecord . from
 gconNum :: forall a. Constructors a => Int
 gconNum = gConNum @(Rep a)
 
+-- | Index of a constructor.
+gconIndex :: forall a. Constructors a => a -> Int
+gconIndex = conIdToInt . conId
+
 -- | An opaque identifier for a constructor.
 newtype ConId a = ConId Int
   deriving (Eq, Ord)
 
+-- | Identifier of a constructor.
+conId :: forall a. Constructors a => a -> ConId a
+conId = toConId . gConId . from
+
+-- | Index of a constructor, given its identifier.
+-- See also 'gconIndex'.
 conIdToInt :: forall a. ConId a -> Int
 conIdToInt (ConId i) = i
 
+-- | Name of a constructor. See also 'gconName'.
+conIdToString :: forall a. Constructors a => ConId a -> String
+conIdToString = gConIdToString . fromConId
+
+-- | All constructor identifiers.
+--
+-- @
+-- 'gconNum' \@a = length ('conIdEnum' \@a)
+-- @
 conIdEnum :: forall a. Constructors a => [ConId a]
 conIdEnum = fmap ConId [0 .. n]
   where
     ConId n = conIdMax @a
 
-conIdToString :: forall a. Constructors a => ConId a -> String
-conIdToString = gConIdToString . fromConId
+-- | This must not be called on an empty type.
+conIdMin :: forall a. Constructors a => ConId a
+conIdMin = ConId 0
 
-conId :: forall a. Constructors a => a -> ConId a
-conId = toConId . gConId . from
-
+-- | This must not be called on an empty type.
 conIdMax :: forall a. Constructors a => ConId a
 conIdMax = toConId gConIdMax
 
@@ -139,6 +157,9 @@ fromConId (ConId i) = GConId i
 
 reGConId :: GConId r -> GConId s
 reGConId (GConId i) = GConId i
+
+gConIdMin :: forall r. GConstructors r => GConId r
+gConIdMin = GConId 0
 
 gConIdMax :: forall r. GConstructors r => GConId r
 gConIdMax = GConId (gConNum @r - 1)
