@@ -31,6 +31,7 @@ gprecShows = gPrecShows Proxy . from
 -- | Generic representation of 'Show' types.
 type GShow0 = GShow Proxy
 
+-- | Generic 'liftShowsPrec'.
 gliftShowsPrec
   :: (Generic1 f, GShow1 (Rep1 f))
   => (Int -> a -> ShowS) -> ([a] -> ShowS)
