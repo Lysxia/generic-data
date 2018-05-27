@@ -124,6 +124,21 @@ module Generic.Data
   , conIdToInt
   , conIdToString
   , conIdEnum
+
+  -- ** Using type families
+  , MetaOf
+  , MetaDataName
+  , MetaDataModule
+  , MetaDataPackage
+  , MetaDataNewtype
+  , MetaConsName
+  , MetaConsFixity
+  , MetaConsRecord
+  , MetaSelNameM
+  , MetaSelName
+  , MetaSelUnpack
+  , MetaSelSourceStrictness
+  , MetaSelStrictness
   ) where
 
 import Generic.Data.Internal.Prelude
