@@ -2,7 +2,6 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -25,7 +24,7 @@ instance (Generic a, Coercible a (Old a), Newtype' a) => Newtype a
 
 type Old a = GOld (Rep a)
 
-type family GOld (f :: k -> *) where
+type family GOld (f :: * -> *) where
   GOld (D1 _d (C1 _c (S1 _s (K1 _i b)))) = b
 
 type Newtype' a = NewtypeErr a (MetaDataNewtype (MetaOf (Rep a)))

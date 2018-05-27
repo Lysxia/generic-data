@@ -212,7 +212,7 @@ instance Constructor c => GConstructors (M1 C c f) where
 -- * Type families
 
 -- | 'Meta' field of the 'M1' type constructor.
-type family MetaOf (f :: k -> *) :: Meta where
+type family MetaOf (f :: * -> *) :: Meta where
   MetaOf (M1 i d f) = d
 
 -- Variable names borrowed from the documentation on 'Meta'.
