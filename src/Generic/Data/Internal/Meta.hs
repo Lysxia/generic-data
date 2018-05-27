@@ -101,6 +101,11 @@ gconNum :: forall a. Constructors a => Int
 gconNum = gConNum @(Rep a)
 
 -- | Index of a constructor.
+--
+-- @
+-- 'gconIndex' Nothing = 0
+-- 'gconIndex' (Just "test") = 1
+-- @
 gconIndex :: forall a. Constructors a => a -> Int
 gconIndex = conIdToInt . conId
 
