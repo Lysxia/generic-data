@@ -31,6 +31,7 @@ library
     Generic.Data.Internal.Prelude
     Generic.Data.Internal.Resolvers
     Generic.Data.Internal.Show
+    Generic.Data.Internal.Surgery
   build-depends:
     contravariant,
     show-combinators,
