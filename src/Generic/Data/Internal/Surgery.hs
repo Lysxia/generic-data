@@ -44,6 +44,20 @@ type family   RemoveField (n :: Nat) (f :: k -> *) :: k -> *
 type instance RemoveField n (M1 i m f) = M1 i m (RemoveField n f)
 type instance RemoveField n (f :*: g) = If (n == 0) g (f :*: RemoveField (n-1) g)
 
+-- | Position of a record field
+type family   FieldIndex (field :: Symbol) (f :: k -> *) :: Nat
+type instance FieldIndex field (M1 D m f) = FieldIndex field f
+type instance FieldIndex field (M1 C m f) = FieldIndex field f
+type instance FieldIndex field (M1 S ('MetaSel ('Just field') su ss ds) f :*: g)
+  = If (field == field') 0 (1 + FieldIndex field g)
+
+-- | Number of fields of a single constructor
+type family   Arity (f :: k -> *) :: Nat
+type instance Arity (M1 d m f) = Arity f
+type instance Arity (f :*: g) = Arity f + Arity g
+type instance Arity (K1 i c) = 1
+type instance Arity U1 = 0
+
 class GRemoveField (n :: Nat) f where
   gRemoveField :: f x -> (FieldTypeAt n f, RemoveField n f x)
 
