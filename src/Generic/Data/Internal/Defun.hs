@@ -7,14 +7,31 @@ not pull in too heavy dependencies.
 
 -}
 
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 
 module Generic.Data.Internal.Defun where
 
 import Data.Kind
+
+type family If (b :: Bool) (x :: k) (y :: k) :: k where
+  If 'True   x _y = x
+  If 'False _x  y = y
+
+class IsBool (b :: Bool) where
+  _If :: ((b ~ 'True) => r) -> ((b ~ 'False) => r) -> r
+
+instance IsBool 'True  where _If a _ = a
+instance IsBool 'False where _If _ b = b
+
+data TyExp_ :: k -> Type
+type TyExp a = TyExp_ a -> Type
+
+type family Eval (e :: TyExp_ a -> Type) :: a
 
 data TyFun :: Type -> Type -> Type
 
