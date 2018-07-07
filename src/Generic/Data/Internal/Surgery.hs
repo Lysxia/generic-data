@@ -3,6 +3,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -81,3 +82,27 @@ instance (If (n == 0) (() :: Constraint) (GInsertField (n-1) g), IsBool (n == 0)
   gInsertField ab t = _If @(n == 0)
     (M1 (K1 t) :*: ab)
     (let a :*: b = ab in a :*: gInsertField @(n-1) b t)
+
+type family   ConstrAt (n :: Nat) (f :: k -> *) :: k -> *
+type instance ConstrAt n (M1 i m f) = ConstrAt n f
+type instance ConstrAt n (f :+: g) = If (n == 0) f (ConstrAt (n-1) g)
+
+type family   RemoveConstr (n :: Nat) (f :: k -> *) :: k -> *
+type instance RemoveConstr n (M1 i m f) = M1 i m (RemoveConstr n f)
+type instance RemoveConstr n (f :+: g) = If (n == 0) g (f :+: RemoveConstr (n-1) g)
+
+class GRemoveConstr (n :: Nat) f where
+  gRemoveConstr :: f x -> Either (ConstrAt n f x) (RemoveConstr n f x)
+
+instance GRemoveConstr n f => GRemoveConstr n (M1 i c f) where
+  gRemoveConstr (M1 a) = M1 <$> gRemoveConstr @n a
+
+instance (If (n == 0) (() :: Constraint) (GRemoveConstr (n-1) g), IsBool (n == 0))
+  => GRemoveConstr n (f :+: g) where
+  gRemoveConstr = _If @(n == 0)
+    (\case
+      L1 a -> Left a
+      R1 b -> Right b)
+    (\case
+      L1 a -> Right (L1 a)
+      R1 b -> R1 <$> gRemoveConstr @(n-1) b)
