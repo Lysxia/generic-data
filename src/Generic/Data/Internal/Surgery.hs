@@ -19,7 +19,6 @@ module Generic.Data.Internal.Surgery where
 
 import Control.Monad ((<=<))
 import Data.Bifunctor (first)
-import Data.Functor.Contravariant (Contravariant)
 import Data.Kind (Constraint)
 import Data.Type.Equality (type (==))
 import GHC.Generics
@@ -42,9 +41,13 @@ toLoL :: forall a x. (Generic a, GLinearize (Rep a)) => a -> LoL (Linearize (Rep
 toLoL = LoL . gLinearize . from
 
 -- | Convert a list-of-lists representation to a synthetic generic type.
+--
+-- The synthesized representation is made of balanced binary trees,
+-- corresponding to what GHC would actually generate.
+-- That structure assumed by at least one piece of code out there (@aeson@).
 toData
   :: forall f l x
-  . (GArborify f, Functor f, Contravariant f, Linearize f ~ l, f ~ Arborify l)
+  . (GArborify f, Linearize f ~ l, f ~ Arborify l)
   => LoL l x -> Data f x
 toData = Data . gArborify . unLoL
 
