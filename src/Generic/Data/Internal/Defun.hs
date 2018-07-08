@@ -18,9 +18,9 @@ module Generic.Data.Internal.Defun where
 
 import Data.Kind
 
-type family If (b :: Bool) (x :: k) (y :: k) :: k where
-  If 'True   x _y = x
-  If 'False _x  y = y
+type family   If (b :: Bool) (x :: k) (y :: k) :: k
+type instance If 'True   x _y = x
+type instance If 'False _x  y = y
 
 class IsBool (b :: Bool) where
   _If :: ((b ~ 'True) => r) -> ((b ~ 'False) => r) -> r
