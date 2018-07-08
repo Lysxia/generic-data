@@ -1,4 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -37,6 +38,25 @@ type family   LinearizeProduct (f :: k -> *) (tl :: k -> *) :: k -> *
 type instance LinearizeProduct U1 tl = tl
 type instance LinearizeProduct (f :*: g) tl = LinearizeProduct f (LinearizeProduct g tl)
 type instance LinearizeProduct (M1 s m f) tl = M1 s m f :*: tl
+
+class GLinearize f where
+  gLinearize :: f x -> Linearize f x
+
+instance GLinearizeSum f V1 => GLinearize (M1 d m f) where
+  gLinearize (M1 a) = M1 (gLinearizeSum @_ @V1 (Left a))
+
+class GLinearizeSum f tl where
+  gLinearizeSum :: Either (f x) (tl x) -> LinearizeSum f tl x
+
+instance GLinearizeSum V1 tl where
+  gLinearizeSum (Left !_) = error "impossible"
+  gLinearizeSum (Right c) = c
+
+instance (GLinearizeSum g tl, GLinearizeSum f (LinearizeSum g tl))
+  => GLinearizeSum (f :+: g) tl where
+  gLinearizeSum (Left (L1 a)) = gLinearizeSum @_ @(LinearizeSum g tl) (Left a)
+  gLinearizeSum (Left (R1 b)) = gLinearizeSum @f (Right (gLinearizeSum @g @tl (Left b)))
+  gLinearizeSum (Right c) = gLinearizeSum @f (Right (gLinearizeSum @g (Right c)))
 
 type family   Arborify (f :: k -> *) :: k -> *
 type instance Arborify (M1 d m f) = M1 d m (ArborifySum f (CoArity f))
