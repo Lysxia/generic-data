@@ -58,6 +58,23 @@ instance (GLinearizeSum g tl, GLinearizeSum f (LinearizeSum g tl))
   gLinearizeSum (Left (R1 b)) = gLinearizeSum @f (Right (gLinearizeSum @g @tl (Left b)))
   gLinearizeSum (Right c) = gLinearizeSum @f (Right (gLinearizeSum @g (Right c)))
 
+instance GLinearizeProduct f U1 => GLinearizeSum (M1 c m f) tl where
+  gLinearizeSum (Left (M1 a)) = L1 (M1 (gLinearizeProduct a U1))
+  gLinearizeSum (Right c) = R1 c
+
+class GLinearizeProduct f tl where
+  gLinearizeProduct :: f x -> tl x -> LinearizeProduct f tl x
+
+instance GLinearizeProduct U1 tl where
+  gLinearizeProduct _ = id
+
+instance (GLinearizeProduct g tl, GLinearizeProduct f (LinearizeProduct g tl))
+  => GLinearizeProduct (f :*: g) tl where
+  gLinearizeProduct (a :*: b) = gLinearizeProduct a . gLinearizeProduct b
+
+instance GLinearizeProduct (M1 s m f) tl where
+  gLinearizeProduct = (:*:)
+
 type family   Arborify (f :: k -> *) :: k -> *
 type instance Arborify (M1 d m f) = M1 d m (ArborifySum f (CoArity f))
 
