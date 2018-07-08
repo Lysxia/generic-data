@@ -113,6 +113,8 @@ insertRField z (LoL a) = LoL (gInsertField @n z a)
 
 -- | @'removeConstr' \@"C" \@n \@t@: remove the @n@-th constructor, named @C@,
 -- with contents isomorphic to the tuple @t@.
+--
+-- 'Data.Functor.Identity.Identity' can be used as a singleton tuple.
 removeConstr
   :: forall c t n l l' lt x
   .  ( GRemoveConstr n l, n ~ ConstrIndex c l, Generic t
@@ -124,6 +126,8 @@ removeConstr (LoL a) = bimap (to . coerce' . gArborify @lt) LoL (gRemoveConstr @
 
 -- | @'insertConstr' \@"C" \@n \@t@: insert a constructor @C@ at position @n@
 -- with contents isomorphic to the tuple @t@.
+--
+-- 'Data.Functor.Identity.Identity' can be used as a singleton tuple.
 insertConstr
   :: forall c t n l l' lt x
   .  ( GInsertConstr n l, n ~ ConstrIndex c l, Generic t
