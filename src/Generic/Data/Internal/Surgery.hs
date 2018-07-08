@@ -13,7 +13,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 
--- | Operate on data types: insert/modify/delete fields and constructors.
+-- | Operate on data types: insert\/modify\/delete fields and constructors.
 
 module Generic.Data.Internal.Surgery where
 
@@ -83,7 +83,7 @@ removeCField
   => LoL l x -> (t, LoL l' x)
 removeCField (LoL a) = LoL <$> gRemoveField @n a
 
--- | @'removeRField' \@"fdName" \@n \@t@: remove the field @fdName@
+-- | @'removeRField' \@\"fdName\" \@n \@t@: remove the field @fdName@
 -- at position @n@ of type @t@ in a record type.
 removeRField
   :: forall fdName n t l l' x
@@ -101,7 +101,7 @@ insertCField
   => t -> LoL l' x -> LoL l x
 insertCField z (LoL a) = LoL (gInsertField @n z a)
 
--- | @'insertRField' \@"fdName" \@n \@t@: insert a field
+-- | @'insertRField' \@\"fdName\" \@n \@t@: insert a field
 -- named @fdName@ of type @t@ at position @n@ in a record type.
 insertRField
   :: forall fdName n t l' l x
@@ -110,7 +110,7 @@ insertRField
   => t -> LoL l' x -> LoL l x
 insertRField z (LoL a) = LoL (gInsertField @n z a)
 
--- | @'removeConstr' \@"C" \@n \@t@: remove the @n@-th constructor, named @C@,
+-- | @'removeConstr' \@\"C\" \@n \@t@: remove the @n@-th constructor, named @C@,
 -- with contents isomorphic to the tuple @t@.
 --
 -- 'Data.Functor.Identity.Identity' can be used as a singleton tuple.
@@ -123,7 +123,7 @@ removeConstr
   => LoL l x -> Either t (LoL l' x)
 removeConstr (LoL a) = bimap (to . coerce' . gArborify @lt) LoL (gRemoveConstr @n a)
 
--- | @'insertConstr' \@"C" \@n \@t@: insert a constructor @C@ at position @n@
+-- | @'insertConstr' \@\"C\" \@n \@t@: insert a constructor @C@ at position @n@
 -- with contents isomorphic to the tuple @t@.
 --
 -- 'Data.Functor.Identity.Identity' can be used as a singleton tuple.
