@@ -1,4 +1,4 @@
-# Generic data types in Haskell [![Build Status](https://travis-ci.org/Lysxia/generic-data.svg)](https://travis-ci.org/Lysxia/generic-data)
+# Generic data types in Haskell [![Hackage](https://img.shields.io/hackage/v/generic-data.svg)](https://hackage.haskell.org/package/generic-data) [![Build Status](https://travis-ci.org/Lysxia/generic-data.svg)](https://travis-ci.org/Lysxia/generic-data)
 
 Utilities for `GHC.Generics`.
 
