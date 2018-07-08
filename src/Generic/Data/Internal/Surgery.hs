@@ -64,6 +64,47 @@ fromLoL = to . gArborify . unLoL
 
 --
 
+-- | @'removeCField' \@n \@t@: remove the @n@-th field of type @t@
+-- in a non-record single-constructor type.
+removeCField
+  :: forall n t l l' x
+  .  ( GRemoveField n l, t ~ FieldTypeAt n l
+     , l ~ InsertField n 'Nothing t l', l' ~ RemoveField n l)
+  => LoL l x -> (t, LoL l' x)
+removeCField (LoL a) = LoL <$> gRemoveField @n a
+
+-- | @'removeRField' \@"fdName" \@n \@t@: remove the field @fdName@
+-- at position @n@ of type @t@ in a record type.
+removeRField
+  :: forall fdName n t l l' x
+  .  ( GRemoveField n l, t ~ FieldTypeAt n l, n ~ FieldIndex fdName l
+     , l ~ InsertField n ('Just fdName) t l', l' ~ RemoveField n l)
+  => LoL l x -> (t, LoL l' x)
+removeRField (LoL a) = LoL <$> gRemoveField @n a
+
+-- | @'insertCField' \@n \@t@: insert a field of type @t@
+-- at position @n@ in a non-record single-constructor type.
+insertCField
+  :: forall n t l' l x
+  .  ( GInsertField n l, t ~ FieldTypeAt n l
+     , l ~ InsertField n 'Nothing t l', l' ~ RemoveField n l)
+  => t -> LoL l' x -> LoL l x
+insertCField z (LoL a) = LoL (gInsertField @n z a)
+
+-- | @'insertRField' \@"fdName" \@n \@t@: insert a field
+-- named @fdName@ of type @t@ at position @n@ in a record type.
+insertRField
+  :: forall fdName n t l' l x
+  .  ( GInsertField n l, t ~ FieldTypeAt n l, n ~ FieldIndex fdName l
+     , l ~ InsertField n ('Just fdName) t l', l' ~ RemoveField n l)
+  => t -> LoL l' x -> LoL l x
+insertRField z (LoL a) = LoL (gInsertField @n z a)
+
+--
+
+absurd :: V1 x -> a
+absurd !_ = error "impossible"
+
 type family   Linearize (f :: k -> *) :: k -> *
 type instance Linearize (M1 d m f) = M1 d m (LinearizeSum f V1)
 
@@ -87,7 +128,7 @@ class GLinearizeSum f tl where
   gLinearizeSum :: Either (f x) (tl x) -> LinearizeSum f tl x
 
 instance GLinearizeSum V1 tl where
-  gLinearizeSum (Left !_) = error "impossible"
+  gLinearizeSum (Left  v) = absurd v
   gLinearizeSum (Right c) = c
 
 instance (GLinearizeSum g tl, GLinearizeSum f (LinearizeSum g tl))
@@ -119,7 +160,7 @@ class GArborify f where
 instance GArborifySum f V1 => GArborify (M1 d m f) where
   gArborify (M1 a) = case gArborifySum @_ @V1 a of
     Left a' -> M1 a'
-    Right !_ -> error "impossible"
+    Right v -> absurd v
 
 class GArborifySum f tl where
   gArborifySum :: LinearizeSum f tl x -> Either (f x) (tl x)
@@ -187,6 +228,7 @@ type instance Eval (SplitAt n (f :*: g)) =
 
 type family   FieldTypeAt (n :: Nat) (f :: k -> *) :: *
 type instance FieldTypeAt n (M1 i c f) = FieldTypeAt n f
+type instance FieldTypeAt n (f :+: V1) = FieldTypeAt n f
 type instance FieldTypeAt n (f :*: g) = If (n == 0) (FieldTypeOf f) (FieldTypeAt (n-1) g)
 
 type family   FieldTypeOf (f :: k -> *) :: *
@@ -194,12 +236,26 @@ type instance FieldTypeOf (M1 s m (K1 i a)) = a
 
 type family   RemoveField (n :: Nat) (f :: k -> *) :: k -> *
 type instance RemoveField n (M1 i m f) = M1 i m (RemoveField n f)
+type instance RemoveField n (f :+: V1) = RemoveField n f :+: V1
 type instance RemoveField n (f :*: g) = If (n == 0) g (f :*: RemoveField (n-1) g)
+
+type DefaultMetaSel field
+  = 'MetaSel field 'NoSourceUnpackedness 'NoSourceStrictness 'DecidedLazy
+
+type family   InsertField (n :: Nat) (fd :: Maybe Symbol) (t :: *) (f :: k -> *) :: k -> *
+type instance InsertField n fd t (M1 D m f) = M1 D m (InsertField n fd t f)
+type instance InsertField n fd t (M1 C m f) = M1 C m (InsertField n fd t f)
+type instance InsertField n fd t (f :+: V1) = InsertField n fd t f :+: V1
+type instance InsertField n fd t (f :*: g) =
+  If (n == 0)
+    (M1 S (DefaultMetaSel fd) (K1 R t) :*: (f :*: g))
+    (f :*: InsertField (n-1) fd t g)
 
 -- | Position of a record field
 type family   FieldIndex (field :: Symbol) (f :: k -> *) :: Nat
 type instance FieldIndex field (M1 D m f) = FieldIndex field f
 type instance FieldIndex field (M1 C m f) = FieldIndex field f
+type instance FieldIndex field (f :+: V1) = FieldIndex field f
 type instance FieldIndex field (M1 S ('MetaSel ('Just field') su ss ds) f :*: g)
   = If (field == field') 0 (1 + FieldIndex field g)
 
@@ -224,6 +280,10 @@ class GRemoveField (n :: Nat) f where
 instance GRemoveField n f => GRemoveField n (M1 i c f) where
   gRemoveField (M1 a) = M1 <$> gRemoveField @n a
 
+instance GRemoveField n f => GRemoveField n (f :+: V1) where
+  gRemoveField (L1 a) = L1 <$> gRemoveField @n a
+  gRemoveField (R1 v) = absurd v
+
 instance (If (n == 0) (() :: Constraint) (GRemoveField (n-1) g), IsBool (n == 0))
   => GRemoveField n (M1 s m (K1 i t) :*: g) where
   gRemoveField (a@(M1 (K1 t)) :*: b) = _If @(n == 0)
@@ -231,16 +291,20 @@ instance (If (n == 0) (() :: Constraint) (GRemoveField (n-1) g), IsBool (n == 0)
     ((a :*:) <$> gRemoveField @(n-1) b)
 
 class GInsertField (n :: Nat) f where
-  gInsertField :: RemoveField n f x -> FieldTypeAt n f -> f x
+  gInsertField :: FieldTypeAt n f -> RemoveField n f x -> f x
 
 instance GInsertField n f => GInsertField n (M1 i c f) where
-  gInsertField (M1 a) t = M1 (gInsertField @n a t)
+  gInsertField t (M1 a) = M1 (gInsertField @n t a)
+
+instance GInsertField n f => GInsertField n (f :+: V1) where
+  gInsertField t (L1 a) = L1 (gInsertField @n t a)
+  gInsertField _ (R1 v) = absurd v
 
 instance (If (n == 0) (() :: Constraint) (GInsertField (n-1) g), IsBool (n == 0))
   => GInsertField n (M1 s m (K1 i t) :*: g) where
-  gInsertField ab t = _If @(n == 0)
+  gInsertField t ab = _If @(n == 0)
     (M1 (K1 t) :*: ab)
-    (let a :*: b = ab in a :*: gInsertField @(n-1) b t)
+    (let a :*: b = ab in a :*: gInsertField @(n-1) t b)
 
 type family   ConstrAt (n :: Nat) (f :: k -> *) :: k -> *
 type instance ConstrAt n (M1 i m f) = ConstrAt n f
