@@ -57,11 +57,21 @@ fromData :: forall f x. GLinearize f => Data f x -> LoL (Linearize f) x
 fromData = LoL . gLinearize . unData
 
 -- | The inverse of 'toLoL'.
+--
+-- It may be useful to annotate the output type of 'fromLoL',
+-- since the rest of the type depends on it. The following methods are possible:
+--
+-- @
+-- 'fromLoL' :: 'LoLOf' Ty -> Ty
+-- 'fromLoL' \@Ty  -- with TypeApplications
+-- @
 fromLoL
   :: forall a l x
   . (Generic a, GArborify (Rep a), Linearize (Rep a) ~ l, Rep a ~ Arborify l)
   => LoL l x -> a
 fromLoL = to . gArborify . unLoL
+
+type LoLOf a = LoL (Linearize (Rep a)) ()
 
 --
 
@@ -111,9 +121,20 @@ removeConstr
      , l' ~ RemoveConstr n l)
   => LoL l x -> Either t (LoL l' x)
 removeConstr (LoL a) = bimap (to . coerce' . gArborify @lt) LoL (gRemoveConstr @n a)
-  where
-    coerce' :: Coercible (f x) (g x) => f x -> g x
-    coerce' = coerce
+
+-- | @'insertConstr' \@"C" \@n \@t@: insert a constructor @C@ at position @n@
+-- with contents isomorphic to the tuple @t@.
+insertConstr
+  :: forall c t n l l' lt x
+  .  ( GInsertConstr n l, n ~ ConstrIndex c l, Generic t
+     , Coercible (Rep t) (M1 D DummyMeta lt), MatchFields (Rep t) (M1 D DummyMeta lt)
+     , GLinearize lt, lt ~ Arborify (ConstrAt n l), Linearize lt ~ ConstrAt n l
+     , l' ~ RemoveConstr n l)
+  => Either t (LoL l' x) -> LoL l x
+insertConstr z = LoL (gInsertConstr @n (bimap (gLinearize @lt . coerce' . from) unLoL z))
+
+coerce' :: Coercible (f x) (g x) => f x -> g x
+coerce' = coerce
 
 type DummyMeta = 'MetaData "" "" "" 'False
 

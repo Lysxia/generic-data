@@ -54,4 +54,7 @@ test = testGroup "surgery"
       "[Right A,Left 0,Right (C 1 2 3 4 5)]" @?=
       (show . fmap (bimap unI (unit . toData) . removeConstr @"B" . toLoL))
         [A, B 0, x]
+
+  , testCase "insertConstr" $
+      "B 0" @?= (show . fromLoL @T . insertConstr @"B" . Left) (I 0)
   ]
