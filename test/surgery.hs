@@ -4,6 +4,7 @@
     FlexibleContexts,
     TypeApplications #-}
 
+import Data.Bifunctor (bimap)
 import GHC.Generics (Generic(..))
 import Test.Tasty
 import Test.Tasty.HUnit
@@ -18,11 +19,16 @@ x = C 1 2 3 4 5
 data P = P Int Int Int deriving (Eq, Show, Generic)
 data R = R { u, v, w :: Int } deriving (Eq, Show, Generic)
 
+newtype I a = I { unI :: a } deriving (Eq, Show, Generic)
+
 main :: IO ()
 main = defaultMain test
 
 show' :: Show (f ()) => f () -> String
 show' = show
+
+unit :: f () -> f ()
+unit = id
 
 test :: TestTree
 test = testGroup "surgery"
@@ -43,4 +49,9 @@ test = testGroup "surgery"
   , testCase "insertRField" $
       "R {u = 1, n = (), v = 2, w = 3}" @?=
       (show' . toData . insertRField @"n" @1 () . toLoL) (R 1 2 3)
+
+  , testCase "removeConstr" $
+      "[Right A,Left 0,Right (C 1 2 3 4 5)]" @?=
+      (show . fmap (bimap unI (unit . toData) . removeConstr @"B" . toLoL))
+        [A, B 0, x]
   ]

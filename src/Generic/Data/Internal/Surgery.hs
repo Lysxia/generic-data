@@ -18,7 +18,8 @@
 module Generic.Data.Internal.Surgery where
 
 import Control.Monad ((<=<))
-import Data.Bifunctor (first)
+import Data.Bifunctor (bimap, first)
+import Data.Coerce
 import Data.Kind (Constraint)
 import Data.Type.Equality (type (==))
 import GHC.Generics
@@ -100,13 +101,30 @@ insertRField
   => t -> LoL l' x -> LoL l x
 insertRField z (LoL a) = LoL (gInsertField @n z a)
 
+-- | @'removeConstr' \@"C" \@n \@t@: remove the @n@-th constructor, named @C@,
+-- with contents isomorphic to the tuple @t@.
+removeConstr
+  :: forall c t n l l' lt x
+  .  ( GRemoveConstr n l, n ~ ConstrIndex c l, Generic t
+     , Coercible (Rep t) (M1 D DummyMeta lt), MatchFields (Rep t) (M1 D DummyMeta lt)
+     , GArborify lt, lt ~ Arborify (ConstrAt n l), Linearize lt ~ ConstrAt n l
+     , l' ~ RemoveConstr n l)
+  => LoL l x -> Either t (LoL l' x)
+removeConstr (LoL a) = bimap (to . coerce' . gArborify @lt) LoL (gRemoveConstr @n a)
+  where
+    coerce' :: Coercible (f x) (g x) => f x -> g x
+    coerce' = coerce
+
+type DummyMeta = 'MetaData "" "" "" 'False
+
 --
 
 absurd :: V1 x -> a
 absurd !_ = error "impossible"
 
 type family   Linearize (f :: k -> *) :: k -> *
-type instance Linearize (M1 d m f) = M1 d m (LinearizeSum f V1)
+type instance Linearize (M1 D m f) = M1 D m (LinearizeSum f V1)
+type instance Linearize (M1 C m f) = M1 C m (LinearizeProduct f U1)
 
 type family   LinearizeSum (f :: k -> *) (tl :: k -> *) :: k -> *
 type instance LinearizeSum V1 tl = tl
@@ -121,8 +139,11 @@ type instance LinearizeProduct (M1 s m f) tl = M1 s m f :*: tl
 class GLinearize f where
   gLinearize :: f x -> Linearize f x
 
-instance GLinearizeSum f V1 => GLinearize (M1 d m f) where
+instance GLinearizeSum f V1 => GLinearize (M1 D m f) where
   gLinearize (M1 a) = M1 (gLinearizeSum @_ @V1 (Left a))
+
+instance GLinearizeProduct f U1 => GLinearize (M1 C m f) where
+  gLinearize (M1 a) = M1 (gLinearizeProduct a U1)
 
 class GLinearizeSum f tl where
   gLinearizeSum :: Either (f x) (tl x) -> LinearizeSum f tl x
@@ -157,10 +178,13 @@ instance GLinearizeProduct (M1 s m f) tl where
 class GArborify f where
   gArborify :: Linearize f x -> f x
 
-instance GArborifySum f V1 => GArborify (M1 d m f) where
+instance GArborifySum f V1 => GArborify (M1 D m f) where
   gArborify (M1 a) = case gArborifySum @_ @V1 a of
     Left a' -> M1 a'
     Right v -> absurd v
+
+instance GArborifyProduct f U1 => GArborify (M1 C m f) where
+  gArborify (M1 a) = M1 (fst (gArborifyProduct @_ @U1 a))
 
 class GArborifySum f tl where
   gArborifySum :: LinearizeSum f tl x -> Either (f x) (tl x)
@@ -192,7 +216,8 @@ instance GArborifyProduct (M1 s m f) tl where
   gArborifyProduct (a :*: c) = (a, c)
 
 type family   Arborify (f :: k -> *) :: k -> *
-type instance Arborify (M1 d m f) = M1 d m (Eval (ArborifySum (CoArity f) f))
+type instance Arborify (M1 D m f) = M1 D m (Eval (ArborifySum (CoArity f) f))
+type instance Arborify (M1 C m f) = M1 C m (Eval (ArborifyProduct (Arity f) f))
 
 data ArborifySum (n :: Nat) (f :: k -> *) :: TyExp_ (k -> *) -> *
 type instance Eval (ArborifySum n V1) = V1
@@ -314,6 +339,11 @@ type family   RemoveConstr (n :: Nat) (f :: k -> *) :: k -> *
 type instance RemoveConstr n (M1 i m f) = M1 i m (RemoveConstr n f)
 type instance RemoveConstr n (f :+: g) = If (n == 0) g (f :+: RemoveConstr (n-1) g)
 
+type family   ConstrIndex (con :: Symbol) (f :: k -> *) :: Nat
+type instance ConstrIndex con (M1 D m f) = ConstrIndex con f
+type instance ConstrIndex con (M1 C ('MetaCons con' fx s) f :+: g) =
+  If (con == con') 0 (1 + ConstrIndex con g)
+
 class GRemoveConstr (n :: Nat) f where
   gRemoveConstr :: f x -> Either (ConstrAt n f x) (RemoveConstr n f x)
 
@@ -346,3 +376,11 @@ instance (If (n == 0) (() :: Constraint) (GInsertConstr (n-1) g), IsBool (n == 0
       Left a -> R1 (gInsertConstr @(n-1) (Left a))
       Right (L1 a) -> L1 a
       Right (R1 b) -> R1 (gInsertConstr @(n-1) (Right b)))
+
+-- | Generate equality constraints between fields of two matching generic
+-- representations.
+type family   MatchFields (f :: k -> *) (g :: k -> *) :: Constraint
+type instance MatchFields (M1 i c f) (M1 j d g) = MatchFields f g
+type instance MatchFields (f1 :+: f2) (g1 :+: g2) = (MatchFields f1 g1, MatchFields f2 g2)
+type instance MatchFields (f1 :*: f2) (g1 :*: g2) = (MatchFields f1 g1, MatchFields f2 g2)
+type instance MatchFields (K1 i a) (K1 j b) = (a ~ b)
