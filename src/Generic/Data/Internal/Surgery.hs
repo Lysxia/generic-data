@@ -19,20 +19,57 @@ module Generic.Data.Internal.Surgery where
 import Data.Kind (Constraint)
 import Data.Type.Equality (type (==))
 import GHC.Generics
+import GHC.TypeNats
 import GHC.TypeLits
 
+import Generic.Data.Internal.Compat (Div)
 import Generic.Data.Internal.Defun
 
 type family   Linearize (f :: k -> *) :: k -> *
 type instance Linearize (M1 d m f) = M1 d m (LinearizeSum f V1)
 
 type family   LinearizeSum (f :: k -> *) (tl :: k -> *) :: k -> *
+type instance LinearizeSum V1 tl = tl
 type instance LinearizeSum (f :+: g) tl = LinearizeSum f (LinearizeSum g tl)
 type instance LinearizeSum (M1 c m f) tl = M1 c m (LinearizeProduct f U1) :+: tl
 
 type family   LinearizeProduct (f :: k -> *) (tl :: k -> *) :: k -> *
+type instance LinearizeProduct U1 tl = tl
 type instance LinearizeProduct (f :*: g) tl = LinearizeProduct f (LinearizeProduct g tl)
 type instance LinearizeProduct (M1 s m f) tl = M1 s m f :*: tl
+
+type family   Arborify (f :: k -> *) :: k -> *
+type instance Arborify (M1 d m f) = M1 d m (ArborifySum f (CoArity f))
+
+type family   ArborifySum (f :: k -> *) (n :: Nat) :: k -> *
+type instance ArborifySum V1 n = V1
+type instance ArborifySum (f :+: g) n =
+  If (n == 1)
+    (ArborifyProduct f (Arity f))
+    (ArborifySum2 (Div n 2) (n - Div n 2) (SplitAt (Div n 2) (f :+: g)))
+
+type family   SplitAt (n :: Nat) (f :: k -> *) :: (k -> *, k -> *)
+type instance SplitAt n (f :+: g) =
+  If (n == 0) '(V1, f :+: g) (ConsFst (:+:) f (SplitAt (n-1) g))
+type instance SplitAt n (f :*: g) =
+  If (n == 0) '(U1, f :*: g) (ConsFst (:*:) f (SplitAt (n-1) g))
+
+type family   ArborifyProduct (f :: k -> *) (n :: nat) :: k -> *
+type instance ArborifyProduct U1 n = U1
+type instance ArborifyProduct (f :*: g) n =
+  If (n == 1)
+    f
+    (ArborifyProduct2 (Div n 2) (n - Div n 2) (SplitAt (Div n 2) (f :+: g)))
+
+type family   ConsFst (cons :: (k -> *) -> (k -> *) -> k -> *)
+                (f :: k -> *) (e :: (k -> *, k -> *)) :: (k -> *, k -> *)
+type instance ConsFst cons f '(g, h) = '(cons f g, h)
+
+type family   ArborifySum2 (m :: Nat) (n :: Nat) (e :: (k -> *, k -> *)) :: k -> *
+type instance ArborifySum2 m n '(f, g) = ArborifySum f m :+: ArborifySum g n
+
+type family   ArborifyProduct2 (m :: Nat) (n :: Nat) (e :: (k -> *, k -> *)) :: k -> *
+type instance ArborifyProduct2 m n '(f, g) = ArborifyProduct f m :*: ArborifyProduct g n
 
 type family   FieldTypeAt (n :: Nat) (f :: k -> *) :: *
 type instance FieldTypeAt n (M1 i c f) = FieldTypeAt n f
@@ -58,6 +95,13 @@ type instance Arity (M1 d m f) = Arity f
 type instance Arity (f :*: g) = Arity f + Arity g
 type instance Arity (K1 i c) = 1
 type instance Arity U1 = 0
+
+-- | Number of constructors of a data type
+type family   CoArity (f :: k -> *) :: Nat
+type instance CoArity (M1 D m f) = CoArity f
+type instance CoArity (M1 C m f) = 1
+type instance CoArity V1         = 0
+type instance CoArity (f :+: g)  = CoArity f + CoArity g
 
 class GRemoveField (n :: Nat) f where
   gRemoveField :: f x -> (FieldTypeAt n f, RemoveField n f x)
