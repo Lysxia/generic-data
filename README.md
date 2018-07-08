@@ -20,6 +20,13 @@ To derive type classes defined elsewhere, it might be worth taking a look at
 
 Extract type names, constructor names, number and arities of constructors, etc..
 
+## Type surgery
+
+Modify types, adding or removing constructors and fields, to be used with
+generic implementations.
+
+WIP
+
 ---
 
 ## Related links
