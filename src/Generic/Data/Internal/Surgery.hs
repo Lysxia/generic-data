@@ -106,3 +106,20 @@ instance (If (n == 0) (() :: Constraint) (GRemoveConstr (n-1) g), IsBool (n == 0
     (\case
       L1 a -> Right (L1 a)
       R1 b -> R1 <$> gRemoveConstr @(n-1) b)
+
+class GInsertConstr (n :: Nat) f where
+  gInsertConstr :: Either (ConstrAt n f x) (RemoveConstr n f x) -> f x
+
+instance GInsertConstr n f => GInsertConstr n (M1 i c f) where
+  gInsertConstr = M1 . gInsertConstr @n . fmap unM1
+
+instance (If (n == 0) (() :: Constraint) (GInsertConstr (n-1) g), IsBool (n == 0))
+  => GInsertConstr n (f :+: g) where
+  gInsertConstr = _If @(n == 0)
+    (\case
+      Left a -> L1 a
+      Right b -> R1 b)
+    (\case
+      Left a -> R1 (gInsertConstr @(n-1) (Left a))
+      Right (L1 a) -> L1 a
+      Right (R1 b) -> R1 (gInsertConstr @(n-1) (Right b)))
