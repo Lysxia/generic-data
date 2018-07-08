@@ -26,7 +26,14 @@ import GHC.TypeNats
 import GHC.TypeLits
 
 import Generic.Data.Internal.Compat (Div)
+import Generic.Data.Internal.Data
 import Generic.Data.Internal.Defun
+
+linearize :: (Generic a, GLinearize (Rep a)) => a -> Data (Linearize (Rep a)) x
+linearize = Data . gLinearize . from
+
+arborify :: (Generic a, GArborify (Rep a)) => Data (Linearize (Rep a)) x -> a
+arborify = to . gArborify . unData
 
 type family   Linearize (f :: k -> *) :: k -> *
 type instance Linearize (M1 d m f) = M1 d m (LinearizeSum f V1)
