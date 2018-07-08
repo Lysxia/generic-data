@@ -23,7 +23,6 @@ import Data.Coerce
 import Data.Kind (Constraint)
 import Data.Type.Equality (type (==))
 import GHC.Generics
-import GHC.TypeNats
 import GHC.TypeLits
 
 import Generic.Data.Internal.Compat (Div)
