@@ -43,7 +43,7 @@ toLoL = LoL . gLinearize . from
 -- | Convert a list-of-lists representation to a synthetic generic type.
 --
 -- The synthesized representation is made of balanced binary trees,
--- corresponding to what GHC would actually generate.
+-- corresponding to what GHC would generate for an actual data type.
 -- That structure assumed by at least one piece of code out there (@aeson@).
 toData
   :: forall f l x
