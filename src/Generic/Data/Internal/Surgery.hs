@@ -17,6 +17,8 @@
 
 module Generic.Data.Internal.Surgery where
 
+import Control.Monad ((<=<))
+import Data.Bifunctor (first)
 import Data.Kind (Constraint)
 import Data.Type.Equality (type (==))
 import GHC.Generics
@@ -74,6 +76,43 @@ instance (GLinearizeProduct g tl, GLinearizeProduct f (LinearizeProduct g tl))
 
 instance GLinearizeProduct (M1 s m f) tl where
   gLinearizeProduct = (:*:)
+
+class GArborify f where
+  gArborify :: Linearize f x -> f x
+
+instance GArborifySum f V1 => GArborify (M1 d m f) where
+  gArborify (M1 a) = case gArborifySum @_ @V1 a of
+    Left a' -> M1 a'
+    Right !_ -> error "impossible"
+
+class GArborifySum f tl where
+  gArborifySum :: LinearizeSum f tl x -> Either (f x) (tl x)
+
+instance GArborifySum V1 tl where
+  gArborifySum = Right
+
+instance (GArborifySum g tl, GArborifySum f (LinearizeSum g tl))
+  => GArborifySum (f :+: g) tl where
+  gArborifySum = first R1 . gArborifySum <=< first L1 . gArborifySum
+
+instance GArborifyProduct f U1 => GArborifySum (M1 c m f) tl where
+  gArborifySum (L1 (M1 a)) = Left (M1 (fst (gArborifyProduct @_ @U1 a)))
+  gArborifySum (R1 c) = Right c
+
+class GArborifyProduct f tl where
+  gArborifyProduct :: LinearizeProduct f tl x -> (f x, tl x)
+
+instance GArborifyProduct U1 tl where
+  gArborifyProduct c = (U1, c)
+
+instance (GArborifyProduct g tl, GArborifyProduct f (LinearizeProduct g tl))
+  => GArborifyProduct (f :*: g) tl where
+  gArborifyProduct abc = (a :*: b, c) where
+    (a, bc) = gArborifyProduct abc
+    (b,  c) = gArborifyProduct  bc
+
+instance GArborifyProduct (M1 s m f) tl where
+  gArborifyProduct (a :*: c) = (a, c)
 
 type family   Arborify (f :: k -> *) :: k -> *
 type instance Arborify (M1 d m f) = M1 d m (ArborifySum f (CoArity f))
