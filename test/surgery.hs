@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+
 import GHC.Generics (Generic(..))
 import Test.Tasty
 import Test.Tasty.HUnit
@@ -15,5 +16,5 @@ main = defaultMain test
 
 test :: TestTree
 test = testGroup "surgery"
-  [ testCase "roundtrip" $ x @?= (arborify . linearize) x
+  [ testCase "roundtrip" $ x @?= (fromLoL . toLoL) x
   ]

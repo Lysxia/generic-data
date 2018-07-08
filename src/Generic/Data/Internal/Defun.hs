@@ -13,6 +13,7 @@ not pull in too heavy dependencies.
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Generic.Data.Internal.Defun where
 
@@ -32,6 +33,27 @@ data TyExp_ :: k -> Type
 type TyExp a = TyExp_ a -> Type
 
 type family Eval (e :: TyExp_ a -> Type) :: a
+
+data Pure (x :: a) :: TyExp_ a -> *
+type instance Eval (Pure x) = x
+
+data Pure2 :: (a -> b -> c) -> a -> b -> TyExp_ c -> *
+type instance Eval (Pure2 f a b) = f a b
+
+data Uncurry :: (a -> b -> TyExp_ c -> *) -> (a, b) -> TyExp_ c -> *
+type instance Eval (Uncurry f '(x, y)) = Eval (f x y)
+
+data (<=<) :: (b -> TyExp_ c -> *) -> (a -> TyExp_ b -> *) -> a -> TyExp_ c -> *
+type instance Eval ((f <=< g) x) = Eval (f (Eval (g x)))
+
+data Bimap
+  :: (a     -> TyExp_  a'      -> *)
+  -> (   b  -> TyExp_      b'  -> *)
+  -> (a, b) -> TyExp_ (a', b') -> *
+type instance Eval (Bimap f g '(x, y)) = '(Eval (f x), Eval (g y))
+
+data (=<<) :: (a -> TyExp_ b -> *) -> (TyExp_ a -> *) -> TyExp_ b -> *
+type instance Eval (k =<< e) = Eval (k (Eval e))
 
 data TyFun :: Type -> Type -> Type
 

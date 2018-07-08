@@ -19,6 +19,7 @@ module Generic.Data.Internal.Surgery where
 
 import Control.Monad ((<=<))
 import Data.Bifunctor (first)
+import Data.Functor.Contravariant (Contravariant)
 import Data.Kind (Constraint)
 import Data.Type.Equality (type (==))
 import GHC.Generics
@@ -29,11 +30,36 @@ import Generic.Data.Internal.Compat (Div)
 import Generic.Data.Internal.Data
 import Generic.Data.Internal.Defun
 
-linearize :: (Generic a, GLinearize (Rep a)) => a -> Data (Linearize (Rep a)) x
-linearize = Data . gLinearize . from
+-- | Generic representation in a list-of-lists ('LoL') shape at the type level
+-- (reusing the constructors from "GHC.Generics", as opposed to @generics-sop@
+-- for instance).
+--
+-- This representation makes it easy to modify fields and constructors.
+newtype LoL l x = LoL { unLoL :: l x }
 
-arborify :: (Generic a, GArborify (Rep a)) => Data (Linearize (Rep a)) x -> a
-arborify = to . gArborify . unData
+-- | Convert the generic representation of a type to a list-of-lists shape.
+toLoL :: forall a x. (Generic a, GLinearize (Rep a)) => a -> LoL (Linearize (Rep a)) x
+toLoL = LoL . gLinearize . from
+
+-- | Convert a list-of-lists representation to a synthetic generic type.
+toData
+  :: forall f l x
+  . (GArborify f, Functor f, Contravariant f, Linearize f ~ l, f ~ Arborify l)
+  => LoL l x -> Data f x
+toData = Data . gArborify . unLoL
+
+-- | The inverse of 'toData'.
+fromData :: forall f x. GLinearize f => Data f x -> LoL (Linearize f) x
+fromData = LoL . gLinearize . unData
+
+-- | The inverse of 'toLoL'.
+fromLoL
+  :: forall a l x
+  . (Generic a, GArborify (Rep a), Linearize (Rep a) ~ l, Rep a ~ Arborify l)
+  => LoL l x -> a
+fromLoL = to . gArborify . unLoL
+
+--
 
 type family   Linearize (f :: k -> *) :: k -> *
 type instance Linearize (M1 d m f) = M1 d m (LinearizeSum f V1)
@@ -122,37 +148,39 @@ instance GArborifyProduct (M1 s m f) tl where
   gArborifyProduct (a :*: c) = (a, c)
 
 type family   Arborify (f :: k -> *) :: k -> *
-type instance Arborify (M1 d m f) = M1 d m (ArborifySum f (CoArity f))
+type instance Arborify (M1 d m f) = M1 d m (Eval (ArborifySum (CoArity f) f))
 
-type family   ArborifySum (f :: k -> *) (n :: Nat) :: k -> *
-type instance ArborifySum V1 n = V1
-type instance ArborifySum (f :+: g) n =
-  If (n == 1)
-    (ArborifyProduct f (Arity f))
-    (ArborifySum2 (Div n 2) (n - Div n 2) (SplitAt (Div n 2) (f :+: g)))
+data ArborifySum (n :: Nat) (f :: k -> *) :: TyExp_ (k -> *) -> *
+type instance Eval (ArborifySum n V1) = V1
+type instance Eval (ArborifySum n (f :+: g)) =
+  Eval (If (n == 1)
+    (ArborifyProduct (Arity f) f)
+    (Arborify' ArborifySum (:+:) n (Div n 2) f g))
 
-type family   SplitAt (n :: Nat) (f :: k -> *) :: (k -> *, k -> *)
-type instance SplitAt n (f :+: g) =
-  If (n == 0) '(V1, f :+: g) (ConsFst (:+:) f (SplitAt (n-1) g))
-type instance SplitAt n (f :*: g) =
-  If (n == 0) '(U1, f :*: g) (ConsFst (:*:) f (SplitAt (n-1) g))
+data ArborifyProduct (n :: Nat) (f :: k -> *) :: TyExp_ (k -> *) -> *
+type instance Eval (ArborifyProduct n (M1 C s f)) = M1 C s (Eval (ArborifyProduct n f))
+type instance Eval (ArborifyProduct n U1) = U1
+type instance Eval (ArborifyProduct n (f :*: g)) =
+  Eval (If (n == 1)
+    (Pure f)
+    (Arborify' ArborifyProduct (:*:) n (Div n 2) f g))
 
-type family   ArborifyProduct (f :: k -> *) (n :: nat) :: k -> *
-type instance ArborifyProduct U1 n = U1
-type instance ArborifyProduct (f :*: g) n =
-  If (n == 1)
-    f
-    (ArborifyProduct2 (Div n 2) (n - Div n 2) (SplitAt (Div n 2) (f :+: g)))
+-- let nDiv2 = Div n 2 in ...
+type Arborify' arb op n nDiv2 f g =
+   (   Uncurry (Pure2 op)
+   <=< Bimap (arb nDiv2) (arb (n-nDiv2))
+   <=< SplitAt nDiv2
+   ) (op f g)
 
-type family   ConsFst (cons :: (k -> *) -> (k -> *) -> k -> *)
-                (f :: k -> *) (e :: (k -> *, k -> *)) :: (k -> *, k -> *)
-type instance ConsFst cons f '(g, h) = '(cons f g, h)
-
-type family   ArborifySum2 (m :: Nat) (n :: Nat) (e :: (k -> *, k -> *)) :: k -> *
-type instance ArborifySum2 m n '(f, g) = ArborifySum f m :+: ArborifySum g n
-
-type family   ArborifyProduct2 (m :: Nat) (n :: Nat) (e :: (k -> *, k -> *)) :: k -> *
-type instance ArborifyProduct2 m n '(f, g) = ArborifyProduct f m :*: ArborifyProduct g n
+data SplitAt :: Nat -> (k -> *) -> TyExp_ (k -> *, k -> *) -> *
+type instance Eval (SplitAt n (f :+: g)) =
+  Eval (If (n == 0)
+    (Pure '(V1, f :+: g))
+    (Bimap (Pure2 (:+:) f) Pure =<< SplitAt (n-1) g))
+type instance Eval (SplitAt n (f :*: g)) =
+  Eval (If (n == 0)
+    (Pure '(U1, f :*: g))
+    (Bimap (Pure2 (:*:) f) Pure =<< SplitAt (n-1) g))
 
 type family   FieldTypeAt (n :: Nat) (f :: k -> *) :: *
 type instance FieldTypeAt n (M1 i c f) = FieldTypeAt n f
@@ -175,6 +203,7 @@ type instance FieldIndex field (M1 S ('MetaSel ('Just field') su ss ds) f :*: g)
 -- | Number of fields of a single constructor
 type family   Arity (f :: k -> *) :: Nat
 type instance Arity (M1 d m f) = Arity f
+type instance Arity (f :+: V1) = Arity f
 type instance Arity (f :*: g) = Arity f + Arity g
 type instance Arity (K1 i c) = 1
 type instance Arity U1 = 0
