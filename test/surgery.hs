@@ -4,12 +4,14 @@
     FlexibleContexts,
     TypeApplications #-}
 
+{-# OPTIONS_GHC -Wno-unused-top-binds #-}
+
 import Data.Bifunctor (bimap)
 import GHC.Generics (Generic(..))
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import Generic.Data.Internal.Surgery
+import Generic.Data.Surgery
 
 data T = A | B Int | C Int Int Int Int Int deriving (Eq, Show, Generic)
 
