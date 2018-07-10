@@ -19,6 +19,7 @@ library
   hs-source-dirs:      src
   exposed-modules:
     Generic.Data
+    Generic.Data.Surgery
     Generic.Data.Types
     Generic.Data.Internal.Compat
     Generic.Data.Internal.Data
