@@ -22,7 +22,6 @@ library
     Generic.Data.Types
     Generic.Data.Internal.Compat
     Generic.Data.Internal.Data
-    Generic.Data.Internal.Defun
     Generic.Data.Internal.Enum
     Generic.Data.Internal.Functions
     Generic.Data.Internal.Generically
@@ -34,6 +33,7 @@ library
     Generic.Data.Internal.Surgery
   build-depends:
     contravariant,
+    first-class-families,
     show-combinators,
     base >= 4.9 && < 5
   hs-source-dirs:      orphans

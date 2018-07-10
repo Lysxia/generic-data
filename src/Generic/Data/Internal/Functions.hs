@@ -17,10 +17,10 @@ import Data.Proxy
 import GHC.Generics
 import GHC.TypeLits
 
-import Generic.Data.Internal.Defun
+import Fcf
 
 -- | Apply a type function on every field of a type.
-type family   Map (s :: TyFun a b -> Type) (r :: k -> Type) :: k -> Type
+type family   Map (s :: a -> b -> Type) (r :: k -> Type) :: k -> Type
 type instance Map s (M1 i c f) = M1 i c (Map s f)
 type instance Map s (f :+: g)  = Map s f :+: Map s g
 type instance Map s (f :*: g)  = Map s f :*: Map s g

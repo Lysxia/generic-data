@@ -25,9 +25,10 @@ import Data.Type.Equality (type (==))
 import GHC.Generics
 import GHC.TypeLits
 
+import Fcf
+
 import Generic.Data.Internal.Compat (Div)
 import Generic.Data.Internal.Data
-import Generic.Data.Internal.Defun
 
 -- | Generic representation in a list-of-lists ('LoL') shape at the type level
 -- (reusing the constructors from "GHC.Generics", as opposed to @generics-sop@
@@ -243,14 +244,14 @@ type family   Arborify (f :: k -> *) :: k -> *
 type instance Arborify (M1 D m f) = M1 D m (Eval (ArborifySum (CoArity f) f))
 type instance Arborify (M1 C m f) = M1 C m (Eval (ArborifyProduct (Arity f) f))
 
-data ArborifySum (n :: Nat) (f :: k -> *) :: TyExp_ (k -> *) -> *
+data ArborifySum (n :: Nat) (f :: k -> *) :: (k -> *) -> *
 type instance Eval (ArborifySum n V1) = V1
 type instance Eval (ArborifySum n (f :+: g)) =
   Eval (If (n == 1)
     (ArborifyProduct (Arity f) f)
     (Arborify' ArborifySum (:+:) n (Div n 2) f g))
 
-data ArborifyProduct (n :: Nat) (f :: k -> *) :: TyExp_ (k -> *) -> *
+data ArborifyProduct (n :: Nat) (f :: k -> *) :: (k -> *) -> *
 type instance Eval (ArborifyProduct n (M1 C s f)) = M1 C s (Eval (ArborifyProduct n f))
 type instance Eval (ArborifyProduct n U1) = U1
 type instance Eval (ArborifyProduct n (f :*: g)) =
@@ -261,19 +262,19 @@ type instance Eval (ArborifyProduct n (f :*: g)) =
 -- let nDiv2 = Div n 2 in ...
 type Arborify' arb op n nDiv2 f g =
    (   Uncurry (Pure2 op)
-   <=< Bimap (arb nDiv2) (arb (n-nDiv2))
+   <=< BimapPair (arb nDiv2) (arb (n-nDiv2))
    <=< SplitAt nDiv2
    ) (op f g)
 
-data SplitAt :: Nat -> (k -> *) -> TyExp_ (k -> *, k -> *) -> *
+data SplitAt :: Nat -> (k -> *) -> (k -> *, k -> *) -> *
 type instance Eval (SplitAt n (f :+: g)) =
   Eval (If (n == 0)
     (Pure '(V1, f :+: g))
-    (Bimap (Pure2 (:+:) f) Pure =<< SplitAt (n-1) g))
+    (BimapPair (Pure2 (:+:) f) Pure =<< SplitAt (n-1) g))
 type instance Eval (SplitAt n (f :*: g)) =
   Eval (If (n == 0)
     (Pure '(U1, f :*: g))
-    (Bimap (Pure2 (:*:) f) Pure =<< SplitAt (n-1) g))
+    (BimapPair (Pure2 (:*:) f) Pure =<< SplitAt (n-1) g))
 
 type family   FieldTypeAt (n :: Nat) (f :: k -> *) :: *
 type instance FieldTypeAt n (M1 i c f) = FieldTypeAt n f
