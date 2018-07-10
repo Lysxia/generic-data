@@ -38,7 +38,7 @@ import Generic.Data.Internal.Data
 newtype LoL l x = LoL { unLoL :: l x }
 
 -- | Convert the generic representation of a type to a list-of-lists shape.
-toLoL :: forall a x. (Generic a, GLinearize (Rep a)) => a -> LoL (Linearize (Rep a)) x
+toLoL :: forall a l x. (Generic a, ToLoLRep a l) => a -> LoL l x
 toLoL = LoL . gLinearize . from
 
 -- | Convert a list-of-lists representation to a synthetic generic type.
@@ -46,69 +46,65 @@ toLoL = LoL . gLinearize . from
 -- The synthesized representation is made of balanced binary trees,
 -- corresponding to what GHC would generate for an actual data type.
 -- That structure assumed by at least one piece of code out there (@aeson@).
-toData
-  :: forall f l x
-  . (GArborify f, Linearize f ~ l, f ~ Arborify l)
-  => LoL l x -> Data f x
+toData :: forall f l x. FromLoL f l => LoL l x -> Data f x
 toData = Data . gArborify . unLoL
 
 -- | The inverse of 'toData'.
-fromData :: forall f x. GLinearize f => Data f x -> LoL (Linearize f) x
+fromData :: forall f l x. ToLoL f l => Data f x -> LoL l x
 fromData = LoL . gLinearize . unData
 
 -- | The inverse of 'toLoL'.
 --
 -- It may be useful to annotate the output type of 'fromLoL',
--- since the rest of the type depends on it. The following methods are possible:
+-- since the rest of the type depends on it and it might only be inferred from
+-- the context. The following annotations are possible:
 --
 -- @
 -- 'fromLoL' :: 'LoLOf' Ty -> Ty
 -- 'fromLoL' \@Ty  -- with TypeApplications
 -- @
-fromLoL
-  :: forall a l x
-  . (Generic a, GArborify (Rep a), Linearize (Rep a) ~ l, Rep a ~ Arborify l)
-  => LoL l x -> a
+fromLoL :: forall a l x. (Generic a, FromLoLRep a l) => LoL l x -> a
 fromLoL = to . gArborify . unLoL
 
 type LoLOf a = LoL (Linearize (Rep a)) ()
+
+type   ToLoLRep a l =   ToLoL (Rep a) l
+type FromLoLRep a l = FromLoL (Rep a) l
+type   ToLoL    f l = (GLinearize f, Linearize f ~ l)
+type FromLoL    f l = (GArborify  f, Linearize f ~ l, f ~ Arborify l)
 
 --
 
 -- | @'removeCField' \@n \@t@: remove the @n@-th field of type @t@
 -- in a non-record single-constructor type.
 removeCField
-  :: forall n t l l' x
-  .  ( GRemoveField n l, t ~ FieldTypeAt n l
-     , l ~ InsertField n 'Nothing t l', l' ~ RemoveField n l)
-  => LoL l x -> (t, LoL l' x)
+  :: forall    n t lt l x
+  .  RmvCField n t lt l
+  => LoL lt x -> (t, LoL l x)
 removeCField (LoL a) = LoL <$> gRemoveField @n a
 
 -- | @'removeRField' \@\"fdName\" \@n \@t@: remove the field @fdName@
 -- at position @n@ of type @t@ in a record type.
 removeRField
-  :: forall fdName n t l l' x
-  .  ( GRemoveField n l, t ~ FieldTypeAt n l, n ~ FieldIndex fdName l
-     , l ~ InsertField n ('Just fdName) t l', l' ~ RemoveField n l)
-  => LoL l x -> (t, LoL l' x)
+  :: forall    fd n t lt l x
+  .  RmvRField fd n t lt l
+  => LoL lt x -> (t, LoL l x)
 removeRField (LoL a) = LoL <$> gRemoveField @n a
 
 -- | @'insertCField' \@n \@t@: insert a field of type @t@
 -- at position @n@ in a non-record single-constructor type.
 insertCField
-  :: forall n t l' l x
-  .  ( GInsertField n l, t ~ FieldTypeAt n l
-     , l ~ InsertField n 'Nothing t l', l' ~ RemoveField n l)
-  => t -> LoL l' x -> LoL l x
+  :: forall    n t lt l x
+  .  InsCField n t lt l
+  => t -> LoL l x -> LoL lt x
 insertCField z (LoL a) = LoL (gInsertField @n z a)
 
 -- | @'insertRField' \@\"fdName\" \@n \@t@: insert a field
 -- named @fdName@ of type @t@ at position @n@ in a record type.
 insertRField
-  :: forall fdName n t l' l x
-  .  ( GInsertField n l, t ~ FieldTypeAt n l, n ~ FieldIndex fdName l
-     , l ~ InsertField n ('Just fdName) t l', l' ~ RemoveField n l)
-  => t -> LoL l' x -> LoL l x
+  :: forall    fd n t lt l x
+  .  InsRField fd n t lt l
+  => t -> LoL l x -> LoL lt x
 insertRField z (LoL a) = LoL (gInsertField @n z a)
 
 -- | @'removeConstr' \@\"C\" \@n \@t@: remove the @n@-th constructor, named @C@,
@@ -116,26 +112,52 @@ insertRField z (LoL a) = LoL (gInsertField @n z a)
 --
 -- 'Data.Functor.Identity.Identity' can be used as a singleton tuple.
 removeConstr
-  :: forall c t n l l' lt x
-  .  ( GRemoveConstr n l, n ~ ConstrIndex c l, Generic t
-     , Coercible (Rep t) (M1 D DummyMeta lt), MatchFields (Rep t) (M1 D DummyMeta lt)
-     , GArborify lt, lt ~ Arborify (ConstrAt n l), Linearize lt ~ ConstrAt n l
-     , l' ~ RemoveConstr n l)
-  => LoL l x -> Either t (LoL l' x)
-removeConstr (LoL a) = bimap (to . coerce' . gArborify @lt) LoL (gRemoveConstr @n a)
+  :: forall    c t n lc l l_t x
+  .  RmvConstr c t n lc l l_t
+  => LoL lc x -> Either t (LoL l x)
+removeConstr (LoL a) = bimap (to . coerce' . gArborify @l_t) LoL (gRemoveConstr @n a)
 
 -- | @'insertConstr' \@\"C\" \@n \@t@: insert a constructor @C@ at position @n@
 -- with contents isomorphic to the tuple @t@.
 --
 -- 'Data.Functor.Identity.Identity' can be used as a singleton tuple.
 insertConstr
-  :: forall c t n l l' lt x
-  .  ( GInsertConstr n l, n ~ ConstrIndex c l, Generic t
-     , Coercible (Rep t) (M1 D DummyMeta lt), MatchFields (Rep t) (M1 D DummyMeta lt)
-     , GLinearize lt, lt ~ Arborify (ConstrAt n l), Linearize lt ~ ConstrAt n l
-     , l' ~ RemoveConstr n l)
-  => Either t (LoL l' x) -> LoL l x
-insertConstr z = LoL (gInsertConstr @n (bimap (gLinearize @lt . coerce' . from) unLoL z))
+  :: forall    c t n lc l l_t x
+  .  InsConstr c t n lc l l_t
+  => Either t (LoL l x) -> LoL lc x
+insertConstr z = LoL (gInsertConstr @n (bimap (gLinearize @l_t . coerce' . from) unLoL z))
+
+--
+
+type RmvCField n t lt l =
+  ( GRemoveField n lt, t ~ FieldTypeAt n lt
+  , lt ~ InsertField n 'Nothing t l, l ~ RemoveField n lt)
+
+type RmvRField fd n t lt l =
+  ( GRemoveField n lt, t ~ FieldTypeAt n lt, n ~ FieldIndex fd lt
+  , lt ~ InsertField n ('Just fd) t l, l ~ RemoveField n lt)
+
+type InsCField n t lt l =
+  ( GInsertField n lt, t ~ FieldTypeAt n lt
+  , lt ~ InsertField n 'Nothing t l, l ~ RemoveField n lt)
+
+type InsRField fd n t lt l =
+  ( GInsertField n lt, t ~ FieldTypeAt n lt, n ~ FieldIndex fd lt
+  , lt ~ InsertField n ('Just fd) t l, l ~ RemoveField n lt)
+
+type RmvConstr c t n lc l l_t =
+  ( GRemoveConstr n lc, n ~ ConstrIndex c lc, Generic t
+  , Coercible (Rep t) (M1 D DummyMeta l_t), MatchFields (Rep t) (M1 D DummyMeta l_t)
+  , GArborify l_t, l_t ~ Arborify (ConstrAt n lc), Linearize l_t ~ ConstrAt n lc
+  , l ~ RemoveConstr n lc)
+
+type InsConstr c t n lc l l_t =
+  ( GInsertConstr n lc, n ~ ConstrIndex c lc, Generic t
+  , Coercible (Rep t) (M1 D DummyMeta l_t), MatchFields (Rep t) (M1 D DummyMeta l_t)
+  , GLinearize l_t, l_t ~ Arborify (ConstrAt n lc), Linearize l_t ~ ConstrAt n lc
+  , l ~ RemoveConstr n lc)
+
+--
 
 coerce' :: Coercible (f x) (g x) => f x -> g x
 coerce' = coerce

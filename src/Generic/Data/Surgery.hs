@@ -6,6 +6,8 @@ module Generic.Data.Surgery
   , fromData
   , fromLoL
 
+  , LoLOf
+
     -- * Surgeries
   , removeCField
   , insertCField
@@ -13,6 +15,20 @@ module Generic.Data.Surgery
   , insertRField
   , removeConstr
   , insertConstr
+
+    -- * Constraint synonyms
+
+  , ToLoLRep
+  , ToLoL
+  , FromLoLRep
+  , FromLoL
+
+  , RmvCField
+  , InsCField
+  , RmvRField
+  , InsRField
+  , RmvConstr
+  , InsConstr
   ) where
 
 import Generic.Data.Internal.Surgery
