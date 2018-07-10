@@ -18,6 +18,9 @@ module Generic.Data.Surgery
 
     -- * Constraint synonyms
 
+    -- | Hiding implementation details from the signatures above.
+    -- Useful to compose surgeries in a reusable way.
+
   , ToLoLRep
   , ToLoL
   , FromLoLRep
