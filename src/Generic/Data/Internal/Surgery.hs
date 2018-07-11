@@ -78,8 +78,8 @@ fromData = OR . gLinearize . unData
 -- the context. The following annotations are possible:
 --
 -- @
--- 'fromOR' :: 'OROf' Ty -> Ty
--- 'fromOR' \@Ty  -- with TypeApplications
+-- 'fromOR' :: 'OROf' a -> a
+-- 'fromOR' \@a  -- with TypeApplications
 -- @
 fromOR :: forall a l x. (Generic a, FromORRep a l) => OR l x -> a
 fromOR = to . gArborify . unOR
