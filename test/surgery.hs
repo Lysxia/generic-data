@@ -2,16 +2,18 @@
     DataKinds,
     DeriveGeneric,
     FlexibleContexts,
-    TypeApplications #-}
+    TypeApplications,
+    TypeOperators #-}
 
 {-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
 import Data.Bifunctor (bimap)
-import GHC.Generics (Generic(..))
+import GHC.Generics
 import Test.Tasty
 import Test.Tasty.HUnit
 
 import Generic.Data.Surgery
+import Generic.Data.Types (Data(Data))
 
 data T = A | B Int | C Int Int Int Int Int deriving (Eq, Show, Generic)
 
@@ -36,6 +38,7 @@ test :: TestTree
 test = testGroup "surgery"
   [ testCase "roundtrip" $ x @?= (fromOR . toOR) x
   , testConsumer
+  , testProducer
   ]
 
 testConsumer :: TestTree
@@ -64,3 +67,60 @@ testConsumer = testGroup "consumer"
   , testCase "insertConstr" $
       "B 0" @?= (show . fromOR @T . insertConstr @"B" . Left) (I 0)
   ]
+
+testProducer :: TestTree
+testProducer = testGroup "producer"
+  [ testCase "removeCField" $
+      P 0 0 0 @?=
+        (fromOR . snd . removeCField @1 @[Int] . fromData) def
+
+  , testCase "removeRField" $
+      R 0 0 0 @?=
+        (fromOR . snd . removeRField @"v" @1 @[Int] . fromData) def
+
+  , testCase "insertCField" $
+      P 0 9 0 @?=
+        (fromOR . insertCField @1 9 . fromData) def
+
+  , testCase "insertCField" $
+      R 0 9 0 @?=
+        (fromOR . insertRField @"v" 9 . fromData) def
+
+  , testCase "removeConstr" $
+      Right A @?=
+        (fmap fromOR . removeConstr @"D" @() @3 . fromData) def
+
+  , testCase "insertConstr" $
+      B 0 @?=
+        (fromOR . insertConstr @"A" @() . Right . fromData) def
+  ]
+
+class Def a where
+  def :: a
+
+instance Def Int where
+  def = 0
+
+instance Def [a] where
+  def = []
+
+instance GDef f => Def (Data f x) where
+  def = Data gdef
+
+class GDef f where
+  gdef :: f x
+
+instance GDef f => GDef (M1 i c f) where
+  gdef = M1 gdef
+
+instance GDef f => GDef (f :+: g) where
+  gdef = L1 gdef
+
+instance (GDef f, GDef g) => GDef (f :*: g) where
+  gdef = gdef :*: gdef
+
+instance Def a => GDef (K1 i a) where
+  gdef = K1 def
+
+instance GDef U1 where
+  gdef = U1

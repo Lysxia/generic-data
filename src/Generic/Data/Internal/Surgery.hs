@@ -29,6 +29,7 @@ import Fcf
 
 import Generic.Data.Internal.Compat (Div)
 import Generic.Data.Internal.Data
+import Generic.Data.Internal.Meta (MetaOf, MetaConsName)
 
 -- | /A sterile operating room, where generic data comes to be altered./
 --
@@ -98,7 +99,7 @@ type FromORRep a l = FromOR (Rep a) l
 
 -- | Similar to 'ToORRep', but as a constraint on the standard
 -- generic representation of @a@ directly, @f ~ 'Rep' a@.
-type   ToOR f l = (GLinearize f, Linearize f ~ l)
+type   ToOR f l = (GLinearize f, Linearize f ~ l, f ~ Arborify l)
 
 -- | Similar to 'FromORRep', but as a constraint on the standard
 -- generic representation of @a@ directly, @f ~ 'Rep' a@.
@@ -145,9 +146,10 @@ insertRField z (OR a) = OR (gInsertField @n z a)
 -- singleton tuple.
 removeConstr
   :: forall    c t n lc l l_t x
-  .  RmvConstr c t n lc l l_t
+  .  RmvConstr c t n lc l l_t x
   => OR lc x -> Either t (OR l x)
-removeConstr (OR a) = bimap (to . coerce' . gArborify @l_t) OR (gRemoveConstr @n a)
+removeConstr (OR a) = bimap
+  (to . coerce' . gArborify @(Arborify l_t)) OR (gRemoveConstr @n a)
 
 -- | @'insertConstr' \@\"C\" \@n \@t@: insert a constructor @C@ at position @n@
 -- with contents isomorphic to the tuple @t@.
@@ -156,9 +158,11 @@ removeConstr (OR a) = bimap (to . coerce' . gArborify @l_t) OR (gRemoveConstr @n
 -- singleton tuple.
 insertConstr
   :: forall    c t n lc l l_t x
-  .  InsConstr c t n lc l l_t
+  .  InsConstr c t n lc l l_t x
   => Either t (OR l x) -> OR lc x
-insertConstr z = OR (gInsertConstr @n (bimap (gLinearize @l_t . coerce' . from) unOR z))
+insertConstr z =
+  OR (gInsertConstr @n
+    (bimap (gLinearize @(Arborify l_t) . coerce' . from) unOR z))
 
 --
 
@@ -190,31 +194,38 @@ type InsRField fd n t lt l =
 -- named @c@ at position @n@, and removing it from @lc@ yields row @l@.
 -- Furthermore, constructor @c@ contains a field row @l_t@ compatible with the
 -- tuple type @t@.
-type RmvConstr c t n lc l l_t =
+type RmvConstr c t n lc l l_t x =
   ( GRemoveConstr n lc, n ~ ConstrIndex c lc, Generic t
-  , Coercible (Rep t) (M1 D DummyMeta l_t), MatchFields (Rep t) (M1 D DummyMeta l_t)
-  , GArborify l_t, l_t ~ Arborify (ConstrAt n lc), Linearize l_t ~ ConstrAt n lc
-  , l ~ RemoveConstr n lc)
+  , Coercible (Arborify l_t x) (Rep t x)
+  , MatchFields (UnM1 (Rep t)) (Arborify l_t)
+  , GArborify (Arborify l_t), l_t ~ Linearize (Arborify l_t), l_t ~ ConstrAt n lc
+  , c ~ MetaConsName (MetaOf l_t)
+  , lc ~ InsertConstr n l_t l, l ~ RemoveConstr n lc)
 
 -- | This constraint means that the inserting a constructor @c@ at position @n@
 -- in the constructor row @l@ yields row @lc@.
 -- Furthermore, constructor @c@ contains a field row @l_t@ compatible with the
 -- tuple type @t@.
-type InsConstr c t n lc l l_t =
+type InsConstr c t n lc l l_t x =
   ( GInsertConstr n lc, n ~ ConstrIndex c lc, Generic t
-  , Coercible (Rep t) (M1 D DummyMeta l_t), MatchFields (Rep t) (M1 D DummyMeta l_t)
-  , GLinearize l_t, l_t ~ Arborify (ConstrAt n lc), Linearize l_t ~ ConstrAt n lc
-  , l ~ RemoveConstr n lc)
+  , Coercible (Rep t x) (Arborify l_t x)
+  , MatchFields (UnM1 (Rep t)) (Arborify l_t)
+  , GLinearize (Arborify l_t), l_t ~ Linearize (Arborify l_t), l_t ~ ConstrAt n lc
+  , c ~ MetaConsName (MetaOf l_t)
+  , lc ~ InsertConstr n l_t l, l ~ RemoveConstr n lc)
 
 --
 
 coerce' :: Coercible (f x) (g x) => f x -> g x
 coerce' = coerce
 
-type DummyMeta = 'MetaData "" "" "" 'False
-
 absurd :: V1 x -> a
 absurd !_ = error "impossible"
+
+type DummyMeta = 'MetaData "" "" "" 'False
+
+type family   UnM1 (f :: k -> *) :: k -> *
+type instance UnM1 (M1 i c f) = f
 
 --
 
@@ -371,6 +382,7 @@ type instance InsertField n fd t (f :*: g) =
   If (n == 0)
     (M1 S (DefaultMetaSel fd) (K1 R t) :*: (f :*: g))
     (f :*: InsertField (n-1) fd t g)
+type instance InsertField 0 fd t U1 = M1 S (DefaultMetaSel fd) (K1 R t) :*: U1
 
 -- | Position of a record field
 type family   FieldIndex (field :: Symbol) (f :: k -> *) :: Nat
@@ -435,6 +447,12 @@ type family   RemoveConstr (n :: Nat) (f :: k -> *) :: k -> *
 type instance RemoveConstr n (M1 i m f) = M1 i m (RemoveConstr n f)
 type instance RemoveConstr n (f :+: g) = If (n == 0) g (f :+: RemoveConstr (n-1) g)
 
+type family   InsertConstr (n :: Nat) (t :: k -> *) (f :: k -> *) :: k -> *
+type instance InsertConstr n t (M1 i m f) = M1 i m (InsertConstr n t f)
+type instance InsertConstr n t (f :+: g) =
+  If (n == 0) (t :+: (f :+: g)) (f :+: InsertConstr (n-1) t g)
+type instance InsertConstr 0 t V1 = t :+: V1
+
 type family   ConstrIndex (con :: Symbol) (f :: k -> *) :: Nat
 type instance ConstrIndex con (M1 D m f) = ConstrIndex con f
 type instance ConstrIndex con (M1 C ('MetaCons con' fx s) f :+: g) =
@@ -475,8 +493,16 @@ instance (If (n == 0) (() :: Constraint) (GInsertConstr (n-1) g), IsBool (n == 0
 
 -- | Generate equality constraints between fields of two matching generic
 -- representations.
-type family   MatchFields (f :: k -> *) (g :: k -> *) :: Constraint
-type instance MatchFields (M1 i c f) (M1 j d g) = MatchFields f g
-type instance MatchFields (f1 :+: f2) (g1 :+: g2) = (MatchFields f1 g1, MatchFields f2 g2)
-type instance MatchFields (f1 :*: f2) (g1 :*: g2) = (MatchFields f1 g1, MatchFields f2 g2)
-type instance MatchFields (K1 i a) (K1 j b) = (a ~ b)
+class MatchFields (f :: k -> *) (g :: k -> *)
+instance (g' ~ M1 D d g, MatchFields f g) => MatchFields (M1 D c f) g'
+-- Forcing the MetaCons field
+instance (g' ~ M1 C ('MetaCons _cn _s _t) g, MatchFields f g)
+  => MatchFields (M1 C c f) g'
+instance (g' ~ M1 S d g, MatchFields f g) => MatchFields (M1 S c f) g'
+instance (g' ~ (g1 :+: g2), MatchFields f1 g1, MatchFields f2 g2)
+  => MatchFields (f1 :+: f2) g'
+instance (g' ~ (g1 :*: g2), MatchFields f1 g1, MatchFields f2 g2)
+  => MatchFields (f1 :*: f2) g'
+instance (g' ~ K1 j a) => MatchFields (K1 i a) g'
+instance (g' ~ U1) => MatchFields U1 g'
+instance (g' ~ V1) => MatchFields V1 g'
