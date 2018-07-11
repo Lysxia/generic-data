@@ -362,7 +362,7 @@ insertRField z (OR a) = OR (gInsertField @n z a)
 removeConstr
   :: forall    c t n lc l l_t x
   .  ( RmvConstr c t n lc l l_t x
-     , Coercible (Rep t x) (Arborify l_t x) )
+     , Coercible (Arborify l_t x) (Rep t x) )  -- Coercible is... (contd.)
   => OR lc x -> Either t (OR l x)
 removeConstr (OR a) = bimap
   (to . coerce' . gArborify @(Arborify l_t)) OR (gRemoveConstr @n a)
@@ -407,7 +407,7 @@ removeConstr (OR a) = bimap
 insertConstr
   :: forall    c t n lc l l_t x
   .  ( InsConstr c t n lc l l_t x
-     , Coercible (Rep t x) (Arborify l_t x) )
+     , Coercible (Rep t x) (Arborify l_t x) )  -- ... not symmetric?
   => Either t (OR l x) -> OR lc x
 insertConstr z =
   OR (gInsertConstr @n
