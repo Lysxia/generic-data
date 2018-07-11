@@ -32,7 +32,7 @@ import Generic.Data.Internal.Data
 
 -- | /A sterile operating room, where generic data comes to be altered./
 --
--- Generic representation in a list-of-lists shape (\"LoL\") at the type level
+-- Generic representation in a list-of-lists shape at the type level
 -- (reusing the constructors from "GHC.Generics" for convenience).
 -- This representation makes it easy to modify fields and constructors.
 --
@@ -41,15 +41,15 @@ import Generic.Data.Internal.Data
 --
 -- @x@ corresponds to the last parameter of 'Rep', and is currently ignored by
 -- this module (no support for 'Generic1').
-newtype LoL l x = LoL { unLoL :: l x }
+newtype OR l x = OR { unOR :: l x }
 
--- | /Move your data to the operating room, where surgeries can be applied./
+-- | /Move fresh data to the operating room, where surgeries can be applied./
 --
 -- Convert a generic type to a list-of-lists-shaped representation.
-toLoL :: forall a l x. (Generic a, ToLoLRep a l) => a -> LoL l x
-toLoL = LoL . gLinearize . from
+toOR :: forall a l x. (Generic a, ToORRep a l) => a -> OR l x
+toOR = OR . gLinearize . from
 
--- | /Move your altered data out of the operating room, to be consumed by/
+-- | /Move altered data out of the operating room, to be consumed by/
 -- /some generic function./
 --
 -- Convert a list-of-lists representation to a synthetic generic type.
@@ -58,51 +58,51 @@ toLoL = LoL . gLinearize . from
 -- corresponding closely to what GHC would generate for an actual data type.
 --
 -- That structure assumed by at least one piece of code out there (@aeson@).
-toData :: forall f l x. FromLoL f l => LoL l x -> Data f x
-toData = Data . gArborify . unLoL
+toData :: forall f l x. FromOR f l => OR l x -> Data f x
+toData = Data . gArborify . unOR
 
 -- | /Move altered data, produced by some generic function, to the operating/
 -- /room./
 --
 -- The inverse of 'toData'.
-fromData :: forall f l x. ToLoL f l => Data f x -> LoL l x
-fromData = LoL . gLinearize . unData
+fromData :: forall f l x. ToOR f l => Data f x -> OR l x
+fromData = OR . gLinearize . unData
 
 -- | /Move restored data out of the operation room and back to the real/
 -- /world./
 --
--- The inverse of 'toLoL'.
+-- The inverse of 'toOR'.
 --
--- It may be useful to annotate the output type of 'fromLoL',
+-- It may be useful to annotate the output type of 'fromOR',
 -- since the rest of the type depends on it and it might only be inferred from
 -- the context. The following annotations are possible:
 --
 -- @
--- 'fromLoL' :: 'LoLOf' Ty -> Ty
--- 'fromLoL' \@Ty  -- with TypeApplications
+-- 'fromOR' :: 'OROf' Ty -> Ty
+-- 'fromOR' \@Ty  -- with TypeApplications
 -- @
-fromLoL :: forall a l x. (Generic a, FromLoLRep a l) => LoL l x -> a
-fromLoL = to . gArborify . unLoL
+fromOR :: forall a l x. (Generic a, FromORRep a l) => OR l x -> a
+fromOR = to . gArborify . unOR
 
 -- | The list-of-lists generic representation type of type @a@,
--- that 'toLoL' and 'fromLoL' convert to and from.
-type LoLOf a = LoL (Linearize (Rep a)) ()
+-- that 'toOR' and 'fromOR' convert to and from.
+type OROf a = OR (Linearize (Rep a)) ()
 
 -- | This constraint means that @a@ is convertible /to/ its list-of-lists
--- generic representation. Implies @'LoLOf' a ~ 'LoL' l ()@.
-type   ToLoLRep a l =   ToLoL (Rep a) l
+-- generic representation. Implies @'OROf' a ~ 'OR' l ()@.
+type   ToORRep a l =   ToOR (Rep a) l
 
 -- | This constraint means that @a@ is convertible /from/ its list-of-lists
--- generic representation. Implies @'LoLOf' a ~ 'LoL' l ()@.
-type FromLoLRep a l = FromLoL (Rep a) l
+-- generic representation. Implies @'OROf' a ~ 'OR' l ()@.
+type FromORRep a l = FromOR (Rep a) l
 
--- | Similar to 'ToLoLRep', but as a constraint on the standard
+-- | Similar to 'ToORRep', but as a constraint on the standard
 -- generic representation of @a@ directly, @f ~ 'Rep' a@.
-type   ToLoL f l = (GLinearize f, Linearize f ~ l)
+type   ToOR f l = (GLinearize f, Linearize f ~ l)
 
--- | Similar to 'FromLoLRep', but as a constraint on the standard
+-- | Similar to 'FromORRep', but as a constraint on the standard
 -- generic representation of @a@ directly, @f ~ 'Rep' a@.
-type FromLoL f l = (GArborify  f, Linearize f ~ l, f ~ Arborify l)
+type FromOR f l = (GArborify  f, Linearize f ~ l, f ~ Arborify l)
 
 --
 
@@ -111,32 +111,32 @@ type FromLoL f l = (GArborify  f, Linearize f ~ l, f ~ Arborify l)
 removeCField
   :: forall    n t lt l x
   .  RmvCField n t lt l
-  => LoL lt x -> (t, LoL l x)
-removeCField (LoL a) = LoL <$> gRemoveField @n a
+  => OR lt x -> (t, OR l x)
+removeCField (OR a) = OR <$> gRemoveField @n a
 
 -- | @'removeRField' \@\"fdName\" \@n \@t@: remove the field @fdName@
 -- at position @n@ of type @t@ in a record type.
 removeRField
   :: forall    fd n t lt l x
   .  RmvRField fd n t lt l
-  => LoL lt x -> (t, LoL l x)
-removeRField (LoL a) = LoL <$> gRemoveField @n a
+  => OR lt x -> (t, OR l x)
+removeRField (OR a) = OR <$> gRemoveField @n a
 
 -- | @'insertCField' \@n \@t@: insert a field of type @t@
 -- at position @n@ in a non-record single-constructor type.
 insertCField
   :: forall    n t lt l x
   .  InsCField n t lt l
-  => t -> LoL l x -> LoL lt x
-insertCField z (LoL a) = LoL (gInsertField @n z a)
+  => t -> OR l x -> OR lt x
+insertCField z (OR a) = OR (gInsertField @n z a)
 
 -- | @'insertRField' \@\"fdName\" \@n \@t@: insert a field
 -- named @fdName@ of type @t@ at position @n@ in a record type.
 insertRField
   :: forall    fd n t lt l x
   .  InsRField fd n t lt l
-  => t -> LoL l x -> LoL lt x
-insertRField z (LoL a) = LoL (gInsertField @n z a)
+  => t -> OR l x -> OR lt x
+insertRField z (OR a) = OR (gInsertField @n z a)
 
 -- | @'removeConstr' \@\"C\" \@n \@t@: remove the @n@-th constructor, named @C@,
 -- with contents isomorphic to the tuple @t@.
@@ -145,8 +145,8 @@ insertRField z (LoL a) = LoL (gInsertField @n z a)
 removeConstr
   :: forall    c t n lc l l_t x
   .  RmvConstr c t n lc l l_t
-  => LoL lc x -> Either t (LoL l x)
-removeConstr (LoL a) = bimap (to . coerce' . gArborify @l_t) LoL (gRemoveConstr @n a)
+  => OR lc x -> Either t (OR l x)
+removeConstr (OR a) = bimap (to . coerce' . gArborify @l_t) OR (gRemoveConstr @n a)
 
 -- | @'insertConstr' \@\"C\" \@n \@t@: insert a constructor @C@ at position @n@
 -- with contents isomorphic to the tuple @t@.
@@ -155,8 +155,8 @@ removeConstr (LoL a) = bimap (to . coerce' . gArborify @l_t) LoL (gRemoveConstr 
 insertConstr
   :: forall    c t n lc l l_t x
   .  InsConstr c t n lc l l_t
-  => Either t (LoL l x) -> LoL lc x
-insertConstr z = LoL (gInsertConstr @n (bimap (gLinearize @l_t . coerce' . from) unLoL z))
+  => Either t (OR l x) -> OR lc x
+insertConstr z = OR (gInsertConstr @n (bimap (gLinearize @l_t . coerce' . from) unOR z))
 
 --
 

@@ -34,29 +34,29 @@ unit = id
 
 test :: TestTree
 test = testGroup "surgery"
-  [ testCase "roundtrip" $ x @?= (fromLoL . toLoL) x
+  [ testCase "roundtrip" $ x @?= (fromOR . toOR) x
 
   , testCase "removeCField" $
       "P 1 3" @?=
-      (show' . toData . snd . removeCField @1 . toLoL) (P 1 2 3)
+      (show' . toData . snd . removeCField @1 . toOR) (P 1 2 3)
 
   , testCase "removeRField" $
       "R {u = 1, w = 3}" @?=
-      (show' . toData . snd . removeRField @"v" . toLoL) (R 1 2 3)
+      (show' . toData . snd . removeRField @"v" . toOR) (R 1 2 3)
 
   , testCase "insertCField" $
       "P 1 () 2 3" @?=
-      (show' . toData . insertCField @1 () . toLoL) (P 1 2 3)
+      (show' . toData . insertCField @1 () . toOR) (P 1 2 3)
 
   , testCase "insertRField" $
       "R {u = 1, n = (), v = 2, w = 3}" @?=
-      (show' . toData . insertRField @"n" @1 () . toLoL) (R 1 2 3)
+      (show' . toData . insertRField @"n" @1 () . toOR) (R 1 2 3)
 
   , testCase "removeConstr" $
       "[Right A,Left 0,Right (C 1 2 3 4 5)]" @?=
-      (show . fmap (bimap unI (unit . toData) . removeConstr @"B" . toLoL))
+      (show . fmap (bimap unI (unit . toData) . removeConstr @"B" . toOR))
         [A, B 0, x]
 
   , testCase "insertConstr" $
-      "B 0" @?= (show . fromLoL @T . insertConstr @"B" . Left) (I 0)
+      "B 0" @?= (show . fromOR @T . insertConstr @"B" . Left) (I 0)
   ]

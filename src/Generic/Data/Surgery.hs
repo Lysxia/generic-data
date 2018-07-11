@@ -3,14 +3,14 @@
 
 module Generic.Data.Surgery
   ( -- * Getting into the operating room
-    LoL
+    OR
 
-  , toLoL
+  , toOR
   , toData
   , fromData
-  , fromLoL
+  , fromOR
 
-  , LoLOf
+  , OROf
 
     -- * Surgeries
   , removeCField
@@ -27,10 +27,10 @@ module Generic.Data.Surgery
 
     -- ** Conversions
 
-  , ToLoLRep
-  , ToLoL
-  , FromLoLRep
-  , FromLoL
+  , ToORRep
+  , ToOR
+  , FromORRep
+  , FromOR
 
     -- ** Surgeries
 
