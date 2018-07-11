@@ -20,7 +20,7 @@ module Generic.Data.Internal.Surgery where
 import Control.Monad ((<=<))
 import Data.Bifunctor (bimap, first)
 import Data.Coerce
-import Data.Kind (Constraint)
+import Data.Kind (Constraint, Type)
 import Data.Type.Equality (type (==))
 import GHC.Generics
 import GHC.TypeLits
@@ -34,7 +34,7 @@ import Generic.Data.Internal.Utils (coerce', absurd1)
 
 -- | /A sterile operating room, where generic data comes to be altered./
 --
--- Generic representation in a list-of-lists shape at the type level
+-- Generic representation in a simplified shape @l@ at the type level
 -- (reusing the constructors from "GHC.Generics" for convenience).
 -- This representation makes it easy to modify fields and constructors.
 --
@@ -43,23 +43,56 @@ import Generic.Data.Internal.Utils (coerce', absurd1)
 --
 -- @x@ corresponds to the last parameter of 'Rep', and is currently ignored by
 -- this module (no support for 'Generic1').
-newtype OR l x = OR { unOR :: l x }
+newtype OR (l :: k -> Type) (x :: k) = OR { unOR :: l x }
 
 -- | /Move fresh data to the operating room, where surgeries can be applied./
 --
--- Convert a generic type to a list-of-lists-shaped representation.
+-- Convert a generic type to a generic representation.
+--
+-- === __Details__
+--
+-- ==== Type parameters
+--
+-- @
+-- a :: 'Type'       -- Generic type
+-- l :: k -> 'Type'  -- Generic representation (simplified)
+-- x :: k          -- Ignored
+-- @
+--
+-- ==== Functional dependencies
+--
+-- @
+-- a -> l
+-- @
 toOR :: forall a l x. (Generic a, ToORRep a l) => a -> OR l x
 toOR = OR . gLinearize . from
 
 -- | /Move altered data out of the operating room, to be consumed by/
 -- /some generic function./
 --
--- Convert a list-of-lists representation to a synthetic generic type.
+-- Convert a generic representation to a \"synthetic\" generic type.
 --
 -- The synthesized representation is made of balanced binary trees,
 -- corresponding closely to what GHC would generate for an actual data type.
 --
 -- That structure assumed by at least one piece of code out there (@aeson@).
+--
+-- === __Details__
+--
+-- ==== Type parameters
+--
+-- @
+-- f :: k -> 'Type'  -- 'Generic' representation (proper)
+-- l :: k -> 'Type'  -- Generic representation (simplified)
+-- x :: k          -- Ignored
+-- @
+--
+-- ==== Functional dependencies
+--
+-- @
+-- f -> l
+-- l -> f
+-- @
 toData :: forall f l x. FromOR f l => OR l x -> Data f x
 toData = Data . gArborify . unOR
 
@@ -67,6 +100,23 @@ toData = Data . gArborify . unOR
 -- /room./
 --
 -- The inverse of 'toData'.
+--
+-- === __Details__
+--
+-- ==== Type parameters
+--
+-- @
+-- f :: k -> 'Type'  -- 'Generic' representation (proper)
+-- l :: k -> 'Type'  -- Generic representation (simplified)
+-- x :: k          -- Ignored
+-- @
+--
+-- ==== Functional dependencies
+--
+-- @
+-- f -> l
+-- l -> f
+-- @
 fromData :: forall f l x. ToOR f l => Data f x -> OR l x
 fromData = OR . gLinearize . unData
 
@@ -83,18 +133,34 @@ fromData = OR . gLinearize . unData
 -- 'fromOR' :: 'OROf' a -> a
 -- 'fromOR' \@a  -- with TypeApplications
 -- @
+--
+-- === __Details__
+--
+-- ==== Type parameters
+--
+-- @
+-- a :: 'Type'       -- Generic type
+-- l :: k -> 'Type'  -- Generic representation (simplified)
+-- x :: k          -- Ignored
+-- @
+--
+-- ==== Functional dependencies
+--
+-- @
+-- a -> l
+-- @
 fromOR :: forall a l x. (Generic a, FromORRep a l) => OR l x -> a
 fromOR = to . gArborify . unOR
 
--- | The list-of-lists generic representation type of type @a@,
+-- | The simplified generic representation type of type @a@,
 -- that 'toOR' and 'fromOR' convert to and from.
 type OROf a = OR (Linearize (Rep a)) ()
 
--- | This constraint means that @a@ is convertible /to/ its list-of-lists
+-- | This constraint means that @a@ is convertible /to/ its simplified
 -- generic representation. Implies @'OROf' a ~ 'OR' l ()@.
 type   ToORRep a l =   ToOR (Rep a) l
 
--- | This constraint means that @a@ is convertible /from/ its list-of-lists
+-- | This constraint means that @a@ is convertible /from/ its simplified
 -- generic representation. Implies @'OROf' a ~ 'OR' l ()@.
 type FromORRep a l = FromOR (Rep a) l
 
@@ -110,6 +176,33 @@ type FromOR f l = (GArborify  f, Linearize f ~ l, f ~ Arborify l)
 
 -- | @'removeCField' \@n \@t@: remove the @n@-th field of type @t@
 -- in a non-record single-constructor type.
+--
+-- === __Details__
+--
+-- ==== Type parameters
+--
+-- @
+-- n  :: 'Nat'        -- Field position
+-- t  :: 'Type'       -- Field type
+-- lt :: k -> 'Type'  -- Row with    field
+-- l  :: k -> 'Type'  -- Row without field
+-- x  :: k          -- Ignored
+-- @
+--
+-- ==== Signature
+--
+-- @
+-- OR lt x      -- Data with field
+-- ->
+-- (t, OR l x)  -- Field value × Data without field
+-- @
+--
+-- ==== Functional dependencies
+--
+-- @
+-- n lt  -> t l
+-- n t l -> lt
+-- @
 removeCField
   :: forall    n t lt l x
   .  RmvCField n t lt l
@@ -118,6 +211,35 @@ removeCField (OR a) = OR <$> gRemoveField @n a
 
 -- | @'removeRField' \@\"fdName\" \@n \@t@: remove the field @fdName@
 -- at position @n@ of type @t@ in a record type.
+--
+-- === __Details__
+--
+-- ==== Type parameters
+--
+-- @
+-- fd :: 'Symbol'     -- Field name
+-- n  :: 'Nat'        -- Field position
+-- t  :: 'Type'       -- Field type
+-- lt :: k -> 'Type'  -- Row with    field
+-- l  :: k -> 'Type'  -- Row without field
+-- x  :: k          -- Ignored
+-- @
+--
+-- ==== Signature
+--
+-- @
+-- OR lt x      -- Data with field
+-- ->
+-- (t, OR l x)  -- Field value × Data without field
+-- @
+--
+-- ==== Functional dependencies
+--
+-- @
+-- fd lt    -> n  t l
+-- n  lt    -> fd t l
+-- fd n t l -> lt
+-- @
 removeRField
   :: forall    fd n t lt l x
   .  RmvRField fd n t lt l
@@ -126,6 +248,33 @@ removeRField (OR a) = OR <$> gRemoveField @n a
 
 -- | @'insertCField' \@n \@t@: insert a field of type @t@
 -- at position @n@ in a non-record single-constructor type.
+--
+-- === __Details__
+--
+-- ==== Type parameters
+--
+-- @
+-- n  :: 'Nat'        -- Field position
+-- t  :: 'Type'       -- Field type
+-- lt :: k -> 'Type'  -- Row with    field
+-- l  :: k -> 'Type'  -- Row without field
+-- x  :: k          -- Ignored
+-- @
+--
+-- ==== Signature
+--
+-- @
+-- (t, OR l x)  -- Field value × Data without field
+-- ->
+-- OR lt x      -- Data with field
+-- @
+--
+-- ==== Functional dependencies
+--
+-- @
+-- n lt  -> t l
+-- n t l -> lt
+-- @
 insertCField
   :: forall    n t lt l x
   .  InsCField n t lt l
@@ -134,6 +283,35 @@ insertCField z (OR a) = OR (gInsertField @n z a)
 
 -- | @'insertRField' \@\"fdName\" \@n \@t@: insert a field
 -- named @fdName@ of type @t@ at position @n@ in a record type.
+--
+-- === __Details__
+--
+-- ==== Type parameters
+--
+-- @
+-- fd :: 'Symbol'     -- Field name
+-- n  :: 'Nat'        -- Field position
+-- t  :: 'Type'       -- Field type
+-- lt :: k -> 'Type'  -- Row with    field
+-- l  :: k -> 'Type'  -- Row without field
+-- x  :: k          -- Ignored
+-- @
+--
+-- ==== Signature
+--
+-- @
+-- (t, OR l x)  -- Field value × Data without field
+-- ->
+-- OR lt x      -- Data with field
+-- @
+--
+-- ==== Functional dependencies
+--
+-- @
+-- fd lt    -> n  t l
+-- n  lt    -> fd t l
+-- fd n t l -> lt
+-- @
 insertRField
   :: forall    fd n t lt l x
   .  InsRField fd n t lt l
@@ -145,6 +323,38 @@ insertRField z (OR a) = OR (gInsertField @n z a)
 --
 -- @()@ and 'Data.Functor.Identity.Identity' can be used as an empty and a
 -- singleton tuple.
+--
+-- === __Details__
+--
+-- ==== Type parameters
+--
+-- @
+-- c   :: 'Symbol'     -- Constructor name
+-- t   :: 'Type'       -- Tuple type to hold c's contents
+-- n   :: 'Nat'        -- Constructor position
+-- lc  :: k -> 'Type'  -- Row with    constructor
+-- l   :: k -> 'Type'  -- Row without constructor
+-- l_t :: k -> 'Type'  -- Field row of constructor c
+-- x   :: k          -- Ignored
+-- @
+--
+-- ==== Signature
+--
+-- @
+-- OR lt x            -- Data with constructor
+-- ->
+-- Either t (OR l x)  -- Constructor (as a tuple) | Data without constructor
+-- @
+--
+-- ==== Functional dependencies
+--
+-- @
+-- c lc      -> n l l_t
+-- n lc      -> c l l_t
+-- c n l l_t -> lc
+-- @
+--
+-- Note that there is no dependency to determine @t@.
 removeConstr
   :: forall    c t n lc l l_t x
   .  RmvConstr c t n lc l l_t x
@@ -157,6 +367,38 @@ removeConstr (OR a) = bimap
 --
 -- @()@ and 'Data.Functor.Identity.Identity' can be used as an empty and a
 -- singleton tuple.
+--
+-- === __Details__
+--
+-- ==== Type parameters
+--
+-- @
+-- c   :: 'Symbol'     -- Constructor name
+-- t   :: 'Type'       -- Tuple type to hold c's contents
+-- n   :: 'Nat'        -- Constructor position
+-- lc  :: k -> 'Type'  -- Row with    constructor
+-- l   :: k -> 'Type'  -- Row without constructor
+-- l_t :: k -> 'Type'  -- Field row of constructor c
+-- x   :: k          -- Ignored
+-- @
+--
+-- ==== Signature
+--
+-- @
+-- Either t (OR l x)  -- Constructor (as a tuple) | Data without constructor
+-- ->
+-- OR lt x            -- Data with constructor
+-- @
+--
+-- ==== Functional dependencies
+--
+-- @
+-- c lc      -> n l l_t
+-- n lc      -> c l l_t
+-- c n l l_t -> lc
+-- @
+--
+-- Note that there is no dependency to determine @t@.
 insertConstr
   :: forall    c t n lc l l_t x
   .  InsConstr c t n lc l l_t x
