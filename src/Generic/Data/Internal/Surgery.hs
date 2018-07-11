@@ -141,7 +141,8 @@ insertRField z (OR a) = OR (gInsertField @n z a)
 -- | @'removeConstr' \@\"C\" \@n \@t@: remove the @n@-th constructor, named @C@,
 -- with contents isomorphic to the tuple @t@.
 --
--- 'Data.Functor.Identity.Identity' can be used as a singleton tuple.
+-- @()@ and 'Data.Functor.Identity.Identity' can be used as an empty and a
+-- singleton tuple.
 removeConstr
   :: forall    c t n lc l l_t x
   .  RmvConstr c t n lc l l_t
@@ -151,7 +152,8 @@ removeConstr (OR a) = bimap (to . coerce' . gArborify @l_t) OR (gRemoveConstr @n
 -- | @'insertConstr' \@\"C\" \@n \@t@: insert a constructor @C@ at position @n@
 -- with contents isomorphic to the tuple @t@.
 --
--- 'Data.Functor.Identity.Identity' can be used as a singleton tuple.
+-- @()@ and 'Data.Functor.Identity.Identity' can be used as an empty and a
+-- singleton tuple.
 insertConstr
   :: forall    c t n lc l l_t x
   .  InsConstr c t n lc l l_t
