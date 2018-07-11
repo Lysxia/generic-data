@@ -361,8 +361,7 @@ insertRField z (OR a) = OR (gInsertField @n z a)
 -- Note that there is no dependency to determine @t@.
 removeConstr
   :: forall    c t n lc l l_t x
-  .  ( RmvConstr c t n lc l l_t x
-     , Coercible (Arborify l_t x) (Rep t x) )  -- Coercible is... (contd.)
+  .  RmvConstr c t n lc l l_t
   => OR lc x -> Either t (OR l x)
 removeConstr (OR a) = bimap
   (to . coerce' . gArborify @(Arborify l_t)) OR (gRemoveConstr @n a)
@@ -406,8 +405,7 @@ removeConstr (OR a) = bimap
 -- Note that there is no dependency to determine @t@.
 insertConstr
   :: forall    c t n lc l l_t x
-  .  ( InsConstr c t n lc l l_t x
-     , Coercible (Rep t x) (Arborify l_t x) )  -- ... not symmetric?
+  .  InsConstr c t n lc l l_t
   => Either t (OR l x) -> OR lc x
 insertConstr z =
   OR (gInsertConstr @n
@@ -447,20 +445,20 @@ type InsRField fd n t lt l =
 -- named @c@ at position @n@, and removing it from @lc@ yields row @l@.
 -- Furthermore, constructor @c@ contains a field row @l_t@ compatible with the
 -- tuple type @t@.
-type RmvConstr c t n lc l l_t x =
+type RmvConstr c t n lc l l_t =
   ( GRemoveConstr n lc
   , GArborify (Arborify l_t)
-  , ConstrSurgery c t n lc l l_t x
+  , ConstrSurgery c t n lc l l_t
   )
 
 -- | This constraint means that the inserting a constructor @c@ at position @n@
 -- in the constructor row @l@ yields row @lc@.
 -- Furthermore, constructor @c@ contains a field row @l_t@ compatible with the
 -- tuple type @t@.
-type InsConstr c t n lc l l_t x =
+type InsConstr c t n lc l l_t =
   ( GInsertConstr n lc
   , GLinearize (Arborify l_t)
-  , ConstrSurgery c t n lc l l_t x
+  , ConstrSurgery c t n lc l l_t
   )
 
 type FieldSurgery n t lt l =
@@ -479,9 +477,10 @@ type RFieldSurgery fd n t lt l =
   , FieldSurgery n t lt l
   )
 
-type ConstrSurgery c t n lc l l_t x =
+type ConstrSurgery c t n lc l l_t =
   ( Generic t
   , MatchFields (UnM1 (Rep t)) (Arborify l_t)
+  , Coercible (Arborify l_t) (Rep t)
   , n ~ ConstrIndex c lc
   , c ~ MetaConsName (MetaOf l_t)
   , l_t ~ Linearize (Arborify l_t)
