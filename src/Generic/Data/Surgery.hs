@@ -1,6 +1,10 @@
+-- | Surgery for generic data types:
+-- remove and insert constructors and fields.
+
 module Generic.Data.Surgery
-  ( -- * Operation room
+  ( -- * Getting into the operating room
     LoL
+
   , toLoL
   , toData
   , fromData
@@ -21,10 +25,14 @@ module Generic.Data.Surgery
     -- | Hiding implementation details from the signatures above.
     -- Useful to compose surgeries in a reusable way.
 
+    -- ** Conversions
+
   , ToLoLRep
   , ToLoL
   , FromLoLRep
   , FromLoL
+
+    -- ** Surgeries
 
   , RmvCField
   , InsCField

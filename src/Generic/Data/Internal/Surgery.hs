@@ -30,30 +30,48 @@ import Fcf
 import Generic.Data.Internal.Compat (Div)
 import Generic.Data.Internal.Data
 
--- | Generic representation in a list-of-lists ('LoL') shape at the type level
--- (reusing the constructors from "GHC.Generics", as opposed to @generics-sop@
--- for instance).
+-- | /A sterile operating room, where generic data comes to be altered./
 --
+-- Generic representation in a list-of-lists shape (\"LoL\") at the type level
+-- (reusing the constructors from "GHC.Generics" for convenience).
 -- This representation makes it easy to modify fields and constructors.
+--
+-- We may also refer to the representation @l@ as a "row" of constructors or of
+-- (unnamed or record) fields, depending on whether it represents a sum type.
+--
+-- @x@ corresponds to the last parameter of 'Rep', and is currently ignored by
+-- this module (no support for 'Generic1').
 newtype LoL l x = LoL { unLoL :: l x }
 
--- | Convert the generic representation of a type to a list-of-lists shape.
+-- | /Move your data to the operating room, where surgeries can be applied./
+--
+-- Convert a generic type to a list-of-lists-shaped representation.
 toLoL :: forall a l x. (Generic a, ToLoLRep a l) => a -> LoL l x
 toLoL = LoL . gLinearize . from
 
--- | Convert a list-of-lists representation to a synthetic generic type.
+-- | /Move your altered data out of the operating room, to be consumed by/
+-- /some generic function./
+--
+-- Convert a list-of-lists representation to a synthetic generic type.
 --
 -- The synthesized representation is made of balanced binary trees,
--- corresponding to what GHC would generate for an actual data type.
+-- corresponding closely to what GHC would generate for an actual data type.
+--
 -- That structure assumed by at least one piece of code out there (@aeson@).
 toData :: forall f l x. FromLoL f l => LoL l x -> Data f x
 toData = Data . gArborify . unLoL
 
--- | The inverse of 'toData'.
+-- | /Move altered data, produced by some generic function, to the operating/
+-- /room./
+--
+-- The inverse of 'toData'.
 fromData :: forall f l x. ToLoL f l => Data f x -> LoL l x
 fromData = LoL . gLinearize . unData
 
--- | The inverse of 'toLoL'.
+-- | /Move restored data out of the operation room and back to the real/
+-- /world./
+--
+-- The inverse of 'toLoL'.
 --
 -- It may be useful to annotate the output type of 'fromLoL',
 -- since the rest of the type depends on it and it might only be inferred from
@@ -66,12 +84,25 @@ fromData = LoL . gLinearize . unData
 fromLoL :: forall a l x. (Generic a, FromLoLRep a l) => LoL l x -> a
 fromLoL = to . gArborify . unLoL
 
+-- | The list-of-lists generic representation type of type @a@,
+-- that 'toLoL' and 'fromLoL' convert to and from.
 type LoLOf a = LoL (Linearize (Rep a)) ()
 
+-- | This constraint means that @a@ is convertible /to/ its list-of-lists
+-- generic representation. Implies @'LoLOf' a ~ 'LoL' l ()@.
 type   ToLoLRep a l =   ToLoL (Rep a) l
+
+-- | This constraint means that @a@ is convertible /from/ its list-of-lists
+-- generic representation. Implies @'LoLOf' a ~ 'LoL' l ()@.
 type FromLoLRep a l = FromLoL (Rep a) l
-type   ToLoL    f l = (GLinearize f, Linearize f ~ l)
-type FromLoL    f l = (GArborify  f, Linearize f ~ l, f ~ Arborify l)
+
+-- | Similar to 'ToLoLRep', but as a constraint on the standard
+-- generic representation of @a@ directly, @f ~ 'Rep' a@.
+type   ToLoL f l = (GLinearize f, Linearize f ~ l)
+
+-- | Similar to 'FromLoLRep', but as a constraint on the standard
+-- generic representation of @a@ directly, @f ~ 'Rep' a@.
+type FromLoL f l = (GArborify  f, Linearize f ~ l, f ~ Arborify l)
 
 --
 
@@ -129,28 +160,44 @@ insertConstr z = LoL (gInsertConstr @n (bimap (gLinearize @l_t . coerce' . from)
 
 --
 
+-- | This constraint means that the (unnamed) field row @lt@ contains
+-- a field of type @t@ at position @n@, and removing it yields row @l@.
 type RmvCField n t lt l =
   ( GRemoveField n lt, t ~ FieldTypeAt n lt
   , lt ~ InsertField n 'Nothing t l, l ~ RemoveField n lt)
 
+-- | This constraint means that the record field row @lt@ contains a field of
+-- type @t@ named @fd@ at position @n@, and removing it yields row @l@.
 type RmvRField fd n t lt l =
   ( GRemoveField n lt, t ~ FieldTypeAt n lt, n ~ FieldIndex fd lt
   , lt ~ InsertField n ('Just fd) t l, l ~ RemoveField n lt)
 
+-- | This constraint means that inserting a field @t@ at position @n@ in the
+-- (unnamed) field row @t@ yields row @lt@.
 type InsCField n t lt l =
   ( GInsertField n lt, t ~ FieldTypeAt n lt
   , lt ~ InsertField n 'Nothing t l, l ~ RemoveField n lt)
 
+-- | This constraint means that inserting a field @t@ named @fd@ at position
+-- @n@ in the record field row @t@ yields row @lt@.
 type InsRField fd n t lt l =
   ( GInsertField n lt, t ~ FieldTypeAt n lt, n ~ FieldIndex fd lt
   , lt ~ InsertField n ('Just fd) t l, l ~ RemoveField n lt)
 
+-- | This constraint means that the constructor row @lc@ contains a constructor
+-- named @c@ at position @n@, and removing it from @lc@ yields row @l@.
+-- Furthermore, constructor @c@ contains a field row @l_t@ compatible with the
+-- tuple type @t@.
 type RmvConstr c t n lc l l_t =
   ( GRemoveConstr n lc, n ~ ConstrIndex c lc, Generic t
   , Coercible (Rep t) (M1 D DummyMeta l_t), MatchFields (Rep t) (M1 D DummyMeta l_t)
   , GArborify l_t, l_t ~ Arborify (ConstrAt n lc), Linearize l_t ~ ConstrAt n lc
   , l ~ RemoveConstr n lc)
 
+-- | This constraint means that the inserting a constructor @c@ at position @n@
+-- in the constructor row @l@ yields row @lc@.
+-- Furthermore, constructor @c@ contains a field row @l_t@ compatible with the
+-- tuple type @t@.
 type InsConstr c t n lc l l_t =
   ( GInsertConstr n lc, n ~ ConstrIndex c lc, Generic t
   , Coercible (Rep t) (M1 D DummyMeta l_t), MatchFields (Rep t) (M1 D DummyMeta l_t)
@@ -164,10 +211,10 @@ coerce' = coerce
 
 type DummyMeta = 'MetaData "" "" "" 'False
 
---
-
 absurd :: V1 x -> a
 absurd !_ = error "impossible"
+
+--
 
 type family   Linearize (f :: k -> *) :: k -> *
 type instance Linearize (M1 D m f) = M1 D m (LinearizeSum f V1)
