@@ -361,7 +361,8 @@ insertRField z (OR a) = OR (gInsertField @n z a)
 -- Note that there is no dependency to determine @t@.
 removeConstr
   :: forall    c t n lc l l_t x
-  .  RmvConstr c t n lc l l_t x
+  .  ( RmvConstr c t n lc l l_t x
+     , Coercible (Rep t x) (Arborify l_t x) )
   => OR lc x -> Either t (OR l x)
 removeConstr (OR a) = bimap
   (to . coerce' . gArborify @(Arborify l_t)) OR (gRemoveConstr @n a)
@@ -405,7 +406,8 @@ removeConstr (OR a) = bimap
 -- Note that there is no dependency to determine @t@.
 insertConstr
   :: forall    c t n lc l l_t x
-  .  InsConstr c t n lc l l_t x
+  .  ( InsConstr c t n lc l l_t x
+     , Coercible (Rep t x) (Arborify l_t x) )
   => Either t (OR l x) -> OR lc x
 insertConstr z =
   OR (gInsertConstr @n
@@ -448,7 +450,6 @@ type InsRField fd n t lt l =
 type RmvConstr c t n lc l l_t x =
   ( GRemoveConstr n lc
   , GArborify (Arborify l_t)
-  , Coercible (Arborify l_t x) (Rep t x)  -- Coercible is... (contd.)
   , ConstrSurgery c t n lc l l_t x
   )
 
@@ -459,7 +460,6 @@ type RmvConstr c t n lc l l_t x =
 type InsConstr c t n lc l l_t x =
   ( GInsertConstr n lc
   , GLinearize (Arborify l_t)
-  , Coercible (Rep t x) (Arborify l_t x)  -- ... not symmetric?
   , ConstrSurgery c t n lc l l_t x
   )
 
