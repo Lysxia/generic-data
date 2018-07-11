@@ -169,50 +169,79 @@ insertConstr z =
 -- | This constraint means that the (unnamed) field row @lt@ contains
 -- a field of type @t@ at position @n@, and removing it yields row @l@.
 type RmvCField n t lt l =
-  ( GRemoveField n lt, t ~ FieldTypeAt n lt
-  , lt ~ InsertField n 'Nothing t l, l ~ RemoveField n lt)
+  ( GRemoveField n lt
+  , CFieldSurgery n t lt l
+  )
 
 -- | This constraint means that the record field row @lt@ contains a field of
 -- type @t@ named @fd@ at position @n@, and removing it yields row @l@.
 type RmvRField fd n t lt l =
-  ( GRemoveField n lt, t ~ FieldTypeAt n lt, n ~ FieldIndex fd lt
-  , lt ~ InsertField n ('Just fd) t l, l ~ RemoveField n lt)
+  ( GRemoveField n lt
+  , RFieldSurgery fd n t lt l
+  )
 
 -- | This constraint means that inserting a field @t@ at position @n@ in the
 -- (unnamed) field row @t@ yields row @lt@.
 type InsCField n t lt l =
-  ( GInsertField n lt, t ~ FieldTypeAt n lt
-  , lt ~ InsertField n 'Nothing t l, l ~ RemoveField n lt)
+  ( GInsertField n lt
+  , CFieldSurgery n t lt l
+  )
 
 -- | This constraint means that inserting a field @t@ named @fd@ at position
 -- @n@ in the record field row @t@ yields row @lt@.
 type InsRField fd n t lt l =
-  ( GInsertField n lt, t ~ FieldTypeAt n lt, n ~ FieldIndex fd lt
-  , lt ~ InsertField n ('Just fd) t l, l ~ RemoveField n lt)
+  ( GInsertField n lt
+  , RFieldSurgery fd n t lt l
+  )
 
 -- | This constraint means that the constructor row @lc@ contains a constructor
 -- named @c@ at position @n@, and removing it from @lc@ yields row @l@.
 -- Furthermore, constructor @c@ contains a field row @l_t@ compatible with the
 -- tuple type @t@.
 type RmvConstr c t n lc l l_t x =
-  ( GRemoveConstr n lc, n ~ ConstrIndex c lc, Generic t
-  , Coercible (Arborify l_t x) (Rep t x)
-  , MatchFields (UnM1 (Rep t)) (Arborify l_t)
-  , GArborify (Arborify l_t), l_t ~ Linearize (Arborify l_t), l_t ~ ConstrAt n lc
-  , c ~ MetaConsName (MetaOf l_t)
-  , lc ~ InsertConstr n l_t l, l ~ RemoveConstr n lc)
+  ( GRemoveConstr n lc
+  , GArborify (Arborify l_t)
+  , Coercible (Arborify l_t x) (Rep t x)  -- Coercible is... (contd.)
+  , ConstrSurgery c t n lc l l_t x
+  )
 
 -- | This constraint means that the inserting a constructor @c@ at position @n@
 -- in the constructor row @l@ yields row @lc@.
 -- Furthermore, constructor @c@ contains a field row @l_t@ compatible with the
 -- tuple type @t@.
 type InsConstr c t n lc l l_t x =
-  ( GInsertConstr n lc, n ~ ConstrIndex c lc, Generic t
-  , Coercible (Rep t x) (Arborify l_t x)
+  ( GInsertConstr n lc
+  , GLinearize (Arborify l_t)
+  , Coercible (Rep t x) (Arborify l_t x)  -- ... not symmetric?
+  , ConstrSurgery c t n lc l l_t x
+  )
+
+type FieldSurgery n t lt l =
+  ( t ~ FieldTypeAt n lt
+  , l ~ RemoveField n lt
+  )
+
+type CFieldSurgery n t lt l =
+  ( lt ~ InsertField n 'Nothing t l
+  , FieldSurgery n t lt l
+  )
+
+type RFieldSurgery fd n t lt l =
+  ( n ~ FieldIndex fd lt
+  , lt ~ InsertField n ('Just fd) t l
+  , FieldSurgery n t lt l
+  )
+
+type ConstrSurgery c t n lc l l_t x =
+  ( Generic t
   , MatchFields (UnM1 (Rep t)) (Arborify l_t)
-  , GLinearize (Arborify l_t), l_t ~ Linearize (Arborify l_t), l_t ~ ConstrAt n lc
+  , n ~ ConstrIndex c lc
   , c ~ MetaConsName (MetaOf l_t)
-  , lc ~ InsertConstr n l_t l, l ~ RemoveConstr n lc)
+  , l_t ~ Linearize (Arborify l_t)
+  , l_t ~ ConstrAt n lc
+  , lc ~ InsertConstr n l_t l
+  , l ~ RemoveConstr n lc
+  )
 
 --
 
