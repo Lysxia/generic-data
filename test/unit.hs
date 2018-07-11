@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TypeApplications #-}
 
@@ -41,6 +42,13 @@ pl1 = p1
 
 data E = E0 | E1 | E2
   deriving (Eq, Show, Generic)
+
+maybeModuleName :: String
+#if MIN_VERSION_base(4,12,0)
+maybeModuleName = "GHC.Maybe"
+#else
+maybeModuleName = "GHC.Base"
+#endif
 
 main :: IO ()
 main = defaultMain test
@@ -100,7 +108,7 @@ test = testGroup "unit"
 
   , testGroup "Meta"
       [ testCase "datatypeName" $ "Maybe" @?= gdatatypeName @(Maybe Int)
-      , testCase "moduleName" $ "GHC.Base" @?= gmoduleName @(Maybe Int)
+      , testCase "moduleName" $ maybeModuleName @?= gmoduleName @(Maybe Int)
       , testCase "packageName" $ "base" @?= gpackageName @(Maybe Int)
       , testCase "isNewtype" $ False @?= gisNewtype @(Maybe Int)
       , testCase "conName" $ "Just" @?= gconName (Just ())

@@ -34,6 +34,7 @@ library
     Generic.Data.Internal.Surgery
     Generic.Data.Internal.Utils
   build-depends:
+    base-orphans >= 0.8,
     contravariant,
     first-class-families,
     show-combinators,
