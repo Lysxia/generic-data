@@ -268,7 +268,8 @@ removeRField (OR a) = OR <$> gRemoveField @n a
 -- ==== Signature
 --
 -- @
--- (t, OR l x)  -- Field value × Data without field
+-- t            -- Field value
+-- OR l x       -- × Data without field
 -- ->
 -- OR lt x      -- Data with field
 -- @
@@ -304,7 +305,8 @@ insertCField z (OR a) = OR (gInsertField @n z a)
 -- ==== Signature
 --
 -- @
--- (t, OR l x)  -- Field value × Data without field
+-- t            -- Field value
+-- OR l x       -- × Data without field
 -- ->
 -- OR lt x      -- Data with field
 -- @
