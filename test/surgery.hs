@@ -35,8 +35,12 @@ unit = id
 test :: TestTree
 test = testGroup "surgery"
   [ testCase "roundtrip" $ x @?= (fromOR . toOR) x
+  , testConsumer
+  ]
 
-  , testCase "removeCField" $
+testConsumer :: TestTree
+testConsumer = testGroup "consumer"
+  [ testCase "removeCField" $
       "P 1 3" @?=
       (show' . toData . snd . removeCField @1 . toOR) (P 1 2 3)
 
