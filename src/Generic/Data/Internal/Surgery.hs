@@ -70,12 +70,8 @@ toOR = OR . gLinearize . from
 -- | /Move altered data out of the operating room, to be consumed by/
 -- /some generic function./
 --
--- Convert a generic representation to a \"synthetic\" generic type.
---
--- The synthesized representation is made of balanced binary trees,
--- corresponding closely to what GHC would generate for an actual data type.
---
--- That structure assumed by at least one piece of code out there (@aeson@).
+-- Convert a generic representation to a \"synthetic\" type that behaves
+-- like a generic type.
 --
 -- === __Details__
 --
@@ -93,6 +89,13 @@ toOR = OR . gLinearize . from
 -- f -> l
 -- l -> f
 -- @
+--
+-- ==== Implementation details
+--
+-- The synthesized representation is made of balanced binary trees,
+-- corresponding closely to what GHC would generate for an actual data type.
+--
+-- That structure assumed by at least one piece of code out there (@aeson@).
 toData :: forall f l x. FromOR f l => OR l x -> Data f x
 toData = Data . gArborify . unOR
 
@@ -126,8 +129,8 @@ fromData = OR . gLinearize . unData
 -- The inverse of 'toOR'.
 --
 -- It may be useful to annotate the output type of 'fromOR',
--- since the rest of the type depends on it and it might only be inferred from
--- the context. The following annotations are possible:
+-- since the rest of the type depends on it and the only way to infer it
+-- otherwise is from the context. The following annotations are possible:
 --
 -- @
 -- 'fromOR' :: 'OROf' a -> a
