@@ -38,8 +38,9 @@ import Generic.Data.Internal.Utils (coerce', absurd1)
 -- (reusing the constructors from "GHC.Generics" for convenience).
 -- This representation makes it easy to modify fields and constructors.
 --
--- We may also refer to the representation @l@ as a "row" of constructors or of
--- (unnamed or record) fields, depending on whether it represents a sum type.
+-- We may also refer to the representation @l@ as a "row" of constructors,
+-- if it represents a sum type, otherwise it is a "row" of unnamed fields or
+-- record fields for single-constructor types.
 --
 -- @x@ corresponds to the last parameter of 'Rep', and is currently ignored by
 -- this module (no support for 'Generic1').
