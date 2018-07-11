@@ -28,8 +28,9 @@ import GHC.TypeLits
 import Fcf
 
 import Generic.Data.Internal.Compat (Div)
-import Generic.Data.Internal.Data
-import Generic.Data.Internal.Meta (MetaOf, MetaConsName)
+import Generic.Data.Internal.Data (Data(Data,unData))
+import Generic.Data.Internal.Meta (MetaOf, MetaConsName, UnM1)
+import Generic.Data.Internal.Utils (coerce', absurd1)
 
 -- | /A sterile operating room, where generic data comes to be altered./
 --
@@ -245,19 +246,6 @@ type ConstrSurgery c t n lc l l_t x =
 
 --
 
-coerce' :: Coercible (f x) (g x) => f x -> g x
-coerce' = coerce
-
-absurd :: V1 x -> a
-absurd !_ = error "impossible"
-
-type DummyMeta = 'MetaData "" "" "" 'False
-
-type family   UnM1 (f :: k -> *) :: k -> *
-type instance UnM1 (M1 i c f) = f
-
---
-
 type family   Linearize (f :: k -> *) :: k -> *
 type instance Linearize (M1 D m f) = M1 D m (LinearizeSum f V1)
 type instance Linearize (M1 C m f) = M1 C m (LinearizeProduct f U1)
@@ -285,7 +273,7 @@ class GLinearizeSum f tl where
   gLinearizeSum :: Either (f x) (tl x) -> LinearizeSum f tl x
 
 instance GLinearizeSum V1 tl where
-  gLinearizeSum (Left  v) = absurd v
+  gLinearizeSum (Left  v) = absurd1 v
   gLinearizeSum (Right c) = c
 
 instance (GLinearizeSum g tl, GLinearizeSum f (LinearizeSum g tl))
@@ -317,7 +305,7 @@ class GArborify f where
 instance GArborifySum f V1 => GArborify (M1 D m f) where
   gArborify (M1 a) = case gArborifySum @_ @V1 a of
     Left a' -> M1 a'
-    Right v -> absurd v
+    Right v -> absurd1 v
 
 instance GArborifyProduct f U1 => GArborify (M1 C m f) where
   gArborify (M1 a) = M1 (fst (gArborifyProduct @_ @U1 a))
@@ -444,7 +432,7 @@ instance GRemoveField n f => GRemoveField n (M1 i c f) where
 
 instance GRemoveField n f => GRemoveField n (f :+: V1) where
   gRemoveField (L1 a) = L1 <$> gRemoveField @n a
-  gRemoveField (R1 v) = absurd v
+  gRemoveField (R1 v) = absurd1 v
 
 instance (If (n == 0) (() :: Constraint) (GRemoveField (n-1) g), IsBool (n == 0))
   => GRemoveField n (M1 s m (K1 i t) :*: g) where
@@ -460,7 +448,7 @@ instance GInsertField n f => GInsertField n (M1 i c f) where
 
 instance GInsertField n f => GInsertField n (f :+: V1) where
   gInsertField t (L1 a) = L1 (gInsertField @n t a)
-  gInsertField _ (R1 v) = absurd v
+  gInsertField _ (R1 v) = absurd1 v
 
 instance (If (n == 0) (() :: Constraint) (GInsertField (n-1) g), IsBool (n == 0))
   => GInsertField n (M1 s m (K1 i t) :*: g) where

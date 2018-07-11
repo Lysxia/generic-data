@@ -10,6 +10,8 @@ import Data.Functor.Classes
 import Data.Semigroup
 import GHC.Generics
 
+import Generic.Data.Internal.Utils (from', to', liftG2)
+
 -- * 'Eq'
 
 -- | Generic @('==')@.
@@ -184,17 +186,3 @@ gliftCompare
   :: (Generic1 f, Ord1 (Rep1 f))
   => (a -> b -> Ordering) -> f a -> f b -> Ordering
 gliftCompare = \compare' a b -> liftCompare compare' (from1 a) (from1 b)
-
--- * Utils
-
--- | A helper for better type inference.
-from' :: Generic a => a -> Rep a ()
-from' = from
-
--- | A helper for better type inference.
-to' :: Generic a => Rep a () -> a
-to' = to
-
--- | Lift binary combinators generically.
-liftG2 :: Generic1 f => (Rep1 f a -> Rep1 f b -> Rep1 f c) -> f a -> f b -> f c
-liftG2 = \(<?>) a b -> to1 (from1 a <?> from1 b)

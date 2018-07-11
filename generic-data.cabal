@@ -32,6 +32,7 @@ library
     Generic.Data.Internal.Resolvers
     Generic.Data.Internal.Show
     Generic.Data.Internal.Surgery
+    Generic.Data.Internal.Utils
   build-depends:
     contravariant,
     first-class-families,

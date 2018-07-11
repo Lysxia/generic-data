@@ -264,3 +264,10 @@ type family MetaSelSourceStrictness (m :: Meta) :: SourceStrictness where
 -- | Inferred strictness of a field ('MetaSel').
 type family MetaSelStrictness (m :: Meta) :: DecidedStrictness where
   MetaSelStrictness ('MetaSel _mn _su _ss ds) = ds
+
+-- | A placeholder for 'Meta' values.
+type DummyMeta = 'MetaData "" "" "" 'False
+
+-- | Remove an 'M1' type constructor.
+type family   UnM1 (f :: k -> *) :: k -> *
+type instance UnM1 (M1 i c f) = f
