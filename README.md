@@ -13,6 +13,8 @@ them:
 - `Eq`, `Ord`, `Enum`, `Bounded`, `Show` (standard);
 - `Functor`, `Foldable`, `Traversable` (via extensions, `DeriveFunctor`, etc.).
 
+(`Read` is currently not implemented.)
+
 To derive type classes defined elsewhere, it might be worth taking a look at
 [one-liner](https://hackage.haskell.org/package/one-liner).
 
@@ -31,13 +33,13 @@ WIP
 
 ## Related links
 
-generic-data aims to subsume the following packages, which may still be
-useful for old versions of GHC and base not supported by generic-data.
+generic-data aims to subsume generic deriving features of the following
+packages:
 
 - [semigroups](https://hackage.haskell.org/package/semigroups): generic
-  `Semigroup`, `Monoid`.
+  `Semigroup`, `Monoid`, but with a heavy dependency footprint.
 - [transformers-compat](https://hackage.haskell.org/package/transformers-compat):
-  generic `Eq1`, `Ord1`, `Show1`, `Read1`.
+  generic `Eq1`, `Ord1`, `Show1`.
 - [generic-deriving](https://hackage.haskell.org/package/generic-deriving):
   doesn't derive the classes in base (defines clones of these classes as a toy
   example); has Template Haskell code to derive `Generic`.
@@ -50,8 +52,10 @@ Here are other relevant links.
   to using `GHC.Generics` to derive instances of many type classes, including
   but not restricted to the above classes (this is done in
   [one-liner-instances](https://hackage.haskell.org/package/one-liner-instances)).
-- [singletons](https://hackage.haskell.org/package/singletons):
-  generic-data borrows code from this package to implement defunctionalization.
+- [singletons](https://hackage.haskell.org/package/singletons),
+  [first-class-families](https://hackage.haskell.org/package/first-class-families)
+  (second one written by me and now used in generic-data):
+  libraries for dependently-typed programming in Haskell.
 
 ---
 
