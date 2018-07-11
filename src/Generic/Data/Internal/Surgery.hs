@@ -68,7 +68,7 @@ toData = Data . gArborify . unOR
 fromData :: forall f l x. ToOR f l => Data f x -> OR l x
 fromData = OR . gLinearize . unData
 
--- | /Move restored data out of the operation room and back to the real/
+-- | /Move restored data out of the operating room and back to the real/
 -- /world./
 --
 -- The inverse of 'toOR'.
