@@ -91,6 +91,7 @@ test-suite lens-surgery-test
   ghc-options: -Wall
   default-language: Haskell2010
   type: exitcode-stdio-1.0
+  buildable: False
 
 source-repository head
   type:     git
