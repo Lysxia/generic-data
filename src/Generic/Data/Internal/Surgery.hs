@@ -20,6 +20,7 @@ module Generic.Data.Internal.Surgery where
 import Control.Monad ((<=<))
 import Data.Bifunctor (bimap, first)
 import Data.Coerce
+import Data.Functor.Identity (Identity)
 import Data.Kind (Constraint, Type)
 import Data.Type.Equality (type (==))
 import GHC.Generics
@@ -390,6 +391,17 @@ removeConstr
 removeConstr (OR a) = bimap
   (to . coerce' . gArborify @(Arborify l_t)) OR (gRemoveConstr @n a)
 
+-- | A variant of 'removeConstr' that can infer the tuple type @t@ to hold
+-- the contents of the removed constructor.
+--
+-- @t@ must be one of @()@, @Identity@, @(,)@ and actual tuples up to size 7
+-- (because that's where 'Generic' instances currently stop).
+removeConstrT
+  :: forall    c t n lc l l_t x
+  .  RmvConstrT c t n lc l l_t
+  => OR lc x -> Either t (OR l x)
+removeConstrT = removeConstr @c @t @n
+
 -- | @'insertConstr' \@\"C\" \@n \@t@: insert a constructor @C@ at position @n@
 -- with contents isomorphic to the tuple @t@.
 --
@@ -437,6 +449,17 @@ insertConstr z =
   OR (gInsertConstr @n
     (bimap (gLinearize @(Arborify l_t) . coerce' . from) unOR z))
 
+-- | A variant of 'insertConstr' that can infer the tuple type @t@ to hold
+-- the contents of the inserted constructor.
+--
+-- @t@ must be one of @()@, @Identity@, @(,)@ and actual tuples up to size 7
+-- (because that's where 'Generic' instances currently stop).
+insertConstrT
+  :: forall    c t n lc l l_t x
+  .  InsConstrT c t n lc l l_t
+  => Either t (OR l x) -> OR lc x
+insertConstrT = insertConstr @c @t @n
+
 --
 
 -- | This constraint means that the (unnamed) field row @lt@ contains
@@ -477,6 +500,12 @@ type RmvConstr c t n lc l l_t =
   , ConstrSurgery c t n lc l l_t
   )
 
+-- | A variant of 'RmvConstr' allowing @t@ to be inferred.
+type RmvConstrT c t n lc l l_t =
+  ( RmvConstr c t n lc l l_t
+  , IsTuple (Arity l_t) t
+  )
+
 -- | This constraint means that the inserting a constructor @c@ at position @n@
 -- in the constructor row @l@ yields row @lc@.
 -- Furthermore, constructor @c@ contains a field row @l_t@ compatible with the
@@ -485,6 +514,12 @@ type InsConstr c t n lc l l_t =
   ( GInsertConstr n lc
   , GLinearize (Arborify l_t)
   , ConstrSurgery c t n lc l l_t
+  )
+
+-- | A variant of 'InsConstr' allowing @t@ to be inferred.
+type InsConstrT c t n lc l l_t =
+  ( InsConstr c t n lc l l_t
+  , IsTuple (Arity l_t) t
   )
 
 type FieldSurgery n t lt l =
@@ -794,3 +829,13 @@ instance (g' ~ (g1 :*: g2), MatchFields f1 g1, MatchFields f2 g2)
 instance (g' ~ K1 j a) => MatchFields (K1 i a) g'
 instance (g' ~ U1) => MatchFields U1 g'
 instance (g' ~ V1) => MatchFields V1 g'
+
+class IsTuple (n :: Nat) (t :: k)
+instance (t ~ ())                    => IsTuple 0 t
+instance (t ~ Identity a)            => IsTuple 1 t
+instance (t ~ (a, b))                => IsTuple 2 t
+instance (t ~ (a, b, c))             => IsTuple 3 t
+instance (t ~ (a, b, c, d))          => IsTuple 4 t
+instance (t ~ (a, b, c, d, e))       => IsTuple 5 t
+instance (t ~ (a, b, c, d, e, f))    => IsTuple 6 t
+instance (t ~ (a, b, c, d, e, f, g)) => IsTuple 7 t

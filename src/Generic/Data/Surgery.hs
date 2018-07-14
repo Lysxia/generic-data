@@ -27,11 +27,15 @@ module Generic.Data.Surgery
   , removeCField
   , insertCField
   , insertCField'
+
   , removeRField
   , insertRField
   , insertRField'
+
   , removeConstr
   , insertConstr
+  , removeConstrT
+  , insertConstrT
 
     -- * Constraint synonyms
 
