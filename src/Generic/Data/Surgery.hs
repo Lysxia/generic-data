@@ -26,8 +26,10 @@ module Generic.Data.Surgery
     -- * Surgeries
   , removeCField
   , insertCField
+  , insertCField'
   , removeRField
   , insertRField
+  , insertRField'
   , removeConstr
   , insertConstr
 

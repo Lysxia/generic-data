@@ -181,6 +181,8 @@ type FromOR f l = (GArborify  f, Linearize f ~ l, f ~ Arborify l)
 -- | @'removeCField' \@n \@t@: remove the @n@-th field of type @t@
 -- in a non-record single-constructor type.
 --
+-- Inverse of 'insertCField'.
+--
 -- === __Details__
 --
 -- ==== Type parameters
@@ -215,6 +217,8 @@ removeCField (OR a) = OR <$> gRemoveField @n a
 
 -- | @'removeRField' \@\"fdName\" \@n \@t@: remove the field @fdName@
 -- at position @n@ of type @t@ in a record type.
+--
+-- Inverse of 'insertRField'.
 --
 -- === __Details__
 --
@@ -253,6 +257,8 @@ removeRField (OR a) = OR <$> gRemoveField @n a
 -- | @'insertCField' \@n \@t@: insert a field of type @t@
 -- at position @n@ in a non-record single-constructor type.
 --
+-- Inverse of 'removeCField'.
+--
 -- === __Details__
 --
 -- ==== Type parameters
@@ -268,8 +274,7 @@ removeRField (OR a) = OR <$> gRemoveField @n a
 -- ==== Signature
 --
 -- @
--- t            -- Field value
--- OR l x       -- × Data without field
+-- (t, OR l x)  -- Field value × Data without field
 -- ->
 -- OR lt x      -- Data with field
 -- @
@@ -283,11 +288,20 @@ removeRField (OR a) = OR <$> gRemoveField @n a
 insertCField
   :: forall    n t lt l x
   .  InsCField n t lt l
+  => (t, OR l x) -> OR lt x
+insertCField = uncurry (insertCField' @n)
+
+-- | Curried 'insertCField'.
+insertCField'
+  :: forall    n t lt l x
+  .  InsCField n t lt l
   => t -> OR l x -> OR lt x
-insertCField z (OR a) = OR (gInsertField @n z a)
+insertCField' z (OR a) = OR (gInsertField @n z a)
 
 -- | @'insertRField' \@\"fdName\" \@n \@t@: insert a field
 -- named @fdName@ of type @t@ at position @n@ in a record type.
+--
+-- Inverse of 'removeRField'.
 --
 -- === __Details__
 --
@@ -305,8 +319,7 @@ insertCField z (OR a) = OR (gInsertField @n z a)
 -- ==== Signature
 --
 -- @
--- t            -- Field value
--- OR l x       -- × Data without field
+-- (t, OR l x)  -- Field value × Data without field
 -- ->
 -- OR lt x      -- Data with field
 -- @
@@ -321,14 +334,23 @@ insertCField z (OR a) = OR (gInsertField @n z a)
 insertRField
   :: forall    fd n t lt l x
   .  InsRField fd n t lt l
+  => (t, OR l x) -> OR lt x
+insertRField = uncurry (insertRField' @fd)
+
+-- | Curried 'insertRField'.
+insertRField'
+  :: forall    fd n t lt l x
+  .  InsRField fd n t lt l
   => t -> OR l x -> OR lt x
-insertRField z (OR a) = OR (gInsertField @n z a)
+insertRField' z (OR a) = OR (gInsertField @n z a)
 
 -- | @'removeConstr' \@\"C\" \@n \@t@: remove the @n@-th constructor, named @C@,
 -- with contents isomorphic to the tuple @t@.
 --
 -- @()@ and 'Data.Functor.Identity.Identity' can be used as an empty and a
 -- singleton tuple.
+--
+-- Inverse of 'insertConstr'.
 --
 -- === __Details__
 --
@@ -373,6 +395,8 @@ removeConstr (OR a) = bimap
 --
 -- @()@ and 'Data.Functor.Identity.Identity' can be used as an empty and a
 -- singleton tuple.
+--
+-- Inverse of 'removeConstr'.
 --
 -- === __Details__
 --
