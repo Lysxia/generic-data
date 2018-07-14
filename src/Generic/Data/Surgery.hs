@@ -57,6 +57,8 @@ module Generic.Data.Surgery
   , InsRField
   , RmvConstr
   , InsConstr
+  , RmvConstrT
+  , InsConstrT
   ) where
 
 import Generic.Data.Internal.Surgery
