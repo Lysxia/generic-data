@@ -20,8 +20,10 @@ import GHC.Generics
 import Generic.Data.Internal.Enum
 import Generic.Data.Internal.Show
 
--- | A wrapper to view a generic 'Rep' as the datatype it's supposed
--- to represent, without needing a declaration.
+-- | Synthetic data type.
+--
+-- A wrapper to view a generic 'Rep' as the datatype it's supposed to
+-- represent, without needing a declaration.
 --
 -- This can be used to derive types from generic types, and get some instances
 -- for free, in particular 'Generic', 'Show', 'Enum', 'Bounded'.
@@ -29,6 +31,15 @@ newtype Data r p = Data { unData :: r p }
   deriving ( Functor, Foldable, Traversable, Applicative, Alternative
            , Monad, MonadPlus, Contravariant
            , Eq, Ord, Eq1, Ord1, Semigroup, Monoid )
+
+-- | Conversion between a generic type and the synthetic type made using its
+-- representation.
+toData :: Generic a => a -> Data (Rep a) p
+toData = Data . from
+
+-- | Inverse of 'fromData'.
+fromData :: Generic a => Data (Rep a) p -> a
+fromData = to . unData
 
 instance (Functor r, Contravariant r) => Generic (Data r p) where
   type Rep (Data r p) = r

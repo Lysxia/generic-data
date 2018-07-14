@@ -4,6 +4,8 @@
 
 module Generic.Data.Types
   ( Data(..)
+  , toData
+  , fromData
   , Map
   ) where
 

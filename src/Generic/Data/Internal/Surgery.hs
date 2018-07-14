@@ -839,3 +839,29 @@ instance (t ~ (a, b, c, d))          => IsTuple 4 t
 instance (t ~ (a, b, c, d, e))       => IsTuple 5 t
 instance (t ~ (a, b, c, d, e, f))    => IsTuple 6 t
 instance (t ~ (a, b, c, d, e, f, g)) => IsTuple 7 t
+
+-- | Unify the spines of two generic representations, but not the
+-- field contents.
+class UnifyRep (f :: k -> *) (g :: k -> *)
+instance (g' ~ M1 D c g, UnifyRep f g) => UnifyRep (M1 D c f) g'
+instance (g' ~ M1 C c g, UnifyRep f g)
+  => UnifyRep (M1 C c f) g'
+instance (g' ~ M1 S c g, UnifyRep f g) => UnifyRep (M1 S c f) g'
+instance (g' ~ (g1 :+: g2), UnifyRep f1 g1, UnifyRep f2 g2)
+  => UnifyRep (f1 :+: f2) g'
+instance (g' ~ (g1 :*: g2), UnifyRep f1 g1, UnifyRep f2 g2)
+  => UnifyRep (f1 :*: f2) g'
+instance (g' ~ K1 i b) => UnifyRep (K1 i a) g'
+instance (g' ~ U1) => UnifyRep U1 g'
+instance (g' ~ V1) => UnifyRep V1 g'
+
+-- | Can be used with @generic-lens@ for type-changing field updates.
+--
+-- A specialization of the identity function to be used to fix types
+-- of functions using 'Data' as input or output, unifying the spines of input
+-- and output generic representations but not their contents, which may thus
+-- change.
+onData
+  :: (UnifyRep (Rep a) (Rep b), UnifyRep (Rep a) (Rep b))
+  => p a b -> p a b
+onData = id

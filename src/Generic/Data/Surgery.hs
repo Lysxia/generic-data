@@ -37,6 +37,11 @@ module Generic.Data.Surgery
   , removeConstrT
   , insertConstrT
 
+    -- * Microsurgery
+  , toData
+  , fromData
+  , onData
+
     -- * Constraint synonyms
 
     -- | Hiding implementation details from the signatures above.
@@ -62,3 +67,4 @@ module Generic.Data.Surgery
   ) where
 
 import Generic.Data.Internal.Surgery
+import Generic.Data.Internal.Data
