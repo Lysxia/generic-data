@@ -8,7 +8,8 @@
 
 {-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
-import Data.Bifunctor (bimap)
+import Data.Bifunctor (second)
+import Data.Functor.Identity
 import GHC.Generics
 import Test.Tasty
 import Test.Tasty.HUnit
@@ -23,8 +24,6 @@ x = C 1 2 3 4 5
 
 data P = P Int Int Int deriving (Eq, Show, Generic)
 data R = R { u, v, w :: Int } deriving (Eq, Show, Generic)
-
-newtype I a = I { unI :: a } deriving (Eq, Show, Generic)
 
 main :: IO ()
 main = defaultMain test
@@ -54,19 +53,20 @@ testConsumer = testGroup "consumer"
 
   , testCase "insertCField" $
       "P 1 () 2 3" @?=
-      (show' . toData . insertCField @1 () . toOR) (P 1 2 3)
+      (show' . toData . insertCField' @1 () . toOR) (P 1 2 3)
 
   , testCase "insertRField" $
       "R {u = 1, n = (), v = 2, w = 3}" @?=
-      (show' . toData . insertRField @"n" @1 () . toOR) (R 1 2 3)
+      (show' . toData . insertRField' @"n" @1 () . toOR) (R 1 2 3)
 
+    -- N.B. Identity (for constructor B) is inferred.
   , testCase "removeConstr" $
-      "[Right A,Left 0,Right (C 1 2 3 4 5)]" @?=
-      (show . fmap (bimap unI (unit . toData) . removeConstr @"B" . toOR))
+      "[Right A,Left (Identity 0),Right (C 1 2 3 4 5)]" @?=
+      (show . fmap (second (unit . toData) . removeConstrT @"B" . toOR))
         [A, B 0, x]
 
   , testCase "insertConstr" $
-      "B 0" @?= (show . fromOR @T . insertConstr @"B" . Left) (I 0)
+      "B 0" @?= (show . fromOR @T . insertConstrT @"B" . Left) (Identity 0)
   ]
 
 testProducer :: TestTree
@@ -81,19 +81,20 @@ testProducer = testGroup "producer"
 
   , testCase "insertCField" $
       P 0 9 0 @?=
-        (fromOR . insertCField @1 9 . fromData) def
+        (fromOR . insertCField' @1 9 . fromData) def
 
   , testCase "insertCField" $
       R 0 9 0 @?=
-        (fromOR . insertRField @"v" 9 . fromData) def
+        (fromOR . insertRField' @"v" 9 . fromData) def
 
   , testCase "removeConstr" $
       Right A @?=
-        (fmap fromOR . removeConstr @"D" @() @3 . fromData) def
+        (fmap fromOR . removeConstrT @"D" @() @3 . fromData) def
 
+    -- N.B. () (for constructor A) is inferred.
   , testCase "insertConstr" $
       B 0 @?=
-        (fromOR . insertConstr @"A" @() . Right . fromData) def
+        (fromOR . insertConstrT @"A" . Right . fromData) def
   ]
 
 class Def a where
