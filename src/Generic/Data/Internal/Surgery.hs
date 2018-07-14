@@ -396,6 +396,16 @@ removeConstr (OR a) = bimap
 --
 -- @t@ must be one of @()@, @Identity@, @(,)@ and actual tuples up to size 7
 -- (because that's where 'Generic' instances currently stop).
+--
+-- === __Details__
+--
+-- See 'removeConstr'.
+--
+-- ==== Extra functional dependency
+--
+-- @
+-- l_t -> t
+-- @
 removeConstrT
   :: forall    c t n lc l l_t x
   .  RmvConstrT c t n lc l l_t
@@ -454,6 +464,16 @@ insertConstr z =
 --
 -- @t@ must be one of @()@, @Identity@, @(,)@ and actual tuples up to size 7
 -- (because that's where 'Generic' instances currently stop).
+--
+-- === __Details__
+--
+-- See 'insertConstr'.
+--
+-- ==== Extra functional dependency
+--
+-- @
+-- l_t -> t
+-- @
 insertConstrT
   :: forall    c t n lc l l_t x
   .  InsConstrT c t n lc l l_t
