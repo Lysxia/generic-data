@@ -543,18 +543,18 @@ type InsConstrT c t n lc l l_t =
   )
 
 type FieldSurgery n t lt l =
-  ( t ~ FieldTypeAt n lt
-  , l ~ RemoveField n lt
+  ( t ~ Eval (FieldTypeAt n lt)
+  , l ~ Eval (RemoveField n lt)
   )
 
 type CFieldSurgery n t lt l =
-  ( lt ~ InsertField n 'Nothing t l
+  ( lt ~ Eval (InsertField n 'Nothing t l)
   , FieldSurgery n t lt l
   )
 
 type RFieldSurgery fd n t lt l =
-  ( n ~ FieldIndex fd lt
-  , lt ~ InsertField n ('Just fd) t l
+  ( n ~ Eval (FieldIndex fd lt)
+  , lt ~ Eval (InsertField n ('Just fd) t l)
   , FieldSurgery n t lt l
   )
 
@@ -562,12 +562,12 @@ type ConstrSurgery c t n lc l l_t =
   ( Generic t
   , MatchFields (UnM1 (Rep t)) (Arborify l_t)
   , Coercible (Arborify l_t) (Rep t)
-  , n ~ ConstrIndex c lc
+  , n ~ Eval (ConstrIndex c lc)
   , c ~ MetaConsName (MetaOf l_t)
   , l_t ~ Linearize (Arborify l_t)
-  , l_t ~ ConstrAt n lc
-  , lc ~ InsertConstr n l_t l
-  , l ~ RemoveConstr n lc
+  , l_t ~ Eval (ConstrAt n lc)
+  , lc ~ Eval (InsertConstr n l_t l)
+  , l ~ Eval (RemoveConstr n lc)
   )
 
 --
@@ -701,39 +701,44 @@ type instance Eval (SplitAt n (f :*: g)) =
     (Pure '(U1, f :*: g))
     (BimapPair (Pure2 (:*:) f) Pure =<< SplitAt (n-1) g))
 
-type family   FieldTypeAt (n :: Nat) (f :: k -> *) :: *
-type instance FieldTypeAt n (M1 i c f) = FieldTypeAt n f
-type instance FieldTypeAt n (f :+: V1) = FieldTypeAt n f
-type instance FieldTypeAt n (f :*: g) = If (n == 0) (FieldTypeOf f) (FieldTypeAt (n-1) g)
+data FieldTypeAt (n :: Nat) (f :: k -> *) :: * -> *
+type instance Eval (FieldTypeAt n (M1 i c f)) = Eval (FieldTypeAt n f)
+type instance Eval (FieldTypeAt n (f :+: V1)) = Eval (FieldTypeAt n f)
+type instance Eval (FieldTypeAt n (f :*: g)) =
+  Eval (If (n == 0) (Pure (FieldTypeOf f)) (FieldTypeAt (n-1) g))
 
 type family   FieldTypeOf (f :: k -> *) :: *
 type instance FieldTypeOf (M1 s m (K1 i a)) = a
 
-type family   RemoveField (n :: Nat) (f :: k -> *) :: k -> *
-type instance RemoveField n (M1 i m f) = M1 i m (RemoveField n f)
-type instance RemoveField n (f :+: V1) = RemoveField n f :+: V1
-type instance RemoveField n (f :*: g) = If (n == 0) g (f :*: RemoveField (n-1) g)
+data RemoveField (n :: Nat) (f :: k -> *) :: (k -> *) -> *
+type instance Eval (RemoveField n (M1 i m f)) = M1 i m (Eval (RemoveField n f))
+type instance Eval (RemoveField n (f :+: V1)) = Eval (RemoveField n f) :+: V1
+type instance Eval (RemoveField n (f :*: g)) =
+  Eval (If (n == 0) (Pure g) ((:*:) f <$> RemoveField (n-1) g))
 
 type DefaultMetaSel field
   = 'MetaSel field 'NoSourceUnpackedness 'NoSourceStrictness 'DecidedLazy
 
-type family   InsertField (n :: Nat) (fd :: Maybe Symbol) (t :: *) (f :: k -> *) :: k -> *
-type instance InsertField n fd t (M1 D m f) = M1 D m (InsertField n fd t f)
-type instance InsertField n fd t (M1 C m f) = M1 C m (InsertField n fd t f)
-type instance InsertField n fd t (f :+: V1) = InsertField n fd t f :+: V1
-type instance InsertField n fd t (f :*: g) =
-  If (n == 0)
-    (M1 S (DefaultMetaSel fd) (K1 R t) :*: (f :*: g))
-    (f :*: InsertField (n-1) fd t g)
-type instance InsertField 0 fd t U1 = M1 S (DefaultMetaSel fd) (K1 R t) :*: U1
+data InsertField (n :: Nat) (fd :: Maybe Symbol) (t :: *) (f :: k -> *) :: (k -> *) -> *
+type instance Eval (InsertField n fd t (M1 D m f)) = M1 D m (Eval (InsertField n fd t f))
+type instance Eval (InsertField n fd t (M1 C m f)) = M1 C m (Eval (InsertField n fd t f))
+type instance Eval (InsertField n fd t (f :+: V1)) = Eval (InsertField n fd t f) :+: V1
+type instance Eval (InsertField n fd t (f :*: g)) =
+  Eval (If (n == 0)
+    (Pure (M1 S (DefaultMetaSel fd) (K1 R t) :*: (f :*: g)))
+    ((:*:) f <$> InsertField (n-1) fd t g))
+type instance Eval (InsertField 0 fd t U1) = M1 S (DefaultMetaSel fd) (K1 R t) :*: U1
+
+data Succ :: Nat -> Nat -> *
+type instance Eval (Succ n) = 1 + n
 
 -- | Position of a record field
-type family   FieldIndex (field :: Symbol) (f :: k -> *) :: Nat
-type instance FieldIndex field (M1 D m f) = FieldIndex field f
-type instance FieldIndex field (M1 C m f) = FieldIndex field f
-type instance FieldIndex field (f :+: V1) = FieldIndex field f
-type instance FieldIndex field (M1 S ('MetaSel ('Just field') su ss ds) f :*: g)
-  = If (field == field') 0 (1 + FieldIndex field g)
+data FieldIndex (field :: Symbol) (f :: k -> *) :: Nat -> *
+type instance Eval (FieldIndex field (M1 D m f)) = Eval (FieldIndex field f)
+type instance Eval (FieldIndex field (M1 C m f)) = Eval (FieldIndex field f)
+type instance Eval (FieldIndex field (f :+: V1)) = Eval (FieldIndex field f)
+type instance Eval (FieldIndex field (M1 S ('MetaSel ('Just field') su ss ds) f :*: g))
+  = Eval (If (field == field') (Pure 0) (Succ =<< FieldIndex field g))
 
 -- | Number of fields of a single constructor
 type family   Arity (f :: k -> *) :: Nat
@@ -751,7 +756,7 @@ type instance CoArity V1         = 0
 type instance CoArity (f :+: g)  = CoArity f + CoArity g
 
 class GRemoveField (n :: Nat) f where
-  gRemoveField :: f x -> (FieldTypeAt n f, RemoveField n f x)
+  gRemoveField :: f x -> (Eval (FieldTypeAt n f), Eval (RemoveField n f) x)
 
 instance GRemoveField n f => GRemoveField n (M1 i c f) where
   gRemoveField (M1 a) = M1 <$> gRemoveField @n a
@@ -767,7 +772,7 @@ instance (If (n == 0) (() :: Constraint) (GRemoveField (n-1) g), IsBool (n == 0)
     ((a :*:) <$> gRemoveField @(n-1) b)
 
 class GInsertField (n :: Nat) f where
-  gInsertField :: FieldTypeAt n f -> RemoveField n f x -> f x
+  gInsertField :: Eval (FieldTypeAt n f) -> Eval (RemoveField n f) x -> f x
 
 instance GInsertField n f => GInsertField n (M1 i c f) where
   gInsertField t (M1 a) = M1 (gInsertField @n t a)
@@ -782,27 +787,29 @@ instance (If (n == 0) (() :: Constraint) (GInsertField (n-1) g), IsBool (n == 0)
     (M1 (K1 t) :*: ab)
     (let a :*: b = ab in a :*: gInsertField @(n-1) t b)
 
-type family   ConstrAt (n :: Nat) (f :: k -> *) :: k -> *
-type instance ConstrAt n (M1 i m f) = ConstrAt n f
-type instance ConstrAt n (f :+: g) = If (n == 0) f (ConstrAt (n-1) g)
+data ConstrAt (n :: Nat) (f :: k -> *) :: (k -> *) -> *
+type instance Eval (ConstrAt n (M1 i m f)) = Eval (ConstrAt n f)
+type instance Eval (ConstrAt n (f :+: g)) =
+  Eval (If (n == 0) (Pure f) (ConstrAt (n-1) g))
 
-type family   RemoveConstr (n :: Nat) (f :: k -> *) :: k -> *
-type instance RemoveConstr n (M1 i m f) = M1 i m (RemoveConstr n f)
-type instance RemoveConstr n (f :+: g) = If (n == 0) g (f :+: RemoveConstr (n-1) g)
+data RemoveConstr (n :: Nat) (f :: k -> *) :: (k -> *) -> *
+type instance Eval (RemoveConstr n (M1 i m f)) = M1 i m (Eval (RemoveConstr n f))
+type instance Eval (RemoveConstr n (f :+: g)) =
+  Eval (If (n == 0) (Pure g) ((:+:) f <$> RemoveConstr (n-1) g))
 
-type family   InsertConstr (n :: Nat) (t :: k -> *) (f :: k -> *) :: k -> *
-type instance InsertConstr n t (M1 i m f) = M1 i m (InsertConstr n t f)
-type instance InsertConstr n t (f :+: g) =
-  If (n == 0) (t :+: (f :+: g)) (f :+: InsertConstr (n-1) t g)
-type instance InsertConstr 0 t V1 = t :+: V1
+data InsertConstr (n :: Nat) (t :: k -> *) (f :: k -> *) :: (k -> *) -> *
+type instance Eval (InsertConstr n t (M1 i m f)) = M1 i m (Eval (InsertConstr n t f))
+type instance Eval (InsertConstr n t (f :+: g)) =
+  Eval (If (n == 0) (Pure (t :+: (f :+: g))) ((:+:) f <$> InsertConstr (n-1) t g))
+type instance Eval (InsertConstr 0 t V1) = t :+: V1
 
-type family   ConstrIndex (con :: Symbol) (f :: k -> *) :: Nat
-type instance ConstrIndex con (M1 D m f) = ConstrIndex con f
-type instance ConstrIndex con (M1 C ('MetaCons con' fx s) f :+: g) =
-  If (con == con') 0 (1 + ConstrIndex con g)
+data ConstrIndex (con :: Symbol) (f :: k -> *) :: Nat -> *
+type instance Eval (ConstrIndex con (M1 D m f)) = Eval (ConstrIndex con f)
+type instance Eval (ConstrIndex con (M1 C ('MetaCons con' fx s) f :+: g)) =
+  Eval (If (con == con') (Pure 0) (Succ =<< ConstrIndex con g))
 
 class GRemoveConstr (n :: Nat) f where
-  gRemoveConstr :: f x -> Either (ConstrAt n f x) (RemoveConstr n f x)
+  gRemoveConstr :: f x -> Either (Eval (ConstrAt n f) x) (Eval (RemoveConstr n f) x)
 
 instance GRemoveConstr n f => GRemoveConstr n (M1 i c f) where
   gRemoveConstr (M1 a) = M1 <$> gRemoveConstr @n a
@@ -818,7 +825,7 @@ instance (If (n == 0) (() :: Constraint) (GRemoveConstr (n-1) g), IsBool (n == 0
       R1 b -> R1 <$> gRemoveConstr @(n-1) b)
 
 class GInsertConstr (n :: Nat) f where
-  gInsertConstr :: Either (ConstrAt n f x) (RemoveConstr n f x) -> f x
+  gInsertConstr :: Either (Eval (ConstrAt n f) x) (Eval (RemoveConstr n f) x) -> f x
 
 instance GInsertConstr n f => GInsertConstr n (M1 i c f) where
   gInsertConstr = M1 . gInsertConstr @n . fmap unM1
