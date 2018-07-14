@@ -1,5 +1,4 @@
 {-# LANGUAGE
-    CPP,
     DataKinds,
     DeriveGeneric,
     FlexibleContexts,
@@ -45,24 +44,24 @@ testConsumer :: TestTree
 testConsumer = testGroup "consumer"
   [ testCase "removeCField" $
       "P 1 3" @?=
-      (show' . toData . snd . removeCField @1 . toOR) (P 1 2 3)
+      (show' . fromOR' . snd . removeCField @1 . toOR) (P 1 2 3)
 
   , testCase "removeRField" $
       "R {u = 1, w = 3}" @?=
-      (show' . toData . snd . removeRField @"v" . toOR) (R 1 2 3)
+      (show' . fromOR' . snd . removeRField @"v" . toOR) (R 1 2 3)
 
   , testCase "insertCField" $
       "P 1 () 2 3" @?=
-      (show' . toData . insertCField' @1 () . toOR) (P 1 2 3)
+      (show' . fromOR' . insertCField' @1 () . toOR) (P 1 2 3)
 
   , testCase "insertRField" $
       "R {u = 1, n = (), v = 2, w = 3}" @?=
-      (show' . toData . insertRField' @"n" @1 () . toOR) (R 1 2 3)
+      (show' . fromOR' . insertRField' @"n" @1 () . toOR) (R 1 2 3)
 
     -- N.B. Identity (for constructor B) is inferred.
   , testCase "removeConstr" $
       "[Right A,Left (Identity 0),Right (C 1 2 3 4 5)]" @?=
-      (show . fmap (second (unit . toData) . removeConstrT @"B" . toOR))
+      (show . fmap (second (unit . fromOR') . removeConstrT @"B" . toOR))
         [A, B 0, x]
 
   , testCase "insertConstr" $
@@ -73,28 +72,28 @@ testProducer :: TestTree
 testProducer = testGroup "producer"
   [ testCase "removeCField" $
       P 0 0 0 @?=
-        (fromOR . snd . removeCField @1 @[Int] . fromData) def
+        (fromOR . snd . removeCField @1 @[Int] . toOR') def
 
   , testCase "removeRField" $
       R 0 0 0 @?=
-        (fromOR . snd . removeRField @"v" @1 @[Int] . fromData) def
+        (fromOR . snd . removeRField @"v" @1 @[Int] . toOR') def
 
   , testCase "insertCField" $
       P 0 9 0 @?=
-        (fromOR . insertCField' @1 9 . fromData) def
+        (fromOR . insertCField' @1 9 . toOR') def
 
   , testCase "insertCField" $
       R 0 9 0 @?=
-        (fromOR . insertRField' @"v" 9 . fromData) def
+        (fromOR . insertRField' @"v" 9 . toOR') def
 
   , testCase "removeConstr" $
       Right A @?=
-        (fmap fromOR . removeConstrT @"D" @() @3 . fromData) def
+        (fmap fromOR . removeConstrT @"D" @() @3 . toOR') def
 
     -- N.B. () (for constructor A) is inferred.
   , testCase "insertConstr" $
       B 0 @?=
-        (fromOR . insertConstrT @"A" . Right . fromData) def
+        (fromOR . insertConstrT @"A" . Right . toOR') def
   ]
 
 class Def a where

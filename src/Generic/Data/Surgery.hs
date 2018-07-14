@@ -17,8 +17,8 @@ module Generic.Data.Surgery
     OR
 
   , toOR
-  , toData
-  , fromData
+  , fromOR'
+  , toOR'
   , fromOR
 
   , OROf

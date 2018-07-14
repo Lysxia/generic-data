@@ -98,13 +98,13 @@ toOR = OR . gLinearize . from
 -- corresponding closely to what GHC would generate for an actual data type.
 --
 -- That structure assumed by at least one piece of code out there (@aeson@).
-toData :: forall f l x. FromOR f l => OR l x -> Data f x
-toData = Data . gArborify . unOR
+fromOR' :: forall f l x. FromOR f l => OR l x -> Data f x
+fromOR' = Data . gArborify . unOR
 
 -- | /Move altered data, produced by some generic function, to the operating/
 -- /room./
 --
--- The inverse of 'toData'.
+-- The inverse of 'fromOR''.
 --
 -- === __Details__
 --
@@ -122,8 +122,8 @@ toData = Data . gArborify . unOR
 -- f -> l
 -- l -> f
 -- @
-fromData :: forall f l x. ToOR f l => Data f x -> OR l x
-fromData = OR . gLinearize . unData
+toOR' :: forall f l x. ToOR f l => Data f x -> OR l x
+toOR' = OR . gLinearize . unData
 
 -- | /Move restored data out of the operating room and back to the real/
 -- /world./
