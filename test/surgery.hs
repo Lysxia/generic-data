@@ -7,6 +7,9 @@
 
 {-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
+-- Many of these tests are more about ensuring things typecheck than really
+-- comparing their runtime results.
+
 import Data.Bifunctor (second)
 import Data.Functor.Identity
 import GHC.Generics
@@ -17,9 +20,6 @@ import Generic.Data.Surgery
 import Generic.Data.Types (Data(Data))
 
 data T = A | B Int | C Int Int Int Int Int deriving (Eq, Show, Generic)
-
-x :: T
-x = C 1 2 3 4 5
 
 data P = P Int Int Int deriving (Eq, Show, Generic)
 data R = R { u, v, w :: Int } deriving (Eq, Show, Generic)
@@ -35,9 +35,30 @@ unit = id
 
 test :: TestTree
 test = testGroup "surgery"
-  [ testCase "roundtrip" $ x @?= (fromOR . toOR) x
+  [ testRoundtrip
   , testConsumer
   , testProducer
+  ]
+
+rt :: (Eq a, Show a) => a -> (a -> a) -> Assertion
+rt x f = x @?= f x
+
+testRoundtrip :: TestTree
+testRoundtrip = testGroup "roundtrip"
+  [ testCase "to-from" $ rt (C 1 2 3 4 5) (fromOR . toOR)
+  , testCase "CField-rmv-ins" $
+      rt (P 1 2 3) (fromOR . insertCField @1 . removeCField @1 . toOR)
+  , testCase "CField-ins-rmv" $
+      rt ((), P 1 2 3) (fmap fromOR . removeCField @1 . insertCField @1 . fmap toOR)
+  , testCase "RField-rmv-ins" $
+      rt (R 1 2 3) (fromOR . insertRField @"u" . removeRField @"u" . toOR)
+  , testCase "RField-ins-rmv" $
+      rt ((), R 1 2 3) (fmap fromOR . removeRField @"t" . insertRField @"t" @1 . fmap toOR)
+  , testCase "Constr-rmv-ins" $
+      rt A (fromOR . insertConstrT @"A" . removeConstrT @"A" . toOR)
+  , testCase "Constr-ins-rmv" $
+      rt (Right A)
+         (fmap fromOR . removeConstrT @"Z" . insertConstrT @"Z" @() @0 . fmap toOR)
   ]
 
 testConsumer :: TestTree
@@ -62,7 +83,7 @@ testConsumer = testGroup "consumer"
   , testCase "removeConstr" $
       "[Right A,Left (Identity 0),Right (C 1 2 3 4 5)]" @?=
       (show . fmap (second (unit . fromOR') . removeConstrT @"B" . toOR))
-        [A, B 0, x]
+        [A, B 0, C 1 2 3 4 5]
 
   , testCase "insertConstr" $
       "B 0" @?= (show . fromOR @T . insertConstrT @"B" . Left) (Identity 0)
