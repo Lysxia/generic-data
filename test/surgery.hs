@@ -1,4 +1,5 @@
 {-# LANGUAGE
+    CPP,
     DataKinds,
     DeriveGeneric,
     FlexibleContexts,
@@ -54,8 +55,11 @@ testRoundtrip = testGroup "roundtrip"
       rt (R 1 2 3) (fromOR . insertRField @"u" . removeRField @"u" . toOR)
   , testCase "RField-ins-rmv" $
       rt ((), R 1 2 3) (fmap fromOR . removeRField @"t" . insertRField @"t" @1 . fmap toOR)
+-- Type error on 8.0
+#if __GLASGOW_HASKELL__ >= 802
   , testCase "Constr-rmv-ins" $
       rt A (fromOR . insertConstrT @"A" . removeConstrT @"A" . toOR)
+#endif
   , testCase "Constr-ins-rmv" $
       rt (Right A)
          (fmap fromOR . removeConstrT @"Z" . insertConstrT @"Z" @() @0 . fmap toOR)
@@ -79,6 +83,8 @@ testConsumer = testGroup "consumer"
       "R {u = 1, n = (), v = 2, w = 3}" @?=
       (show' . fromOR' . insertRField' @"n" @1 () . toOR) (R 1 2 3)
 
+-- Loops on 8.0
+#if __GLASGOW_HASKELL__ >= 802
     -- N.B. Identity (for constructor B) is inferred.
   , testCase "removeConstr" $
       "[Right A,Left (Identity 0),Right (C 1 2 3 4 5)]" @?=
@@ -87,6 +93,7 @@ testConsumer = testGroup "consumer"
 
   , testCase "insertConstr" $
       "B 0" @?= (show . fromOR @T . insertConstrT @"B" . Left) (Identity 0)
+#endif
   ]
 
 testProducer :: TestTree
