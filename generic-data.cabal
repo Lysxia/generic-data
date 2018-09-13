@@ -19,7 +19,6 @@ library
   hs-source-dirs:      src
   exposed-modules:
     Generic.Data
-    Generic.Data.Surgery
     Generic.Data.Types
     Generic.Data.Internal.Compat
     Generic.Data.Internal.Data
@@ -31,12 +30,10 @@ library
     Generic.Data.Internal.Prelude
     Generic.Data.Internal.Resolvers
     Generic.Data.Internal.Show
-    Generic.Data.Internal.Surgery
     Generic.Data.Internal.Utils
   build-depends:
     base-orphans >= 0.8,
     contravariant,
-    first-class-families,
     show-combinators,
     base >= 4.9 && < 5
   hs-source-dirs:      orphans
@@ -66,32 +63,6 @@ test-suite record-test
   ghc-options: -Wall
   default-language: Haskell2010
   type: exitcode-stdio-1.0
-
-test-suite surgery-test
-  hs-source-dirs: test
-  main-is: surgery.hs
-  build-depends:
-    tasty,
-    tasty-hunit,
-    generic-data,
-    base
-  ghc-options: -Wall
-  default-language: Haskell2010
-  type: exitcode-stdio-1.0
-
-test-suite lens-surgery-test
-  hs-source-dirs: test
-  main-is: lens-surgery.hs
-  build-depends:
-    tasty,
-    tasty-hunit,
-    generic-data,
-    generic-lens,
-    base
-  ghc-options: -Wall
-  default-language: Haskell2010
-  type: exitcode-stdio-1.0
-  buildable: False
 
 source-repository head
   type:     git

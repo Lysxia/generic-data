@@ -17,17 +17,6 @@ import Data.Proxy
 import GHC.Generics
 import GHC.TypeLits
 
-import Fcf
-
--- | Apply a type function on every field of a type.
-type family   Map (s :: a -> b -> Type) (r :: k -> Type) :: k -> Type
-type instance Map s (M1 i c f) = M1 i c (Map s f)
-type instance Map s (f :+: g)  = Map s f :+: Map s g
-type instance Map s (f :*: g)  = Map s f :*: Map s g
-type instance Map s (K1 i c)   = K1 i (s @@ c)
-type instance Map s U1 = U1
-type instance Map s V1 = V1
-
 -- | Number of constructors of a data type.
 type family   NConstructors (r :: k -> Type) :: Nat
 type instance NConstructors (M1 D c f) = NConstructors f

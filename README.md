@@ -22,13 +22,6 @@ To derive type classes defined elsewhere, it might be worth taking a look at
 
 Extract type names, constructor names, number and arities of constructors, etc..
 
-## Type surgery
-
-Modify types, adding or removing constructors and fields, to be used with
-generic implementations.
-
-WIP
-
 ---
 
 ## Related links
@@ -54,7 +47,7 @@ Here are other relevant links.
   [one-liner-instances](https://hackage.haskell.org/package/one-liner-instances)).
 - [singletons](https://hackage.haskell.org/package/singletons),
   [first-class-families](https://hackage.haskell.org/package/first-class-families)
-  (second one written by me and now used in generic-data):
+  (second one written by me)
   libraries for dependently-typed programming in Haskell.
 
 ---
