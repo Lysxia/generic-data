@@ -1,14 +1,16 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
 
 module Generic.Data.Internal.Enum where
 
 import GHC.Generics
-import Data.Proxy
 
 -- | Generic 'toEnum'.
 --
@@ -17,19 +19,19 @@ import Data.Proxy
 --   'toEnum' = 'gtoEnum'
 --   'fromEnum' = 'gfromEnum'
 -- @
-gtoEnum :: forall a. (Generic a, GEnum (Rep a)) => Int -> a
+gtoEnum :: forall a. (Generic a, GEnum StandardEnum (Rep a)) => Int -> a
 gtoEnum n
-  | 0 <= n && n < card = to (gToEnum n)
+  | 0 <= n && n < card = to (gToEnum @StandardEnum n)
   | otherwise = error $
       "gtoEnum: out of bounds, index " ++ show n ++ ", card " ++ show card
   where
-    card = gCardinality (Proxy :: Proxy (Rep a))
+    card = gCardinality @StandardEnum @(Rep a)
 
 -- | Generic 'fromEnum'.
 --
 -- See also 'gtoEnum'.
-gfromEnum :: (Generic a, GEnum (Rep a)) => a -> Int
-gfromEnum = gFromEnum . from
+gfromEnum :: (Generic a, GEnum StandardEnum (Rep a)) => a -> Int
+gfromEnum = gFromEnum @StandardEnum . from
 
 -- | Generic 'minBound'.
 --
@@ -48,30 +50,38 @@ gmaxBound :: (Generic a, GBounded (Rep a)) => a
 gmaxBound = to gMaxBound
 
 -- | Generic representation of 'Enum' types.
-class GEnum f where
-  gCardinality :: proxy f -> Int
+--
+-- The @opts@ parameter is a type-level option to select different
+-- implementations.
+class GEnum opts f where
+  gCardinality :: Int
   gFromEnum :: f p -> Int
   gToEnum :: Int -> f p
 
-instance GEnum f => GEnum (M1 i c f) where
-  gCardinality _ = gCardinality (Proxy :: Proxy f)
-  gFromEnum = gFromEnum . unM1
-  gToEnum = M1 . gToEnum
+-- | Standard option for 'GEnum': derive 'Enum' for types with only nullary
+-- constructors (the same restrictions as in the [Haskell 2010
+-- report](https://www.haskell.org/onlinereport/haskell2010/haskellch11.html#x18-18400011.2)).
+data StandardEnum
 
-instance (GEnum f, GEnum g) => GEnum (f :+: g) where
-  gCardinality _ = gCardinality (Proxy :: Proxy f) + gCardinality (Proxy :: Proxy g)
-  gFromEnum (L1 x) = gFromEnum x
-  gFromEnum (R1 y) = cardF + gFromEnum y
+instance GEnum opts f => GEnum opts (M1 i c f) where
+  gCardinality = gCardinality @opts @f
+  gFromEnum = gFromEnum @opts . unM1
+  gToEnum = M1 . gToEnum @opts
+
+instance (GEnum opts f, GEnum opts g) => GEnum opts (f :+: g) where
+  gCardinality = gCardinality @opts @f + gCardinality @opts @g
+  gFromEnum (L1 x) = gFromEnum @opts x
+  gFromEnum (R1 y) = cardF + gFromEnum @opts y
     where
-      cardF = gCardinality (Proxy :: Proxy f)
+      cardF = gCardinality @opts @f
   gToEnum n
-    | n < cardF = L1 (gToEnum n)
-    | otherwise = R1 (gToEnum (n - cardF))
+    | n < cardF = L1 (gToEnum @opts n)
+    | otherwise = R1 (gToEnum @opts (n - cardF))
     where
-      cardF = gCardinality (Proxy :: Proxy f)
+      cardF = gCardinality @opts @f
 
-instance GEnum U1 where
-  gCardinality _ = 1
+instance GEnum opts U1 where
+  gCardinality = 1
   gFromEnum U1 = 0
   gToEnum _ = U1
 

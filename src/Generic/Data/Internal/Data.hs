@@ -5,6 +5,7 @@
 {-# LANGUAGE DeriveTraversable #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
@@ -54,9 +55,9 @@ instance (GShow1 r, Show p) => Show (Data r p) where
 instance GShow1 r => Show1 (Data r) where
   liftShowsPrec = (fmap . fmap) (flip . (. unData)) gLiftPrecShows
 
-instance GEnum r => Enum (Data r p) where
-  toEnum = Data . gToEnum
-  fromEnum = gFromEnum . unData
+instance GEnum StandardEnum r => Enum (Data r p) where
+  toEnum = Data . gToEnum @StandardEnum
+  fromEnum = gFromEnum @StandardEnum . unData
 
 instance GBounded r => Bounded (Data r p) where
   minBound = Data gMinBound

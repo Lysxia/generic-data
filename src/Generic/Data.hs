@@ -40,6 +40,7 @@ module Generic.Data
   , gfromEnum
   , gtoEnum
   , GEnum()
+  , StandardEnum()
 
     -- ** 'Bounded'
     -- | Can also be derived by GHC as part of the standard.

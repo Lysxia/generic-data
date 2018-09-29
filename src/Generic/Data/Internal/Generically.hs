@@ -40,7 +40,7 @@ instance (Generic a, Monoid (Rep a ())) => Monoid (Generically a) where
   mempty = gmempty
   mappend = gmappend'
 
-instance (Generic a, GEnum (Rep a)) => Enum (Generically a) where
+instance (Generic a, GEnum StandardEnum (Rep a)) => Enum (Generically a) where
   fromEnum = gfromEnum
   toEnum = gtoEnum
 
