@@ -48,6 +48,18 @@ instance (Generic a, GBounded (Rep a)) => Bounded (Generically a) where
   minBound = gminBound
   maxBound = gmaxBound
 
+-- | Type with 'Enum' instance derived via 'Generic' with 'SmallEnum' option.
+newtype SmallEnumeration a = SmallEnumeration { unSmallEnumeration :: a }
+
+instance Generic a => Generic (SmallEnumeration a) where
+  type Rep (SmallEnumeration a) = Rep a
+  to = SmallEnumeration . to
+  from = from . unSmallEnumeration
+
+instance (Generic a, GEnum SmallEnum (Rep a)) => Enum (SmallEnumeration a) where
+  fromEnum = gfromSmallEnum
+  toEnum = gtoSmallEnum
+
 -- | Type with instances derived via 'Generic1'.
 newtype Generically1 f a = Generically1 { unGenerically1 :: f a }
 

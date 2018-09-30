@@ -43,6 +43,19 @@ pl1 = p1
 data E = E0 | E1 | E2
   deriving (Eq, Show, Generic)
 
+data SmallE = SE0 Bool Bool | SE1 Bool
+  deriving (Eq, Ord, Show, Generic)
+
+smallEs :: [SmallE]
+smallEs = 
+    [ SE0 False False
+    , SE0 False  True
+    , SE0  True False
+    , SE0  True  True
+    , SE1 False
+    , SE1 True
+    ]
+
 maybeModuleName :: String
 #if MIN_VERSION_base(4,12,0)
 maybeModuleName = "GHC.Maybe"
@@ -100,6 +113,8 @@ test = testGroup "unit"
   , testGroup "Enum"
       [ testCase "toEnum" $ [E0, E1, E2] @?= fmap gtoEnum [0, 1, 2]
       , testCase "fromEnum" $ [0, 1, 2] @?= fmap gfromEnum [E0, E1, E2]
+      , testCase "toSmallEnum" $ smallEs @?= fmap gtoSmallEnum [0 .. 5]
+      , testCase "fromSmallEnum" $ [0 .. 5] @?= fmap gfromSmallEnum smallEs
       ]
   , testGroup "Show"
       [ testCase "show" $ "P 1 2" @?= show (p' 1 2)
