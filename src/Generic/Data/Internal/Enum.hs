@@ -93,7 +93,7 @@ data StandardEnum
 -- before 0. 
 --
 -- * The generic type must not exceed the enumeration limit, hence the name 
--- SmallEnum. As 'Enum' converts from and to 'Int', only @(maxBound :: Int)@ + 1
+-- SmallEnum. As 'Enum' converts from and to 'Int', at most @(maxBound :: Int)@ + 1
 -- many values can be enumerated. This restriction makes 'Word' an invalid field 
 -- type. Notably it is insufficient for each individual field types to stay
 -- below the limit.
