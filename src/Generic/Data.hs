@@ -39,11 +39,11 @@ module Generic.Data
     -- | Can also be derived by GHC as part of the standard.
   , gfromEnum
   , gtoEnum
-  , gfromSmallEnum
-  , gtoSmallEnum
+  , gfromFiniteEnum
+  , gtoFiniteEnum
   , GEnum()
   , StandardEnum()
-  , SmallEnum()
+  , FiniteEnum()
 
     -- ** 'Bounded'
     -- | Can also be derived by GHC as part of the standard.

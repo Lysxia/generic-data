@@ -33,26 +33,26 @@ gtoEnum n
 gfromEnum :: (Generic a, GEnum StandardEnum (Rep a)) => a -> Int
 gfromEnum = gFromEnum @StandardEnum . from
 
--- | Generic 'toEnum' generated with the 'SmallEnum' option.
+-- | Generic 'toEnum' generated with the 'FiniteEnum' option.
 --
 -- @
 -- instance 'Enum' MyType where
---   'toEnum' = 'gtoSmallEnum'
---   'fromEnum' = 'gfromSmallEnum'
+--   'toEnum' = 'gtoFiniteEnum'
+--   'fromEnum' = 'gfromFiniteEnum'
 -- @
-gtoSmallEnum :: forall a. (Generic a, GEnum SmallEnum (Rep a)) => Int -> a
-gtoSmallEnum n
-  | 0 <= n && n < card = to (gToEnum @SmallEnum n)
+gtoFiniteEnum :: forall a. (Generic a, GEnum FiniteEnum (Rep a)) => Int -> a
+gtoFiniteEnum n
+  | 0 <= n && n < card = to (gToEnum @FiniteEnum n)
   | otherwise = error $
       "gtoEnum: out of bounds, index " ++ show n ++ ", card " ++ show card
   where
-    card = gCardinality @SmallEnum @(Rep a)
+    card = gCardinality @FiniteEnum @(Rep a)
 
--- | Generic 'fromEnum' generated with the 'SmallEnum' option.
+-- | Generic 'fromEnum' generated with the 'FiniteEnum' option.
 --
--- See also 'gtoSmallEnum'.
-gfromSmallEnum :: (Generic a, GEnum SmallEnum (Rep a)) => a -> Int
-gfromSmallEnum = gFromEnum @SmallEnum . from
+-- See also 'gtoFiniteEnum'.
+gfromFiniteEnum :: (Generic a, GEnum FiniteEnum (Rep a)) => a -> Int
+gfromFiniteEnum = gFromEnum @FiniteEnum . from
 
 -- | Generic 'minBound'.
 --
@@ -92,11 +92,10 @@ data StandardEnum
 -- unfit field type, because the enumeration of the negative values starts 
 -- before 0. 
 --
--- * The generic type must not exceed the enumeration limit, hence the name 
--- SmallEnum. As 'Enum' converts from and to 'Int', at most @(maxBound :: Int)@ + 1
--- many values can be enumerated. This restriction makes 'Word' an invalid field 
--- type. Notably it is insufficient for each individual field types to stay
--- below the limit.
+-- * The generic type must not exceed the enumeration limit. As 'Enum' converts 
+-- from and to 'Int', at most @(maxBound :: Int)@ + 1 many values can be
+--  enumerated. This restriction makes 'Word' an invalid field type. Notably it
+-- is insufficient for each individual field types to stay below the limit.
 --
 -- These restrictions are unlikely to apply if only Algebraic Data Types (ADTs)
 -- are used as field types.
@@ -104,7 +103,7 @@ data StandardEnum
 -- A 'GEnum' instance generically derived with this option will respect the 
 -- generic 'Ord' instance. Implied by this, the values from different 
 -- constructors are enumerated sequentially. They are not interleaved.
-data SmallEnum
+data FiniteEnum
 
 instance GEnum opts f => GEnum opts (M1 i c f) where
   gCardinality = gCardinality @opts @f
@@ -123,22 +122,22 @@ instance (GEnum opts f, GEnum opts g) => GEnum opts (f :+: g) where
     where
       cardF = gCardinality @opts @f
 
-instance (GEnum SmallEnum f, GEnum SmallEnum g) => GEnum SmallEnum (f :*: g) where
-  gCardinality = gCardinality @SmallEnum @f * gCardinality @SmallEnum @g
-  gFromEnum (x :*: y) = gFromEnum @SmallEnum x * cardG + gFromEnum @SmallEnum y
+instance (GEnum FiniteEnum f, GEnum FiniteEnum g) => GEnum FiniteEnum (f :*: g) where
+  gCardinality = gCardinality @FiniteEnum @f * gCardinality @FiniteEnum @g
+  gFromEnum (x :*: y) = gFromEnum @FiniteEnum x * cardG + gFromEnum @FiniteEnum y
     where
-      cardG = gCardinality @SmallEnum @g
-  gToEnum n = gToEnum @SmallEnum x :*: gToEnum @SmallEnum y
+      cardG = gCardinality @FiniteEnum @g
+  gToEnum n = gToEnum @FiniteEnum x :*: gToEnum @FiniteEnum y
     where
       (x, y) = n `quotRem` cardG
-      cardG = gCardinality @SmallEnum @g
+      cardG = gCardinality @FiniteEnum @g
   
 instance GEnum opts U1 where
   gCardinality = 1
   gFromEnum U1 = 0
   gToEnum _ = U1
 
-instance (Bounded c, Enum c) => GEnum SmallEnum (K1 i c) where
+instance (Bounded c, Enum c) => GEnum FiniteEnum (K1 i c) where
   gCardinality = fromEnum (maxBound :: c) + 1
   gFromEnum = fromEnum . unK1
   gToEnum = K1 . toEnum
