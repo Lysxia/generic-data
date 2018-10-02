@@ -113,8 +113,11 @@ test = testGroup "unit"
   , testGroup "Enum"
       [ testCase "toEnum" $ [E0, E1, E2] @?= fmap gtoEnum [0, 1, 2]
       , testCase "fromEnum" $ [0, 1, 2] @?= fmap gfromEnum [E0, E1, E2]
-      , testCase "toFiniteEnum" $ finiteEs @?= fmap gtoFiniteEnum [0 .. 5]
-      , testCase "fromFiniteEnum" $ [0 .. 5] @?= fmap gfromFiniteEnum finiteEs
+      , testCase "enumFrom" $ [E0, E1, E2] @?= genumFrom E0
+      , testCase "toEnum (FiniteEnum)" $ finiteEs @?= fmap gtoFiniteEnum [0 .. 5]
+      , testCase "fromEnum (FiniteEnum)" $ [0 .. 5] @?= fmap gfromFiniteEnum finiteEs
+      , testCase "enumFrom (FiniteEnum)" $ finiteEs @?= gfiniteEnumFrom (SE0 False False)
+          
       ]
   , testGroup "Show"
       [ testCase "show" $ "P 1 2" @?= show (p' 1 2)

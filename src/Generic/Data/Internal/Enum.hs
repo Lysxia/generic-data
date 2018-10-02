@@ -18,10 +18,14 @@ import GHC.Generics
 -- instance 'Enum' MyType where
 --   'toEnum' = 'gtoEnum'
 --   'fromEnum' = 'gfromEnum'
+--   'enumFrom' = 'genumFrom'
+--   'enumFromThen' = 'genumFromThen'
+--   'enumFromTo' = 'genumFromTo'
+--   'enumFromThenTo' = 'genumFromThenTo'
 -- @
 gtoEnum :: forall a. (Generic a, GEnum StandardEnum (Rep a)) => Int -> a
 gtoEnum n
-  | 0 <= n && n < card = to (gToEnum @StandardEnum n)
+  | 0 <= n && n < card = gtoEnum' @StandardEnum n
   | otherwise = error $
       "gtoEnum: out of bounds, index " ++ show n ++ ", card " ++ show card
   where
@@ -31,7 +35,32 @@ gtoEnum n
 --
 -- See also 'gtoEnum'.
 gfromEnum :: (Generic a, GEnum StandardEnum (Rep a)) => a -> Int
-gfromEnum = gFromEnum @StandardEnum . from
+gfromEnum = gfromEnum' @StandardEnum
+
+-- | Generic 'enumFrom' generated with the 'StandardEnum' option.
+--
+-- See also 'gtoEnum'.
+genumFrom :: (Generic a, GEnum StandardEnum (Rep a)) => a -> [a]
+genumFrom = genumFrom' @StandardEnum
+
+-- | Generic 'enumFromThen' generated with the 'StandardEnum' option.
+--
+-- See also 'gtoEnum'.
+genumFromThen :: (Generic a, GEnum StandardEnum (Rep a)) => a -> a -> [a]
+genumFromThen = genumFromThen' @StandardEnum
+
+-- | Generic 'enumFromTo' generated with the 'StandardEnum' option.
+--
+-- See also 'gtoEnum'.
+genumFromTo :: (Generic a, GEnum StandardEnum (Rep a)) => a -> a -> [a]
+genumFromTo = genumFromTo' @StandardEnum
+
+-- | Generic 'enumFromThenTo' generated with the 'StandardEnum' option.
+--
+-- See also 'gtoEnum'.
+genumFromThenTo :: (Generic a, GEnum StandardEnum (Rep a)) => a -> a -> a -> [a]
+genumFromThenTo = genumFromThenTo' @StandardEnum
+
 
 -- | Generic 'toEnum' generated with the 'FiniteEnum' option.
 --
@@ -39,10 +68,14 @@ gfromEnum = gFromEnum @StandardEnum . from
 -- instance 'Enum' MyType where
 --   'toEnum' = 'gtoFiniteEnum'
 --   'fromEnum' = 'gfromFiniteEnum'
+--   'enumFrom' = 'gfiniteEnumFrom'
+--   'enumFromThen' = 'gfiniteEnumFromThen'
+--   'enumFromTo' = 'gfiniteEnumFromTo'
+--   'enumFromThenTo' = 'gfiniteEnumFromThenTo'
 -- @
 gtoFiniteEnum :: forall a. (Generic a, GEnum FiniteEnum (Rep a)) => Int -> a
 gtoFiniteEnum n
-  | 0 <= n && n < card = to (gToEnum @FiniteEnum n)
+  | 0 <= n && n < card = gtoEnum' @FiniteEnum n
   | otherwise = error $
       "gtoEnum: out of bounds, index " ++ show n ++ ", card " ++ show card
   where
@@ -52,7 +85,82 @@ gtoFiniteEnum n
 --
 -- See also 'gtoFiniteEnum'.
 gfromFiniteEnum :: (Generic a, GEnum FiniteEnum (Rep a)) => a -> Int
-gfromFiniteEnum = gFromEnum @FiniteEnum . from
+gfromFiniteEnum = gfromEnum' @FiniteEnum
+
+-- | Generic 'enumFrom' generated with the 'FiniteEnum' option.
+--
+-- See also 'gtoEnum'.
+gfiniteEnumFrom :: (Generic a, GEnum FiniteEnum (Rep a)) => a -> [a]
+gfiniteEnumFrom = genumFrom' @FiniteEnum
+
+-- | Generic 'enumFromThen' generated with the 'FiniteEnum' option.
+--
+-- See also 'gtoEnum'.
+gfiniteEnumFromThen :: (Generic a, GEnum FiniteEnum (Rep a)) => a -> a -> [a]
+gfiniteEnumFromThen = genumFromThen' @FiniteEnum
+
+-- | Generic 'enumFromTo' generated with the 'FiniteEnum' option.
+--
+-- See also 'gtoEnum'.
+gfiniteEnumFromTo :: (Generic a, GEnum FiniteEnum (Rep a)) => a -> a -> [a]
+gfiniteEnumFromTo = genumFromTo' @FiniteEnum
+
+-- | Generic 'enumFromThenTo' generated with the 'FiniteEnum' option.
+--
+-- See also 'gtoEnum'.
+gfiniteEnumFromThenTo :: (Generic a, GEnum FiniteEnum (Rep a)) => a -> a -> a -> [a]
+gfiniteEnumFromThenTo = genumFromThenTo' @FiniteEnum
+
+-- | Unsafe generic 'toEnum'. Does not check whether the argument is within
+-- valid bounds. Use 'gtoEnum' or 'gtoFiniteEnum' instead.
+gtoEnum' :: forall opts a. (Generic a, GEnum opts (Rep a)) => Int -> a
+gtoEnum' = to. gToEnum @opts
+
+-- | Generic 'fromEnum'. Use 'gfromEnum' or 'gfromFiniteEnum' instead
+gfromEnum' :: forall opts a. (Generic a, GEnum opts (Rep a)) => a -> Int
+gfromEnum' = gFromEnum @opts . from
+
+-- | > genumMin == gfromEnum gminBound
+genumMin :: Int
+genumMin = 0
+
+-- | > genumMin == gfromEnum gmaxBound
+genumMax :: forall opts a. (Generic a, GEnum opts (Rep a)) => Int
+genumMax = gCardinality @opts @(Rep a) - 1
+
+-- | Generic 'enumFrom'. Use 'genumFrom' or 'gfiniteEnumFrom' instead.
+genumFrom' :: forall opts a. (Generic a, GEnum opts (Rep a)) => a -> [a]
+genumFrom' x = map toE [ i_x .. genumMax @opts @a ]
+  where
+    toE = gtoEnum'   @opts
+    i_x = gfromEnum' @opts x
+
+-- | Generic 'enumFromThen'. Use 'genumFromThen' or 'gfiniteEnumFromThen' instead.
+genumFromThen' :: forall opts a. (Generic a, GEnum opts (Rep a)) => a -> a -> [a]
+genumFromThen' x1 x2 = map toE [ i_x1, i_x2 .. bound ]
+  where
+    toE  = gtoEnum'   @opts
+    i_x1 = gfromEnum' @opts x1
+    i_x2 = gfromEnum' @opts x2
+    bound | i_x1 >= i_x2 = genumMin
+          | otherwise    = genumMax @opts @a
+
+-- | Generic 'enumFromTo'. Use 'genumFromTo' or 'gfiniteEnumFromTo' instead.
+genumFromTo' :: forall opts a. (Generic a, GEnum opts (Rep a)) => a -> a -> [a]
+genumFromTo' x y = map toE [ i_x .. i_y ]
+  where
+    toE = gtoEnum'   @opts
+    i_x = gfromEnum' @opts x
+    i_y = gfromEnum' @opts y
+
+-- | Generic 'enumFromThenTo'. Use 'genumFromThenTo' or 'gfiniteEnumFromThenTo' instead.
+genumFromThenTo' :: forall opts a. (Generic a, GEnum opts (Rep a)) => a -> a -> a -> [a]
+genumFromThenTo' x1 x2 y = map toE [ i_x1, i_x2 .. i_y ]
+  where
+    toE  = gtoEnum'   @opts
+    i_x1 = gfromEnum' @opts x1
+    i_x2 = gfromEnum' @opts x2
+    i_y  = gfromEnum' @opts y
 
 -- | Generic 'minBound'.
 --
@@ -85,24 +193,44 @@ class GEnum opts f where
 data StandardEnum
 
 -- | Extends the 'StandardEnum' option for 'GEnum' to allow all constructors to 
--- have arbitrary many arguments. Each argument type/field must be an instance 
--- of both 'Enum' and 'Bounded'. Two restrictions require the user's caution:
+-- have arbitrary many fields. Each field type must be an instance of 
+-- both 'Enum' and 'Bounded'. Two restrictions require the user's caution:
 --
--- * The instances of the field types need to be valid. Particularly 'Int' is an 
--- unfit field type, because the enumeration of the negative values starts 
--- before 0. 
+-- * The 'Enum' instances of the field types need to start enumerating from 0. 
+-- Particularly 'Int' is an unfit field type, because the enumeration of the 
+-- negative values starts before 0. 
 --
--- * The generic type must not exceed the enumeration limit. As 'Enum' converts 
--- from and to 'Int', at most @(maxBound :: Int)@ + 1 many values can be
---  enumerated. This restriction makes 'Word' an invalid field type. Notably it
--- is insufficient for each individual field types to stay below the limit.
+-- * Since 'GEnum' represents the cardinality explicitly as an Int, there can 
+-- only be up to @(maxBound :: Int)@ + 1 different values. This restriction
+-- makes 'Word' an invalid field type. Notably it is insufficient for each
+-- individual field types to stay below this limit. Instead it applies to the
+-- generic type as a whole.
+-- 
+-- The resulting 'GEnum' instance starts enumerating from @0@ up to 
+-- @(cardinality - 1)@ and respects the generic 'Ord' instance. 
+-- Implied by this the values from different constructors are enumerated
+-- sequentially. They are not interleaved. 
 --
--- These restrictions are unlikely to apply if only Algebraic Data Types (ADTs)
--- are used as field types.
---
--- A 'GEnum' instance generically derived with this option will respect the 
--- generic 'Ord' instance. Implied by this, the values from different 
--- constructors are enumerated sequentially. They are not interleaved.
+-- To be very exact: The aforementioned generic 'Ord' instance can be determined
+-- by constraining the field types to 'Enum' instead of 'Ord'. Each field's 
+-- order on its values is given by their enumeration.
+-- 
+-- > data Example = C0 Bool Bool | C1 Bool
+-- >   deriving (Eq, Ord, Show, Generic)
+-- >
+-- > gCardinality == 6  -- 2 * 2 + 2
+-- > 
+-- > enumeration = 
+-- >     [ C0 False False
+-- >     , C0 False  True
+-- >     , C0  True False
+-- >     , C0  True  True
+-- >     , C1 False
+-- >     , C1 True
+-- >     ]
+-- >
+-- > enumeration == map gtoFiniteEnum [0 .. 5]
+-- > [0 .. 5] == map gfromFiniteEnum enumeration
 data FiniteEnum
 
 instance GEnum opts f => GEnum opts (M1 i c f) where
