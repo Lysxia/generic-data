@@ -77,7 +77,7 @@ gtoFiniteEnum :: forall a. (Generic a, GEnum FiniteEnum (Rep a)) => Int -> a
 gtoFiniteEnum n
   | 0 <= n && n < card = gtoEnum' @FiniteEnum n
   | otherwise = error $
-      "gtoEnum: out of bounds, index " ++ show n ++ ", card " ++ show card
+      "gtoFiniteEnum: out of bounds, index " ++ show n ++ ", card " ++ show card
   where
     card = gCardinality @FiniteEnum @(Rep a)
 
