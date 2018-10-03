@@ -40,14 +40,19 @@ p1' = p1
 pl1 :: PTy1 [Int]
 pl1 = p1
 
-data E = E0 | E1 | E2
+data E = E0 | E1 | E2 | E3
   deriving (Eq, Show, Generic)
 
 data FiniteE = SE0 Bool Bool | SE1 Bool
   deriving (Eq, Ord, Show, Generic)
 
-finiteEs :: [FiniteE]
-finiteEs = 
+e0, e1, eLast :: FiniteE
+e0 = allEs !! 0
+e1 = allEs !! 1
+eLast = last allEs
+
+allEs :: [FiniteE]
+allEs = 
     [ SE0 False False
     , SE0 False  True
     , SE0  True False
@@ -106,18 +111,23 @@ test = testGroup "unit"
       ]
   , testGroup "Bounded"
       [ testCase "minBound @E" $ E0 @?= gminBound
-      , testCase "maxBound @E" $ E2 @?= gmaxBound
+      , testCase "maxBound @E" $ E3 @?= gmaxBound
       , testCase "minBound @(P Int)" $ p' minBound minBound @?= gminBound
       , testCase "maxBound @(P Int)" $ p' maxBound maxBound @?= gmaxBound
       ]
   , testGroup "Enum"
-      [ testCase "toEnum" $ [E0, E1, E2] @?= fmap gtoEnum [0, 1, 2]
-      , testCase "fromEnum" $ [0, 1, 2] @?= fmap gfromEnum [E0, E1, E2]
-      , testCase "enumFrom" $ [E0, E1, E2] @?= genumFrom E0
-      , testCase "toEnum (FiniteEnum)" $ finiteEs @?= fmap gtoFiniteEnum [0 .. 5]
-      , testCase "fromEnum (FiniteEnum)" $ [0 .. 5] @?= fmap gfromFiniteEnum finiteEs
-      , testCase "enumFrom (FiniteEnum)" $ finiteEs @?= gfiniteEnumFrom (SE0 False False)
-          
+      [ testCase "toEnum" $ [E0, E1, E2, E3] @?= fmap gtoEnum [0, 1, 2, 3]
+      , testCase "fromEnum" $ [0, 1, 2, 3] @?= fmap gfromEnum [E0, E1, E2, E3]
+      , testCase "enumFrom" $ [E0, E1, E2, E3] @?= genumFrom E0
+      , testCase "enumFromThen" $ [E0, E1, E2, E3] @?= genumFromThen E0 E1
+      , testCase "enumFromTo" $ [E0, E1, E2, E3] @?= genumFromTo E0 E3
+      , testCase "enumFromThenTo" $ [E0, E1, E2, E3] @?= genumFromThenTo E0 E1 E3
+      , testCase "toEnum (FiniteEnum)" $ allEs @?= fmap gtoFiniteEnum [0 .. 5]
+      , testCase "fromEnum (FiniteEnum)" $ [0 .. 5] @?= fmap gfromFiniteEnum allEs
+      , testCase "enumFrom (FiniteEnum)" $ allEs @?= gfiniteEnumFrom e0
+      , testCase "enumFromThen (FiniteEnum)" $ allEs @?= gfiniteEnumFromThen e0 e1
+      , testCase "enumFromTo (FiniteEnum)" $ allEs @?= gfiniteEnumFromTo e0 eLast
+      , testCase "enumFromThenTo (FiniteEnum)" $ allEs @?= gfiniteEnumFromThenTo e0 e1 eLast
       ]
   , testGroup "Show"
       [ testCase "show" $ "P 1 2" @?= show (p' 1 2)

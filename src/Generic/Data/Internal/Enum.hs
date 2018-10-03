@@ -200,11 +200,10 @@ data StandardEnum
 -- Particularly 'Int' is an unfit field type, because the enumeration of the 
 -- negative values starts before 0. 
 --
--- * Since 'GEnum' represents the cardinality explicitly as an Int, there can 
--- only be up to @(maxBound :: Int)@ + 1 different values. This restriction
--- makes 'Word' an invalid field type. Notably it is insufficient for each
--- individual field types to stay below this limit. Instead it applies to the
--- generic type as a whole.
+-- * Since 'GEnum' represents the cardinality explicitly as an Int, there can
+-- only be up to maxBound values. This restriction makes 'Word' an invalid field
+-- type. Notably it is insufficient for each individual field types to stay
+-- below this limit. Instead it applies to the generic type as a whole.
 -- 
 -- The resulting 'GEnum' instance starts enumerating from @0@ up to 
 -- @(cardinality - 1)@ and respects the generic 'Ord' instance. 
