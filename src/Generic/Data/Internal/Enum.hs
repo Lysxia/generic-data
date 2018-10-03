@@ -24,12 +24,7 @@ import GHC.Generics
 --   'enumFromThenTo' = 'genumFromThenTo'
 -- @
 gtoEnum :: forall a. (Generic a, GEnum StandardEnum (Rep a)) => Int -> a
-gtoEnum n
-  | 0 <= n && n < card = gtoEnum' @StandardEnum n
-  | otherwise = error $
-      "gtoEnum: out of bounds, index " ++ show n ++ ", card " ++ show card
-  where
-    card = gCardinality @StandardEnum @(Rep a)
+gtoEnum = gtoEnum' @StandardEnum "gtoEnum"
 
 -- | Generic 'fromEnum' generated with the 'StandardEnum' option.
 --
@@ -74,12 +69,7 @@ genumFromThenTo = genumFromThenTo' @StandardEnum
 --   'enumFromThenTo' = 'gfiniteEnumFromThenTo'
 -- @
 gtoFiniteEnum :: forall a. (Generic a, GEnum FiniteEnum (Rep a)) => Int -> a
-gtoFiniteEnum n
-  | 0 <= n && n < card = gtoEnum' @FiniteEnum n
-  | otherwise = error $
-      "gtoFiniteEnum: out of bounds, index " ++ show n ++ ", card " ++ show card
-  where
-    card = gCardinality @FiniteEnum @(Rep a)
+gtoFiniteEnum = gtoEnum' @FiniteEnum "gtoFiniteEnum"
 
 -- | Generic 'fromEnum' generated with the 'FiniteEnum' option.
 --
@@ -113,8 +103,17 @@ gfiniteEnumFromThenTo = genumFromThenTo' @FiniteEnum
 
 -- | Unsafe generic 'toEnum'. Does not check whether the argument is within
 -- valid bounds. Use 'gtoEnum' or 'gtoFiniteEnum' instead.
-gtoEnum' :: forall opts a. (Generic a, GEnum opts (Rep a)) => Int -> a
-gtoEnum' = to. gToEnum @opts
+gtoEnumRaw' :: forall opts a. (Generic a, GEnum opts (Rep a)) => Int -> a
+gtoEnumRaw' = to . gToEnum @opts
+
+-- | Generic 'toEnum'. Use 'gfromEnum' or 'gfromFiniteEnum' instead.
+gtoEnum' :: forall opts a. (Generic a, GEnum opts (Rep a)) => String -> Int -> a
+gtoEnum' name n
+  | 0 <= n && n < card = gtoEnumRaw' @opts n
+  | otherwise = error $
+      name ++ ": out of bounds, index " ++ show n ++ ", cardinality " ++ show card
+  where
+    card = gCardinality @opts @(Rep a)
 
 -- | Generic 'fromEnum'. Use 'gfromEnum' or 'gfromFiniteEnum' instead.
 gfromEnum' :: forall opts a. (Generic a, GEnum opts (Rep a)) => a -> Int
@@ -132,16 +131,16 @@ genumMax = gCardinality @opts @(Rep a) - 1
 genumFrom' :: forall opts a. (Generic a, GEnum opts (Rep a)) => a -> [a]
 genumFrom' x = map toE [ i_x .. genumMax @opts @a ]
   where
-    toE = gtoEnum'   @opts
-    i_x = gfromEnum' @opts x
+    toE = gtoEnumRaw' @opts
+    i_x = gfromEnum'  @opts x
 
 -- | Generic 'enumFromThen'. Use 'genumFromThen' or 'gfiniteEnumFromThen' instead.
 genumFromThen' :: forall opts a. (Generic a, GEnum opts (Rep a)) => a -> a -> [a]
 genumFromThen' x1 x2 = map toE [ i_x1, i_x2 .. bound ]
   where
-    toE  = gtoEnum'   @opts
-    i_x1 = gfromEnum' @opts x1
-    i_x2 = gfromEnum' @opts x2
+    toE  = gtoEnumRaw' @opts
+    i_x1 = gfromEnum'  @opts x1
+    i_x2 = gfromEnum'  @opts x2
     bound | i_x1 >= i_x2 = genumMin
           | otherwise    = genumMax @opts @a
 
@@ -149,18 +148,18 @@ genumFromThen' x1 x2 = map toE [ i_x1, i_x2 .. bound ]
 genumFromTo' :: forall opts a. (Generic a, GEnum opts (Rep a)) => a -> a -> [a]
 genumFromTo' x y = map toE [ i_x .. i_y ]
   where
-    toE = gtoEnum'   @opts
-    i_x = gfromEnum' @opts x
-    i_y = gfromEnum' @opts y
+    toE = gtoEnumRaw' @opts
+    i_x = gfromEnum'  @opts x
+    i_y = gfromEnum'  @opts y
 
 -- | Generic 'enumFromThenTo'. Use 'genumFromThenTo' or 'gfiniteEnumFromThenTo' instead.
 genumFromThenTo' :: forall opts a. (Generic a, GEnum opts (Rep a)) => a -> a -> a -> [a]
 genumFromThenTo' x1 x2 y = map toE [ i_x1, i_x2 .. i_y ]
   where
-    toE  = gtoEnum'   @opts
-    i_x1 = gfromEnum' @opts x1
-    i_x2 = gfromEnum' @opts x2
-    i_y  = gfromEnum' @opts y
+    toE  = gtoEnumRaw' @opts
+    i_x1 = gfromEnum'  @opts x1
+    i_x2 = gfromEnum'  @opts x2
+    i_y  = gfromEnum'  @opts y
 
 -- | Generic 'minBound'.
 --
