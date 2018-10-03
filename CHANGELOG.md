@@ -1,3 +1,11 @@
+# 0.3.0.0
+
+- Add generic implementations of `enumFrom`, `enumFromThen`, `enumFromTo`,
+  `enumFromThenTo`. They are actually required to be explicit for correct
+  `Enum` instances. Thanks to Topsii.
+- Parameterize `GEnum` by a type-level option, and add `FiniteEnum` option
+  to allow `Enum` to be derived for composite types. Thanks to Topsii.
+
 # 0.2.0.0
 
 - Remove `Generic.Data.Types.Map`
