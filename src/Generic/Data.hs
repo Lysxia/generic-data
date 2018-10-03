@@ -36,11 +36,24 @@ module Generic.Data
   , GShow0
 
     -- ** 'Enum'
-    -- | Can also be derived by GHC as part of the standard.
-  , gfromEnum
-  , gtoEnum
   , GEnum()
+    -- *** StandardEnum option
+    -- | Can also be derived by GHC as part of the standard.
   , StandardEnum()
+  , gtoEnum
+  , gfromEnum
+  , genumFrom
+  , genumFromThen
+  , genumFromTo
+  , genumFromThenTo
+    -- *** FiniteEnum option
+  , FiniteEnum()
+  , gtoFiniteEnum
+  , gfromFiniteEnum
+  , gfiniteEnumFrom
+  , gfiniteEnumFromThen
+  , gfiniteEnumFromTo
+  , gfiniteEnumFromThenTo
 
     -- ** 'Bounded'
     -- | Can also be derived by GHC as part of the standard.
@@ -91,6 +104,7 @@ module Generic.Data
 
     -- * Carriers of generic instances
   , Generically(..)
+  , FiniteEnumeration(..)
   , Generically1(..)
 
     -- * Newtype

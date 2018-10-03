@@ -41,12 +41,32 @@ instance (Generic a, Monoid (Rep a ())) => Monoid (Generically a) where
   mappend = gmappend'
 
 instance (Generic a, GEnum StandardEnum (Rep a)) => Enum (Generically a) where
-  fromEnum = gfromEnum
   toEnum = gtoEnum
+  fromEnum = gfromEnum
+  enumFrom = genumFrom
+  enumFromThen = genumFromThen
+  enumFromTo = genumFromTo
+  enumFromThenTo = genumFromThenTo
 
 instance (Generic a, GBounded (Rep a)) => Bounded (Generically a) where
   minBound = gminBound
   maxBound = gmaxBound
+
+-- | Type with 'Enum' instance derived via 'Generic' with 'FiniteEnum' option.
+newtype FiniteEnumeration a = FiniteEnumeration { unFiniteEnumeration :: a }
+
+instance Generic a => Generic (FiniteEnumeration a) where
+  type Rep (FiniteEnumeration a) = Rep a
+  to = FiniteEnumeration . to
+  from = from . unFiniteEnumeration
+
+instance (Generic a, GEnum FiniteEnum (Rep a)) => Enum (FiniteEnumeration a) where
+  toEnum = gtoFiniteEnum
+  fromEnum = gfromFiniteEnum
+  enumFrom = gfiniteEnumFrom
+  enumFromThen = gfiniteEnumFromThen
+  enumFromTo = gfiniteEnumFromTo
+  enumFromThenTo = gfiniteEnumFromThenTo
 
 -- | Type with instances derived via 'Generic1'.
 newtype Generically1 f a = Generically1 { unGenerically1 :: f a }
