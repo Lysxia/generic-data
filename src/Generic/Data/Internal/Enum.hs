@@ -89,25 +89,25 @@ gfromFiniteEnum = gfromEnum' @FiniteEnum
 
 -- | Generic 'enumFrom' generated with the 'FiniteEnum' option.
 --
--- See also 'gtoEnum'.
+-- See also 'gtoFiniteEnum'.
 gfiniteEnumFrom :: (Generic a, GEnum FiniteEnum (Rep a)) => a -> [a]
 gfiniteEnumFrom = genumFrom' @FiniteEnum
 
 -- | Generic 'enumFromThen' generated with the 'FiniteEnum' option.
 --
--- See also 'gtoEnum'.
+-- See also 'gtoFiniteEnum'.
 gfiniteEnumFromThen :: (Generic a, GEnum FiniteEnum (Rep a)) => a -> a -> [a]
 gfiniteEnumFromThen = genumFromThen' @FiniteEnum
 
 -- | Generic 'enumFromTo' generated with the 'FiniteEnum' option.
 --
--- See also 'gtoEnum'.
+-- See also 'gtoFiniteEnum'.
 gfiniteEnumFromTo :: (Generic a, GEnum FiniteEnum (Rep a)) => a -> a -> [a]
 gfiniteEnumFromTo = genumFromTo' @FiniteEnum
 
 -- | Generic 'enumFromThenTo' generated with the 'FiniteEnum' option.
 --
--- See also 'gtoEnum'.
+-- See also 'gtoFiniteEnum'.
 gfiniteEnumFromThenTo :: (Generic a, GEnum FiniteEnum (Rep a)) => a -> a -> a -> [a]
 gfiniteEnumFromThenTo = genumFromThenTo' @FiniteEnum
 
@@ -116,7 +116,7 @@ gfiniteEnumFromThenTo = genumFromThenTo' @FiniteEnum
 gtoEnum' :: forall opts a. (Generic a, GEnum opts (Rep a)) => Int -> a
 gtoEnum' = to. gToEnum @opts
 
--- | Generic 'fromEnum'. Use 'gfromEnum' or 'gfromFiniteEnum' instead
+-- | Generic 'fromEnum'. Use 'gfromEnum' or 'gfromFiniteEnum' instead.
 gfromEnum' :: forall opts a. (Generic a, GEnum opts (Rep a)) => a -> Int
 gfromEnum' = gFromEnum @opts . from
 
@@ -200,8 +200,8 @@ data StandardEnum
 -- Particularly 'Int' is an unfit field type, because the enumeration of the 
 -- negative values starts before 0. 
 --
--- * Since 'GEnum' represents the cardinality explicitly as an Int, there can
--- only be up to maxBound values. This restriction makes 'Word' an invalid field
+-- * Since 'GEnum' represents the cardinality explicitly as an 'Int', there can
+-- only be up to 'maxBound' values. This restriction makes 'Word' an invalid field
 -- type. Notably it is insufficient for each individual field types to stay
 -- below this limit. Instead it applies to the generic type as a whole.
 -- 
