@@ -123,7 +123,7 @@ gfromEnum' = gFromEnum @opts . from
 genumMin :: Int
 genumMin = 0
 
--- | > genumMin == gfromEnum gmaxBound
+-- | > genumMax == gfromEnum gmaxBound
 genumMax :: forall opts a. (Generic a, GEnum opts (Rep a)) => Int
 genumMax = gCardinality @opts @(Rep a) - 1
 
