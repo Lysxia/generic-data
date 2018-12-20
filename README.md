@@ -7,8 +7,11 @@ Utilities for `GHC.Generics`.
 ```haskell
 {-# LANGUAGE DeriveGeneric #-}
 
+-- base
 import Data.Semigroup (Semigroup(..))
 import GHC.Generics
+
+-- generic-data
 import Generic.Data (gmappend, Generically(..))
 import Generic.Data.Orphans ()
 
@@ -26,6 +29,8 @@ instance Semigroup (Foo a) where
 data Foo a = Bar [a] [a]
   deriving Generic
   deriving Semigroup via (Generically (Foo a))
+
+-- This example can be found in test/example.hs
 ```
 
 Supported classes that GHC currently can't derive: `Semigroup`, `Monoid`,
@@ -57,6 +62,7 @@ More surgeries can be found in
 {-# LANGUAGE DeriveGeneric #-}
 
 import GHC.Generic
+
 import Generic.Data (gshowsPrec)
 import Generic.Data.Microsurgery (unsetIsRecord)
 
@@ -73,6 +79,8 @@ newtype T = T { unT :: Int } deriving Generic
 
 instance Show T where
   showsPrec n = gshowsPrec n . unsetIsRecord . toData
+
+-- This example can be found in test/microsurgery.hs
 ```
 
 ---
