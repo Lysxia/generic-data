@@ -52,4 +52,14 @@ Here are other relevant links.
 
 ---
 
+## Internal module policy
+
+Modules under `Generic.Data.Internal` are not subject to any versioning policy.
+Breaking changes may apply to them at any time.
+
+If something in those modules seems useful, please report it or create a pull
+request to export it from an external module.
+
+---
+
 All contributions are welcome. Open an issue or a pull request on Github!
