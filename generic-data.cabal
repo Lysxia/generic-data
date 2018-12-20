@@ -66,6 +66,16 @@ test-suite record-test
   default-language: Haskell2010
   type: exitcode-stdio-1.0
 
+test-suite example-test
+  hs-source-dirs: test
+  main-is: example.hs
+  build-depends:
+    generic-data,
+    base
+  ghc-options: -Wall
+  default-language: Haskell2010
+  type: exitcode-stdio-1.0
+
 test-suite microsurgery-test
   hs-source-dirs: test
   main-is: microsurgery.hs

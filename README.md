@@ -7,16 +7,23 @@ Utilities for `GHC.Generics`.
 ```haskell
 {-# LANGUAGE DeriveGeneric #-}
 
+import Data.Semigroup (Semigroup(..))
+import GHC.Generics
+import Generic.Data (gmappend, Generically(..))
+import Generic.Data.Orphans ()
+
 data Foo a = Bar [a] [a] deriving Generic
 
 instance Semigroup (Foo a) where
   (<>) = gmappend
 
--- also with an additional extension --
+-- also with some additional extensions --
 
-{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE
+    DerivingStrategies,
+    DerivingVia #-}  -- since GHC 8.6.1
 
-data Foo a = Bar [a] [a] deriving Generic
+data Foo a = Bar [a] [a]
   deriving Generic
   deriving Semigroup via (Generically (Foo a))
 ```
