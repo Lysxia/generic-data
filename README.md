@@ -4,6 +4,23 @@ Utilities for `GHC.Generics`.
 
 ## Generic deriving for standard classes
 
+```haskell
+{-# LANGUAGE DeriveGeneric #-}
+
+data Foo a = Bar [a] [a] deriving Generic
+
+instance Semigroup (Foo a) where
+  (<>) = gmappend
+
+-- also with an additional extension --
+
+{-# LANGUAGE DerivingVia #-}
+
+data Foo a = Bar [a] [a] deriving Generic
+  deriving Generic
+  deriving Semigroup via (Generically (Foo a))
+```
+
 Supported classes that GHC currently can't derive: `Semigroup`, `Monoid`,
 `Applicative`, `Alternative`, `Eq1`, `Ord1`, `Show1`.
 
@@ -15,12 +32,41 @@ them:
 
 (`Read` is currently not implemented.)
 
-To derive type classes defined elsewhere, it might be worth taking a look at
-[one-liner](https://hackage.haskell.org/package/one-liner).
+To derive type classes outside of the standard library, it might be worth
+taking a look at [one-liner](https://hackage.haskell.org/package/one-liner).
 
 ## Type metadata
 
 Extract type names, constructor names, number and arities of constructors, etc..
+
+## Type surgery
+
+generic-data offers simple operations on generic representations.
+
+More surgeries can be found in
+[generic-data-surgery](https://hackage.haskell.org/package/generic-data-surgery).
+
+```haskell
+{-# LANGUAGE DeriveGeneric #-}
+
+import GHC.Generic
+import Generic.Data (gshowsPrec)
+import Generic.Data.Microsurgery (unsetIsRecord)
+
+newtype T = T { unT :: Int } deriving Generic
+
+-- Naively deriving Show would result in this being shown:
+--
+-- show (T 3) = "T {unT = 3}"
+--
+-- But instead, with a simple surgery, unsetIsRecord, we can forget T was
+-- declared as a record:
+--
+-- show (T 3) = "T 3"
+
+instance Show T where
+  showsPrec n = gshowsPrec n . unsetIsRecord . toData
+```
 
 ---
 
