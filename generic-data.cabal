@@ -20,12 +20,14 @@ library
   exposed-modules:
     Generic.Data
     Generic.Data.Types
+    Generic.Data.Microsurgery
     Generic.Data.Internal.Compat
     Generic.Data.Internal.Data
     Generic.Data.Internal.Enum
     Generic.Data.Internal.Functions
     Generic.Data.Internal.Generically
     Generic.Data.Internal.Meta
+    Generic.Data.Internal.Microsurgery
     Generic.Data.Internal.Newtype
     Generic.Data.Internal.Prelude
     Generic.Data.Internal.Resolvers
@@ -58,6 +60,18 @@ test-suite record-test
   hs-source-dirs: test
   main-is: record.hs
   build-depends:
+    generic-data,
+    base
+  ghc-options: -Wall
+  default-language: Haskell2010
+  type: exitcode-stdio-1.0
+
+test-suite microsurgery-test
+  hs-source-dirs: test
+  main-is: microsurgery.hs
+  build-depends:
+    tasty,
+    tasty-hunit,
     generic-data,
     base
   ghc-options: -Wall

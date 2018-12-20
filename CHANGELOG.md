@@ -1,3 +1,9 @@
+# 0.4.0.0
+
+- Created `Microsurgery` module. Initial set of surgeries:
+
+    + `UnsetIsRecord`
+
 # 0.3.0.0
 
 - Add generic implementations of `enumFrom`, `enumFromThen`, `enumFromTo`,
