@@ -13,9 +13,9 @@ module Generic.Data.Microsurgery
 
     -- * Microsurgeries
 
-  , unsetIsRecord
-  , resetIsRecord
-  , UnsetIsRecord
+  , unrecordify
+  , recordify
+  , Unrecordify
   ) where
 
 import Generic.Data.Internal.Data

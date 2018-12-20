@@ -64,7 +64,7 @@ More surgeries can be found in
 import GHC.Generic
 
 import Generic.Data (gshowsPrec)
-import Generic.Data.Microsurgery (unsetIsRecord)
+import Generic.Data.Microsurgery (unrecordify)
 
 newtype T = T { unT :: Int } deriving Generic
 
@@ -72,13 +72,13 @@ newtype T = T { unT :: Int } deriving Generic
 --
 -- show (T 3) = "T {unT = 3}"
 --
--- But instead, with a simple surgery, unsetIsRecord, we can forget T was
+-- But instead, with a simple surgery, unrecordify, we can forget T was
 -- declared as a record:
 --
 -- show (T 3) = "T 3"
 
 instance Show T where
-  showsPrec n = gshowsPrec n . unsetIsRecord . toData
+  showsPrec n = gshowsPrec n . unrecordify . toData
 
 -- This example can be found in test/microsurgery.hs
 ```
