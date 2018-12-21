@@ -1,7 +1,7 @@
 -- | Simple operations on generic representations.
 --
 -- More complex ones can be found in
--- <generic-data-surgery https://hackage.haskell.org/package/generic-data-surgery>.
+-- <https://hackage.haskell.org/package/generic-data-surgery generic-data-surgery>.
 
 module Generic.Data.Microsurgery
   ( -- * Synthetic types
