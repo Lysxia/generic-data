@@ -5,7 +5,7 @@
 
 module Generic.Data.Microsurgery
   ( -- * Synthetic types
-    -- | See also "Generic.Data.Types"
+    -- | Reexported from "Generic.Data.Types"
 
     Data
   , toData
