@@ -2,7 +2,10 @@
 
 - Created `Microsurgery` module. Initial set of surgeries:
 
-    + `UnsetIsRecord`
+    + `Derecordify`
+    + `Typeage`
+    + `RenameFields`, `RenameConstrs`
+    + Some doc about using generic-lens for surgeries
 
 # 0.3.0.0
 
