@@ -1,3 +1,5 @@
+{-# LANGUAGE ExplicitNamespaces #-}
+
 -- | Simple operations on generic representations.
 --
 -- More complex ones can be found in
@@ -13,9 +15,36 @@ module Generic.Data.Microsurgery
 
     -- * Microsurgeries
 
-  , unrecordify
-  , recordify
-  , Unrecordify
+    -- ** Derecordify
+
+  , derecordify
+  , underecordify
+  , Derecordify
+
+    -- ** Type aging ("denewtypify")
+
+  , typeage
+  , untypeage
+  , Typeage
+
+    -- ** Renaming of fields and constructors
+
+  , renameFields
+  , unrenameFields
+  , RenameFields
+
+  , renameConstrs
+  , unrenameConstrs
+  , RenameConstrs
+
+    -- *** Renaming functions
+
+  , type (@@)
+  , SId
+  , SError
+  , SConst
+  , SRename
+
   ) where
 
 import Generic.Data.Internal.Data

@@ -13,7 +13,7 @@ import Generic.Data.Microsurgery
 newtype T = T { _unT :: Int } deriving Generic
 
 instance Show T where
-  showsPrec n = gshowsPrec n . unrecordify . toData
+  showsPrec n = gshowsPrec n . derecordify . toData
 
 main :: IO ()
 main = defaultMain test
