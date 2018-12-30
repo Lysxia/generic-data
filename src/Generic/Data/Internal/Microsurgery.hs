@@ -8,6 +8,8 @@
     TypeOperators,
     UndecidableInstances #-}
 
+-- | Surgeries that are just 'coerce'.
+
 module Generic.Data.Internal.Microsurgery where
 
 import Data.Coerce (Coercible, coerce)
@@ -31,13 +33,11 @@ underecordify = coerce
 
 -- | Forget that a type was declared using record syntax.
 --
--- @
--- data Foo = Bar { baz :: Zap }
---
--- -- becomes --
---
--- data Foo = Bar Zap
--- @
+-- > data Foo = Bar { baz :: Zap }
+-- >
+-- > -- becomes --
+-- >
+-- > data Foo = Bar Zap
 --
 -- Concretely, set the last field of 'MetaCons' to 'False' and forget field
 -- names.
@@ -64,13 +64,11 @@ untypeage = coerce
 
 -- | Forget that a type is a @newtype@.
 --
--- @
--- newtype Foo = Bar Baz
---
--- -- becomes --
---
--- data Foo = Bar Baz
--- @
+-- > newtype Foo = Bar Baz
+-- >
+-- > -- becomes --
+-- >
+-- > data Foo = Bar Baz
 type family Typeage (f :: k -> *) :: k -> *
 type instance Typeage (M1 D ('MetaData nm md pk _nt) f) = M1 D ('MetaData nm md pk 'False) f
 
@@ -99,6 +97,35 @@ unrenameConstrs ::
   Coercible (RenameConstrs rnm f) f =>
   Data f p -> Data (RenameConstrs rnm f) p
 unrenameConstrs = coerce
+
+-- | Rename fields using the function @rnm@ given as a parameter.
+--
+-- > data Foo = Bar { baz :: Zap }
+-- >
+-- > -- becomes, renaming "baz" to "bag" --
+-- >
+-- > data Foo = Bar { bag :: Zap }
+type family RenameFields (rnm :: *) (f :: k -> *) :: k -> *
+type instance RenameFields rnm (M1 D m f) = M1 D m (RenameFields rnm f)
+type instance RenameFields rnm (f :+: g) = RenameFields rnm f :+: RenameFields rnm g
+type instance RenameFields rnm (f :*: g) = RenameFields rnm f :*: RenameFields rnm g
+type instance RenameFields rnm (M1 C m f) = M1 C m (RenameFields rnm f)
+type instance RenameFields rnm (M1 S ('MetaSel ('Just nm) su ss ds) f) = M1 S ('MetaSel ('Just (rnm @@ nm)) su ss ds) f
+
+-- | Rename constructors using the function @rnm@ given as a parameter.
+--
+-- > data Foo = Bar { baz :: Zap }
+-- >
+-- > -- becomes, renaming "Bar" to "Car" --
+-- >
+-- > data Foo = Car { baz :: Zap }
+type family RenameConstrs (rnm :: *) (f :: k -> *) :: k -> *
+type instance RenameConstrs rnm (M1 D m f) = M1 D m (RenameConstrs rnm f)
+type instance RenameConstrs rnm (f :+: g) = RenameConstrs rnm f :+: RenameConstrs rnm g
+type instance RenameConstrs rnm (f :*: g) = RenameConstrs rnm f :*: RenameConstrs rnm g
+type instance RenameConstrs rnm (M1 C ('MetaCons nm fi ir) f) = M1 C ('MetaCons (rnm @@ nm) fi ir) f
+
+-- ** Defining symbol functions
 
 -- | @f \@\@ s@ is the application of a type-level function symbolized by @f@
 -- to a @s :: 'Symbol'@.
@@ -133,17 +160,3 @@ type family SRename' (xs :: [(Symbol, Symbol)]) (f :: *) (s :: Symbol) where
   SRename' ('( s,  t) ': _xs) _f s = t
   SRename' ('(_r, _t) ':  xs)  f s = SRename' xs f s
 
--- | Rename fields using the function @rnm@ given as a parameter.
-type family RenameFields (rnm :: *) (f :: k -> *) :: k -> *
-type instance RenameFields rnm (M1 D m f) = M1 D m (RenameFields rnm f)
-type instance RenameFields rnm (f :+: g) = RenameFields rnm f :+: RenameFields rnm g
-type instance RenameFields rnm (f :*: g) = RenameFields rnm f :*: RenameFields rnm g
-type instance RenameFields rnm (M1 C m f) = M1 C m (RenameFields rnm f)
-type instance RenameFields rnm (M1 S ('MetaSel ('Just nm) su ss ds) f) = M1 S ('MetaSel ('Just (rnm @@ nm)) su ss ds) f
-
--- | Rename constructors using the function @rnm@ given as a parameter.
-type family RenameConstrs (rnm :: *) (f :: k -> *) :: k -> *
-type instance RenameConstrs rnm (M1 D m f) = M1 D m (RenameConstrs rnm f)
-type instance RenameConstrs rnm (f :+: g) = RenameConstrs rnm f :+: RenameConstrs rnm g
-type instance RenameConstrs rnm (f :*: g) = RenameConstrs rnm f :*: RenameConstrs rnm g
-type instance RenameConstrs rnm (M1 C ('MetaCons nm fi ir) f) = M1 C ('MetaCons (rnm @@ nm) fi ir) f
