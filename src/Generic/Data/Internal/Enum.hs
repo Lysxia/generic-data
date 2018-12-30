@@ -199,36 +199,36 @@ data StandardEnum
 -- Particularly 'Int' is an unfit field type, because the enumeration of the 
 -- negative values starts before 0. 
 --
--- * Since 'GEnum' represents the cardinality explicitly as an 'Int', there can
--- only be up to 'maxBound' values. This restriction makes 'Word' an invalid field
--- type. Notably it is insufficient for each individual field types to stay
--- below this limit. Instead it applies to the generic type as a whole.
--- 
--- The resulting 'GEnum' instance starts enumerating from @0@ up to 
--- @(cardinality - 1)@ and respects the generic 'Ord' instance. 
--- Implied by this the values from different constructors are enumerated
--- sequentially. They are not interleaved. 
+-- * There can only be up to 'maxBound' values (because the implementation
+-- represents the cardinality explicitly as an 'Int'). This restriction makes
+-- 'Word' an invalid field type. Notably, it is insufficient for each
+-- individual field types to stay below this limit. Instead it applies to the
+-- generic type as a whole.
 --
--- To be very exact: The aforementioned generic 'Ord' instance can be determined
--- by constraining the field types to 'Enum' instead of 'Ord'. Each field's 
--- order on its values is given by their enumeration.
--- 
--- > data Example = C0 Bool Bool | C1 Bool
--- >   deriving (Eq, Ord, Show, Generic)
--- >
--- > gCardinality == 6  -- 2 * 2 + 2
--- > 
--- > enumeration = 
--- >     [ C0 False False
--- >     , C0 False  True
--- >     , C0  True False
--- >     , C0  True  True
--- >     , C1 False
--- >     , C1 True
--- >     ]
--- >
--- > enumeration == map gtoFiniteEnum [0 .. 5]
--- > [0 .. 5] == map gfromFiniteEnum enumeration
+-- The resulting 'GEnum' instance starts enumerating from @0@ up to
+-- @(cardinality - 1)@ and respects the generic 'Ord' instance (defined by
+-- 'Generic.Data.gcompare'). The values from different constructors are enumerated
+-- sequentially; they are not interleaved.
+--
+-- @
+-- data Example = C0 Bool Bool | C1 Bool
+--   deriving ('Eq', 'Ord', 'Show', 'Generic')
+--
+-- cardinality = 6  -- 2    * 2    + 2
+--                  -- Bool * Bool | Bool
+--
+-- enumeration =
+--     [ C0 False False
+--     , C0 False  True
+--     , C0  True False
+--     , C0  True  True
+--     , C1 False
+--     , C1 True
+--     ]
+--
+-- enumeration == map 'gtoFiniteEnum' [0 .. 5]
+-- [0 .. 5] == map 'gfromFiniteEnum' enumeration
+-- @
 data FiniteEnum
 
 instance GEnum opts f => GEnum opts (M1 i c f) where
