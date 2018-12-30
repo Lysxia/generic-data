@@ -88,6 +88,19 @@ test-suite microsurgery-test
   default-language: Haskell2010
   type: exitcode-stdio-1.0
 
+test-suite lens-surgery-test
+  hs-source-dirs: test
+  main-is: lens-surgery.hs
+  build-depends:
+    tasty,
+    tasty-hunit,
+    generic-data,
+    generic-lens >= 1.1.0.0,
+    base
+  ghc-options: -Wall
+  default-language: Haskell2010
+  type: exitcode-stdio-1.0
+
 source-repository head
   type:     git
   location: https://github.com/Lysxia/generic-data

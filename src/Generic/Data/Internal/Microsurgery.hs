@@ -2,6 +2,8 @@
     AllowAmbiguousTypes,
     DataKinds,
     FlexibleContexts,
+    FlexibleInstances,
+    MultiParamTypeClasses,
     PolyKinds,
     ScopedTypeVariables,
     TypeFamilies,
@@ -160,3 +162,34 @@ type family SRename' (xs :: [(Symbol, Symbol)]) (f :: *) (s :: Symbol) where
   SRename' ('( s,  t) ': _xs) _f s = t
   SRename' ('(_r, _t) ':  xs)  f s = SRename' xs f s
 
+-- * Other
+
+-- This can be used with generic-lens (see Generic.Data.Microsurgery)
+
+-- | Unify the "spines" of two generic representations (the "spine" is
+-- everything except the field types).
+class UnifyRep (f :: k -> *) (g :: k -> *)
+instance (g' ~ M1 s c g, UnifyRep f g) => UnifyRep (M1 s c f) g'
+instance (g' ~ (g1 :+: g2), UnifyRep f1 g1, UnifyRep f2 g2)
+  => UnifyRep (f1 :+: f2) g'
+instance (g' ~ (g1 :*: g2), UnifyRep f1 g1, UnifyRep f2 g2)
+  => UnifyRep (f1 :*: f2) g'
+instance (g' ~ K1 i b) => UnifyRep (K1 i a) g'
+instance (g' ~ U1) => UnifyRep U1 g'
+instance (g' ~ V1) => UnifyRep V1 g'
+
+-- |
+--
+-- > onData :: _ => (a -> b) -> (a -> b)  -- possible specialization
+--
+-- Can be used with @generic-lens@ for type-changing field updates with @field_@
+-- (and possibly other generic optics).
+--
+-- A specialization of the identity function to be used to fix types
+-- of functions using 'Data' as input or output, unifying the "spines" of input
+-- and output generic representations (the "spine" is everything except field
+-- types, which may thus change).
+onData
+  :: (UnifyRep (Rep a) (Rep b), UnifyRep (Rep a) (Rep b))
+  => p a b -> p a b
+onData = id
