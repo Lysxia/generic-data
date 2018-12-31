@@ -180,16 +180,16 @@ instance (g' ~ V1) => UnifyRep V1 g'
 
 -- |
 --
--- > onData :: _ => (a -> b) -> (a -> b)  -- possible specialization
+-- > onData :: _ => (Data r x -> Data s y) -> (Data r x -> Data s y)  -- possible specialization
 --
 -- Can be used with @generic-lens@ for type-changing field updates with @field_@
 -- (and possibly other generic optics).
 --
 -- A specialization of the identity function to be used to fix types
--- of functions using 'Data' as input or output, unifying the "spines" of input
--- and output generic representations (the "spine" is everything except field
--- types, which may thus change).
+-- of functions on 'Data', unifying the "spines" of input and output generic
+-- representations (the "spine" is everything except field types, which may
+-- thus change).
 onData
-  :: (UnifyRep (Rep a) (Rep b), UnifyRep (Rep a) (Rep b))
-  => p a b -> p a b
+  :: (UnifyRep r s, UnifyRep s r)
+  => p (Data r x) (Data s y) -> p (Data r x) (Data s y)
 onData = id
