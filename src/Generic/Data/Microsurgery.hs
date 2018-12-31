@@ -85,6 +85,21 @@ module Generic.Data.Microsurgery
   , SConst
   , SRename
 
+    -- ** Wrap every field in a type constructor
+
+    -- | \"HKD-ification\", to obtain a family of types with a similar
+    -- structure:
+    --
+    -- - https://www.benjamin.pizza/posts/2017-12-15-functor-functors.html
+    -- - http://reasonablypolymorphic.com/blog/higher-kinded-data/
+    --
+    -- See also @test/one-liner-surgery.hs@ in this package for an example
+    -- of using one-liner and generic-lens with a synthetic type constructed
+    -- with 'DOnFields'.
+
+  , OnFields
+  , DOnFields
+
   ) where
 
 import Generic.Data.Internal.Data

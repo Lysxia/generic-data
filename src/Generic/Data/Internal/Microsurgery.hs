@@ -193,3 +193,15 @@ onData
   :: (UnifyRep r s, UnifyRep s r)
   => p (Data r x) (Data s y) -> p (Data r x) (Data s y)
 onData = id
+
+-- | Apply a type constructor @f@ to every field type of a generic
+-- representation @r@.
+type family OnFields (f :: * -> *) (r :: k -> *) :: k -> *
+type instance OnFields f (M1 s m r) = M1 s m (OnFields f r)
+type instance OnFields f (r :+: s) = OnFields f r :+: OnFields f s
+type instance OnFields f (r :*: s) = OnFields f r :*: OnFields f s
+type instance OnFields f (K1 i a) = K1 i (f a)
+
+-- | Apply a type constructor to every field type of a type @a@ to make a
+-- synthetic type.
+type DOnFields (f :: * -> *) (a :: *) = Data (OnFields f (Rep a)) ()

@@ -101,6 +101,20 @@ test-suite lens-surgery-test
   default-language: Haskell2010
   type: exitcode-stdio-1.0
 
+test-suite one-liner-surgery-test
+  hs-source-dirs: test
+  main-is: one-liner-surgery.hs
+  build-depends:
+    tasty,
+    tasty-hunit,
+    generic-data,
+    generic-lens >= 1.1.0.0,
+    one-liner >= 1.0,
+    base
+  ghc-options: -Wall
+  default-language: Haskell2010
+  type: exitcode-stdio-1.0
+
 source-repository head
   type:     git
   location: https://github.com/Lysxia/generic-data
