@@ -113,6 +113,8 @@ type instance RenameFields rnm (f :+: g) = RenameFields rnm f :+: RenameFields r
 type instance RenameFields rnm (f :*: g) = RenameFields rnm f :*: RenameFields rnm g
 type instance RenameFields rnm (M1 C m f) = M1 C m (RenameFields rnm f)
 type instance RenameFields rnm (M1 S ('MetaSel ('Just nm) su ss ds) f) = M1 S ('MetaSel ('Just (rnm @@ nm)) su ss ds) f
+type instance RenameFields rnm V1 = V1
+type instance RenameFields rnm U1 = U1
 
 -- | Rename constructors using the function @rnm@ given as a parameter.
 --
@@ -126,6 +128,7 @@ type instance RenameConstrs rnm (M1 D m f) = M1 D m (RenameConstrs rnm f)
 type instance RenameConstrs rnm (f :+: g) = RenameConstrs rnm f :+: RenameConstrs rnm g
 type instance RenameConstrs rnm (f :*: g) = RenameConstrs rnm f :*: RenameConstrs rnm g
 type instance RenameConstrs rnm (M1 C ('MetaCons nm fi ir) f) = M1 C ('MetaCons (rnm @@ nm) fi ir) f
+type instance RenameConstrs rnm V1 = V1
 
 -- ** Defining symbol functions
 
@@ -201,6 +204,8 @@ type instance OnFields f (M1 s m r) = M1 s m (OnFields f r)
 type instance OnFields f (r :+: s) = OnFields f r :+: OnFields f s
 type instance OnFields f (r :*: s) = OnFields f r :*: OnFields f s
 type instance OnFields f (K1 i a) = K1 i (f a)
+type instance OnFields f U1 = U1
+type instance OnFields f V1 = V1
 
 -- | Apply a type constructor to every field type of a type @a@ to make a
 -- synthetic type.
