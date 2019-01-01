@@ -46,7 +46,7 @@ data Config = O {
 -- See also "Functor functors" and "Higher-kinded data" for a more general pattern:
 --
 -- - https://www.benjamin.pizza/posts/2017-12-15-functor-functors.html
--- - http://reasonablypolymorphic.com/blog/higher-kinded-data/
+-- - https://reasonablypolymorphic.com/blog/higher-kinded-data/
 --
 type ConfigMaybe = DOnFields Maybe Config
 
