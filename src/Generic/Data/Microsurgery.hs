@@ -5,8 +5,10 @@
 --
 -- More complex ones can be found in
 -- <https://hackage.haskell.org/package/generic-data-surgery generic-data-surgery>
--- and, surprisingly, in <https://hackage.haskell.org/package/generic-lens generic-lens>
--- (read more about this just below).
+-- but also, perhaps surprisingly,
+-- in <https://hackage.haskell.org/package/generic-lens generic-lens>
+-- (read more about this just below) and
+-- <https://hackage.haskell.org/package/one-liner one-liner>.
 
 module Generic.Data.Microsurgery
   ( -- * Surgeries with generic-lens
@@ -87,15 +89,17 @@ module Generic.Data.Microsurgery
 
     -- ** Wrap every field in a type constructor
 
-    -- | \"HKD-ification\", to obtain a family of types with a similar
-    -- structure:
+    -- | Give every field a type @f FieldType@ (where @f@ is a parameter), to
+    -- obtain a family of types with a shared structure. This
+    -- \"higher-kindification\" technique is presented in the following
+    -- blogposts:
     --
     -- - https://www.benjamin.pizza/posts/2017-12-15-functor-functors.html
-    -- - http://reasonablypolymorphic.com/blog/higher-kinded-data/
+    -- - https://reasonablypolymorphic.com/blog/higher-kinded-data/
     --
-    -- See also @test/one-liner-surgery.hs@ in this package for an example
-    -- of using one-liner and generic-lens with a synthetic type constructed
-    -- with 'DOnFields'.
+    -- See also the file @test/one-liner-surgery.hs@ in this package for an
+    -- example of using one-liner and generic-lens with a synthetic type
+    -- constructed with 'DOnFields'.
 
   , OnFields
   , DOnFields
