@@ -5,12 +5,13 @@
 
 -- @DataKinds@ and @TypeApplications@ for @renameFields@ and @renameConstrs@
 
-import GHC.Generics -- We need to import the constructors for Coercible to resolve
+import GHC.Generics (Generic)
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import Generic.Data
+import Generic.Data (gshowsPrec)
 import Generic.Data.Microsurgery
+  ( toData, derecordify, typeage, renameFields, renameConstrs, SConst, SError, SRename )
 
 -- From https://stackoverflow.com/questions/53864911/derive-positional-show
 
