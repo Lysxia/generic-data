@@ -61,10 +61,10 @@ More surgeries can be found in
 ```haskell
 {-# LANGUAGE DeriveGeneric #-}
 
-import GHC.Generic
+import GHC.Generic (Generic)
 
 import Generic.Data (gshowsPrec)
-import Generic.Data.Microsurgery (unrecordify)
+import Generic.Data.Microsurgery (toData, derecordify)
 
 newtype T = T { unT :: Int } deriving Generic
 
@@ -78,7 +78,7 @@ newtype T = T { unT :: Int } deriving Generic
 -- show (T 3) = "T 3"
 
 instance Show T where
-  showsPrec n = gshowsPrec n . unrecordify . toData
+  showsPrec n = gshowsPrec n . derecordify . toData
 
 -- This example can be found in test/microsurgery.hs
 ```
