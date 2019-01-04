@@ -56,7 +56,21 @@ Extract type names, constructor names, number and arities of constructors, etc..
 generic-data offers simple operations on generic representations.
 
 More surgeries can be found in
-[generic-data-surgery](https://hackage.haskell.org/package/generic-data-surgery).
+[generic-data-surgery](https://hackage.haskell.org/package/generic-data-surgery),
+and suprisingly, in
+[generic-lens](https://hackage.haskell.org/package/generic-lens) and
+[one-liner](https://hackage.haskell.org/package/one-liner).
+
+For more details, see also:
+
+- the module `Generic.Data.Microsurgery`;
+
+- the files `test/lens-surgery.hs` and `one-liner-surgery.hs`.
+
+### Surgery example
+
+Derive an instance of `Show` generically for a record type,
+but as if it were not a record.
 
 ```haskell
 {-# LANGUAGE DeriveGeneric #-}
