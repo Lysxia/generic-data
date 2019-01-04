@@ -1,3 +1,9 @@
+# 0.5.0.0
+
+- Specialize `onData` to `Data`
+- Add some instances for `U1` and `V1` in `Microsurgery`
+- Add `OnFields` and `DOnFields` surgeries ("higher-kindification")
+
 # 0.4.0.0
 
 - Created `Microsurgery` module. Initial set of surgeries:
