@@ -199,7 +199,7 @@ data StandardEnum
 -- Particularly 'Int' is an unfit field type, because the enumeration of the 
 -- negative values starts before 0. 
 --
--- * There can only be up to 'maxBound' values (because the implementation
+-- * There can only be up to @'maxBound' :: 'Int'@ values (because the implementation
 -- represents the cardinality explicitly as an 'Int'). This restriction makes
 -- 'Word' an invalid field type. Notably, it is insufficient for each
 -- individual field types to stay below this limit. Instead it applies to the
