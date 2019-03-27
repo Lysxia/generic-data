@@ -123,14 +123,14 @@ generic-data aims to subsume generic deriving features of the following
 packages:
 
 - [semigroups](https://hackage.haskell.org/package/semigroups): generic
-  `Semigroup`, `Monoid`, but with a heavy dependency footprint.
+  `Semigroup`, `Monoid`, but with a heavier dependency footprint.
 - [transformers-compat](https://hackage.haskell.org/package/transformers-compat):
   generic `Eq1`, `Ord1`, `Show1`.
 - [generic-deriving](https://hackage.haskell.org/package/generic-deriving):
   doesn't derive the classes in base (defines clones of these classes as a toy
-  example); has Template Haskell code to derive `Generic`.
+  example); has Template Haskell code to derive `Generic` (not in generic-data).
 
-Here are other relevant links.
+Other relevant links.
 
 - [deriving-compat](https://hackage.haskell.org/package/deriving-compat):
   deriving with Template Haskell.
