@@ -20,6 +20,7 @@ module Generic.Data.Microsurgery
     Surgery
   , Surgery'(..)
   , GSurgery
+  , Generically(..)
 
     -- * Synthetic types
 
@@ -113,6 +114,7 @@ module Generic.Data.Microsurgery
   ) where
 
 import Generic.Data.Internal.Data
+import Generic.Data.Internal.Generically
 import Generic.Data.Internal.Microsurgery
 
 -- $lens-surgery

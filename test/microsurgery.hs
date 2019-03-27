@@ -24,9 +24,8 @@ import Generic.Data.Microsurgery
 #if __GLASGOW_HASKELL__ >= 806
 -- DerivingVia test
 -- Constructors must be visible for Coercible
-import Generic.Data (Generically(..))
 import Generic.Data.Microsurgery
-  ( Surgery, Surgery'(..), Derecordify
+  ( Surgery, Surgery'(..), Generically(..), Derecordify
   )
 #endif
 

@@ -18,19 +18,21 @@ import Data.Coerce (Coercible, coerce)
 import GHC.Generics
 import GHC.TypeLits (ErrorMessage(..), Symbol, TypeError)
 
-import Generic.Data.Types
-import Generic.Data.Internal.Generically
+import Generic.Data.Types (Data)
+import Generic.Data.Internal.Generically (Generically(..))
 
 -- * Surgery
 
 -- | Apply a microsurgery @s@ to a type @a@ for @DerivingVia@.
 --
+-- === __Example__
+--
 -- @
--- {-# LANGUAGE DerivingVia #-}
+-- {-\# LANGUAGE DerivingVia \#-}
 --
 -- -- The constructors must be visible.
--- import Generic.Data (Generically(..))
--- import Generic.Data.Microsurgery (Surgery, Surgery'(..), Derecordify)
+-- import "Generic.Data.Microsurgery"
+--   ('Surgery', 'Surgery''(..), 'Generically'(..), 'Derecordify')
 --
 -- data T = T { unT :: Int }
 --   deriving 'Show' via ('Surgery' 'Derecordify' T)
@@ -40,6 +42,7 @@ import Generic.Data.Internal.Generically
 -- @
 type Surgery (s :: *) (a :: *) = Generically (Surgery' s a)
 
+-- | See 'Surgery''.
 newtype Surgery' (s :: *) (a :: *) = Surgery' { unSurgery' :: a }
 
 instance (Generic a, Coercible (GSurgery s (Rep a)) (Rep a)) => Generic (Surgery' s a) where
@@ -74,6 +77,8 @@ underecordify = coerce
 --
 -- Concretely, set the last field of 'MetaCons' to 'False' and forget field
 -- names.
+--
+-- This is a defunctionalized symbol, to be applied using 'GSurgery'.
 data Derecordify :: *
 type instance GSurgery Derecordify f = GDerecordify f
 
@@ -98,13 +103,16 @@ untypeage ::
   Data (GSurgery Typeage f) p -> Data f p
 untypeage = coerce
 
--- | Forget that a type is a @newtype@.
+-- | Forget that a type is a @newtype@. (The pun is that \"aging\" a type makes
+-- it no longer \"new\".)
 --
 -- > newtype Foo = Bar Baz
 -- >
 -- > -- becomes --
 -- >
 -- > data Foo = Bar Baz
+--
+-- This is a defunctionalized symbol, to be applied using 'GSurgery'.
 data Typeage :: *
 type instance GSurgery Typeage (M1 D ('MetaData nm md pk _nt) f) = M1 D ('MetaData nm md pk 'False) f
 
@@ -141,6 +149,8 @@ unrenameConstrs = coerce
 -- > -- becomes, renaming "baz" to "bag" --
 -- >
 -- > data Foo = Bar { bag :: Zap }
+--
+-- This is a defunctionalized symbol, to be applied using 'GSurgery'.
 data RenameFields (rnm :: *) :: *
 type instance GSurgery (RenameFields rnm) f = GRenameFields rnm f
 
@@ -160,6 +170,8 @@ type instance GRenameFields rnm U1 = U1
 -- > -- becomes, renaming "Bar" to "Car" --
 -- >
 -- > data Foo = Car { baz :: Zap }
+--
+-- This is a defunctionalized symbol, to be applied using 'GSurgery'.
 data RenameConstrs (rnm :: *) :: *
 type instance GSurgery (RenameConstrs rnm) f = GRenameConstrs rnm f
 
@@ -239,6 +251,8 @@ onData = id
 
 -- | Apply a type constructor @f@ to every field type of a generic
 -- representation @r@.
+--
+-- This is a defunctionalized symbol, to be applied using 'GSurgery'.
 data OnFields (f :: * -> *) :: *
 type instance GSurgery (OnFields f) g = GOnFields f g
 

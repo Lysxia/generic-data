@@ -106,8 +106,7 @@ Alternatively, using `DerivingVia`:
 import GHC.Generic (Generic)
 
 -- Constructors must be visible to use DerivingVia
-import Generic.Data (Generically(..))
-import Generic.Data.Microsurgery (Surgery, Surgery'(..), Derecordify)
+import Generic.Data.Microsurgery (Surgery, Surgery'(..), Generically(..), Derecordify)
 
 data V = V { v1 :: Int, v2 :: Int }
   deriving Generic
