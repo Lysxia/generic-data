@@ -1,6 +1,9 @@
 # 0.6.0.0
 
 - Add `Surgery` newtype for DerivingVia
+- `Derecordify`, `Typeage`, `RenameFields`, `RenameConstrs`, `OnFields`
+  are no longer type families, but defunctionalized symbols
+  to be applied using `GSurgery`.
 
 # 0.5.0.0
 
