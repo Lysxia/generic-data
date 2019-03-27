@@ -18,15 +18,23 @@ import GHC.TypeLits (TypeError, ErrorMessage(..))
 
 import Generic.Data.Internal.Meta (MetaDataNewtype, MetaOf)
 
--- | Class of newtypes.
+-- | Class of newtypes. There is an instance @'Newtype' a@ if and only if @a@
+-- is a newtype and an instance of 'Generic'.
 class (Generic a, Coercible a (Old a), Newtype' a) => Newtype a
 instance (Generic a, Coercible a (Old a), Newtype' a) => Newtype a
 
+-- | The type wrapped by a newtype.
+--
+-- @
+-- newtype Foo = Foo { bar :: Bar } deriving 'Generic'
+-- -- Old Foo ~ Bar
+-- @
 type Old a = GOld (Rep a)
 
 type family GOld (f :: * -> *) where
   GOld (D1 _d (C1 _c (S1 _s (K1 _i b)))) = b
 
+-- | Use 'Newtype' instead.
 type Newtype' a = NewtypeErr a (MetaDataNewtype (MetaOf (Rep a)))
 
 type family NewtypeErr a (b :: Bool) :: Constraint where

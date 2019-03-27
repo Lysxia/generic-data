@@ -144,7 +144,7 @@ conIdMin = ConId 0
 conIdMax :: forall a. Constructors a => ConId a
 conIdMax = toConId gConIdMax
 
--- | Constraint synonym for 'Generic' and 'GConstructor'.
+-- | Constraint synonym for 'Generic' and 'GConstructors'.
 class (Generic a, GConstructors (Rep a)) => Constructors a
 instance (Generic a, GConstructors (Rep a)) => Constructors a
 

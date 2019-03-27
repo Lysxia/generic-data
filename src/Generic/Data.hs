@@ -64,17 +64,17 @@ module Generic.Data
     -- * Higher-kinded classes
 
     -- ** 'Functor'
-    -- | Can also be derived by GHC (`DeriveFunctor` extension).
+    -- | Can also be derived by GHC (@DeriveFunctor@ extension).
   , gfmap
   , gconstmap
 
     -- ** 'Foldable'
-    -- | Can also be derived by GHC (`DeriveFoldable` extension).
+    -- | Can also be derived by GHC (@DeriveFoldable@ extension).
   , gfoldMap
   , gfoldr
 
     -- ** 'Traversable'
-    -- | Can also be derived by GHC (`DeriveTraversable` extension).
+    -- | Can also be derived by GHC (@DeriveTraversable@ extension).
   , gtraverse
   , gsequenceA
 

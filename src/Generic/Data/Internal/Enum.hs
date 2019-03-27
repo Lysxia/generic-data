@@ -8,6 +8,8 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
 
+-- | Generic deriving for 'Enum'.
+
 module Generic.Data.Internal.Enum where
 
 import GHC.Generics

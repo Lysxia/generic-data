@@ -5,6 +5,8 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeOperators #-}
 
+-- | Orphan instances. They should probably be upstreamed.
+
 module Generic.Data.Orphans where
 
 import Data.Functor.Classes
