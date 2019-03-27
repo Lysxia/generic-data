@@ -53,7 +53,8 @@ Extract type names, constructor names, number and arities of constructors, etc..
 
 ## Type surgery
 
-generic-data offers simple operations on generic representations (microsurgeries).
+generic-data offers simple operations (microsurgeries) on generic
+representations.
 
 More surgeries can be found in
 [generic-data-surgery](https://hackage.haskell.org/package/generic-data-surgery),
