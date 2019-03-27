@@ -53,7 +53,7 @@ Extract type names, constructor names, number and arities of constructors, etc..
 
 ## Type surgery
 
-generic-data offers simple operations on generic representations.
+generic-data offers simple operations on generic representations (microsurgeries).
 
 More surgeries can be found in
 [generic-data-surgery](https://hackage.haskell.org/package/generic-data-surgery),
@@ -95,6 +95,24 @@ instance Show T where
   showsPrec n = gshowsPrec n . derecordify . toData
 
 -- This example can be found in test/microsurgery.hs
+```
+
+Alternatively, using `DerivingVia`:
+
+```haskell
+{-# LANGUAGE DeriveGeneric, DerivingVia #-}
+
+import GHC.Generic (Generic)
+
+-- Constructors must be visible to use DerivingVia
+import Generic.Data (Generically(..))
+import Generic.Data.Microsurgery (Surgery, Surgery'(..), Derecordify)
+
+data V = V { v1 :: Int, v2 :: Int }
+  deriving Generic
+  deriving Show via (Surgery Derecordify V)
+
+-- show (V {v1 = 3, v2 = 4}) = "V 3 4"
 ```
 
 ---

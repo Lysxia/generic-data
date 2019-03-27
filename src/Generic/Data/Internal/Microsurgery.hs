@@ -19,18 +19,49 @@ import GHC.Generics
 import GHC.TypeLits (ErrorMessage(..), Symbol, TypeError)
 
 import Generic.Data.Types
+import Generic.Data.Internal.Generically
+
+-- * Surgery
+
+-- | Apply a microsurgery @s@ to a type @a@ for @DerivingVia@.
+--
+-- @
+-- {-# LANGUAGE DerivingVia #-}
+--
+-- -- The constructors must be visible.
+-- import Generic.Data (Generically(..))
+-- import Generic.Data.Microsurgery (Surgery, Surgery'(..), Derecordify)
+--
+-- data T = T { unT :: Int }
+--   deriving 'Show' via ('Surgery' 'Derecordify' T)
+--
+-- -- T won't be shown as a record:
+-- --   show (T {unT = 3}) == "T 3"
+-- @
+type Surgery (s :: *) (a :: *) = Generically (Surgery' s a)
+
+newtype Surgery' (s :: *) (a :: *) = Surgery' { unSurgery' :: a }
+
+instance (Generic a, Coercible (GSurgery s (Rep a)) (Rep a)) => Generic (Surgery' s a) where
+  type Rep (Surgery' s a) = GSurgery s (Rep a)
+  from = (coerce :: forall x. (a -> Rep a x) -> Surgery' s a -> GSurgery s (Rep a) x) from
+  to = (coerce :: forall x. (Rep a x -> a) -> GSurgery s (Rep a) x -> Surgery' s a) to
+
+-- | Apply a microsurgery represented by a symbol @s@ (declared as a dummy data
+-- type) to a generic representation @f@.
+type family GSurgery (s :: *) (f :: k -> *) :: k -> *
 
 -- * Derecordify
 
 derecordify ::
-  Coercible (Derecordify f) f =>
+  Coercible (GSurgery Derecordify f) f =>
   -- Coercible is not symmetric!??
-  Data f p -> Data (Derecordify f) p
+  Data f p -> Data (GSurgery Derecordify f) p
 derecordify = coerce
 
 underecordify ::
-  Coercible f (Derecordify f) =>
-  Data (Derecordify f) p -> Data f p
+  Coercible f (GSurgery Derecordify f) =>
+  Data (GSurgery Derecordify f) p -> Data f p
 underecordify = coerce
 
 -- | Forget that a type was declared using record syntax.
@@ -43,25 +74,28 @@ underecordify = coerce
 --
 -- Concretely, set the last field of 'MetaCons' to 'False' and forget field
 -- names.
-type family Derecordify (f :: k -> *) :: k -> *
-type instance Derecordify (M1 D m f) = M1 D m (Derecordify f)
-type instance Derecordify (f :+: g) = Derecordify f :+: Derecordify g
-type instance Derecordify (f :*: g) = Derecordify f :*: Derecordify g
-type instance Derecordify (M1 C ('MetaCons nm fx _isRecord) f) = M1 C ('MetaCons nm fx 'False) (Derecordify f)
-type instance Derecordify (M1 S ('MetaSel _nm su ss ds) f) = M1 S ('MetaSel 'Nothing su ss ds) f
-type instance Derecordify V1 = V1
-type instance Derecordify U1 = U1
+data Derecordify :: *
+type instance GSurgery Derecordify f = GDerecordify f
+
+type family GDerecordify (f :: k -> *) :: k -> *
+type instance GDerecordify (M1 D m f) = M1 D m (GDerecordify f)
+type instance GDerecordify (f :+: g) = GDerecordify f :+: GDerecordify g
+type instance GDerecordify (f :*: g) = GDerecordify f :*: GDerecordify g
+type instance GDerecordify (M1 C ('MetaCons nm fx _isRecord) f) = M1 C ('MetaCons nm fx 'False) (GDerecordify f)
+type instance GDerecordify (M1 S ('MetaSel _nm su ss ds) f) = M1 S ('MetaSel 'Nothing su ss ds) f
+type instance GDerecordify V1 = V1
+type instance GDerecordify U1 = U1
 
 -- * Type aging ("denewtypify")
 
 typeage ::
-  Coercible (Typeage f) f =>
-  Data f p -> Data (Typeage f) p
+  Coercible (GSurgery Typeage f) f =>
+  Data f p -> Data (GSurgery Typeage f) p
 typeage = coerce
 
 untypeage ::
-  Coercible f (Typeage f) =>
-  Data (Typeage f) p -> Data f p
+  Coercible f (GSurgery Typeage f) =>
+  Data (GSurgery Typeage f) p -> Data f p
 untypeage = coerce
 
 -- | Forget that a type is a @newtype@.
@@ -71,33 +105,33 @@ untypeage = coerce
 -- > -- becomes --
 -- >
 -- > data Foo = Bar Baz
-type family Typeage (f :: k -> *) :: k -> *
-type instance Typeage (M1 D ('MetaData nm md pk _nt) f) = M1 D ('MetaData nm md pk 'False) f
+data Typeage :: *
+type instance GSurgery Typeage (M1 D ('MetaData nm md pk _nt) f) = M1 D ('MetaData nm md pk 'False) f
 
 -- * Renaming
 
 renameFields ::
   forall rnm f p.
-  Coercible (RenameFields rnm f) f =>
-  Data f p -> Data (RenameFields rnm f) p
+  Coercible (GSurgery (RenameFields rnm) f) f =>
+  Data f p -> Data (GSurgery (RenameFields rnm) f) p
 renameFields = coerce
 
 unrenameFields ::
   forall rnm f p.
-  Coercible (RenameFields rnm f) f =>
-  Data f p -> Data (RenameFields rnm f) p
+  Coercible (GSurgery (RenameFields rnm) f) f =>
+  Data f p -> Data (GSurgery (RenameFields rnm) f) p
 unrenameFields = coerce
 
 renameConstrs ::
   forall rnm f p.
-  Coercible (RenameConstrs rnm f) f =>
-  Data f p -> Data (RenameConstrs rnm f) p
+  Coercible (GSurgery (RenameConstrs rnm) f) f =>
+  Data f p -> Data (GSurgery (RenameConstrs rnm) f) p
 renameConstrs = coerce
 
 unrenameConstrs ::
   forall rnm f p.
-  Coercible (RenameConstrs rnm f) f =>
-  Data f p -> Data (RenameConstrs rnm f) p
+  Coercible (GSurgery (RenameConstrs rnm) f) f =>
+  Data f p -> Data (GSurgery (RenameConstrs rnm) f) p
 unrenameConstrs = coerce
 
 -- | Rename fields using the function @rnm@ given as a parameter.
@@ -107,14 +141,17 @@ unrenameConstrs = coerce
 -- > -- becomes, renaming "baz" to "bag" --
 -- >
 -- > data Foo = Bar { bag :: Zap }
-type family RenameFields (rnm :: *) (f :: k -> *) :: k -> *
-type instance RenameFields rnm (M1 D m f) = M1 D m (RenameFields rnm f)
-type instance RenameFields rnm (f :+: g) = RenameFields rnm f :+: RenameFields rnm g
-type instance RenameFields rnm (f :*: g) = RenameFields rnm f :*: RenameFields rnm g
-type instance RenameFields rnm (M1 C m f) = M1 C m (RenameFields rnm f)
-type instance RenameFields rnm (M1 S ('MetaSel ('Just nm) su ss ds) f) = M1 S ('MetaSel ('Just (rnm @@ nm)) su ss ds) f
-type instance RenameFields rnm V1 = V1
-type instance RenameFields rnm U1 = U1
+data RenameFields (rnm :: *) :: *
+type instance GSurgery (RenameFields rnm) f = GRenameFields rnm f
+
+type family GRenameFields (rnm :: *) (f :: k -> *) :: k -> *
+type instance GRenameFields rnm (M1 D m f) = M1 D m (GRenameFields rnm f)
+type instance GRenameFields rnm (f :+: g) = GRenameFields rnm f :+: GRenameFields rnm g
+type instance GRenameFields rnm (f :*: g) = GRenameFields rnm f :*: GRenameFields rnm g
+type instance GRenameFields rnm (M1 C m f) = M1 C m (GRenameFields rnm f)
+type instance GRenameFields rnm (M1 S ('MetaSel ('Just nm) su ss ds) f) = M1 S ('MetaSel ('Just (rnm @@ nm)) su ss ds) f
+type instance GRenameFields rnm V1 = V1
+type instance GRenameFields rnm U1 = U1
 
 -- | Rename constructors using the function @rnm@ given as a parameter.
 --
@@ -123,12 +160,15 @@ type instance RenameFields rnm U1 = U1
 -- > -- becomes, renaming "Bar" to "Car" --
 -- >
 -- > data Foo = Car { baz :: Zap }
-type family RenameConstrs (rnm :: *) (f :: k -> *) :: k -> *
-type instance RenameConstrs rnm (M1 D m f) = M1 D m (RenameConstrs rnm f)
-type instance RenameConstrs rnm (f :+: g) = RenameConstrs rnm f :+: RenameConstrs rnm g
-type instance RenameConstrs rnm (f :*: g) = RenameConstrs rnm f :*: RenameConstrs rnm g
-type instance RenameConstrs rnm (M1 C ('MetaCons nm fi ir) f) = M1 C ('MetaCons (rnm @@ nm) fi ir) f
-type instance RenameConstrs rnm V1 = V1
+data RenameConstrs (rnm :: *) :: *
+type instance GSurgery (RenameConstrs rnm) f = GRenameConstrs rnm f
+
+type family GRenameConstrs (rnm :: *) (f :: k -> *) :: k -> *
+type instance GRenameConstrs rnm (M1 D m f) = M1 D m (GRenameConstrs rnm f)
+type instance GRenameConstrs rnm (f :+: g) = GRenameConstrs rnm f :+: GRenameConstrs rnm g
+type instance GRenameConstrs rnm (f :*: g) = GRenameConstrs rnm f :*: GRenameConstrs rnm g
+type instance GRenameConstrs rnm (M1 C ('MetaCons nm fi ir) f) = M1 C ('MetaCons (rnm @@ nm) fi ir) f
+type instance GRenameConstrs rnm V1 = V1
 
 -- ** Defining symbol functions
 
@@ -199,14 +239,17 @@ onData = id
 
 -- | Apply a type constructor @f@ to every field type of a generic
 -- representation @r@.
-type family OnFields (f :: * -> *) (r :: k -> *) :: k -> *
-type instance OnFields f (M1 s m r) = M1 s m (OnFields f r)
-type instance OnFields f (r :+: s) = OnFields f r :+: OnFields f s
-type instance OnFields f (r :*: s) = OnFields f r :*: OnFields f s
-type instance OnFields f (K1 i a) = K1 i (f a)
-type instance OnFields f U1 = U1
-type instance OnFields f V1 = V1
+data OnFields (f :: * -> *) :: *
+type instance GSurgery (OnFields f) g = GOnFields f g
+
+type family GOnFields (f :: * -> *) (g :: k -> *) :: k -> *
+type instance GOnFields f (M1 s m r) = M1 s m (GOnFields f r)
+type instance GOnFields f (r :+: s) = GOnFields f r :+: GOnFields f s
+type instance GOnFields f (r :*: s) = GOnFields f r :*: GOnFields f s
+type instance GOnFields f (K1 i a) = K1 i (f a)
+type instance GOnFields f U1 = U1
+type instance GOnFields f V1 = V1
 
 -- | Apply a type constructor to every field type of a type @a@ to make a
 -- synthetic type.
-type DOnFields (f :: * -> *) (a :: *) = Data (OnFields f (Rep a)) ()
+type DOnFields (f :: * -> *) (a :: *) = Data (GSurgery (OnFields f) (Rep a)) ()

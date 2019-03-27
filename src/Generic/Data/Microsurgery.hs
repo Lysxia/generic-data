@@ -15,9 +15,15 @@ module Generic.Data.Microsurgery
 
     -- $lens-surgery
 
+    -- * Deriving via
+
+    Surgery
+  , Surgery'(..)
+  , GSurgery
+
     -- * Synthetic types
 
-    Data
+  , Data
   , toData
   , fromData
   , onData
@@ -44,13 +50,13 @@ module Generic.Data.Microsurgery
 
     -- ** Derecordify
 
-  , Derecordify
+  , Derecordify()
   , derecordify
   , underecordify
 
     -- ** Type aging ("denewtypify")
 
-  , Typeage
+  , Typeage()
   , typeage
   , untypeage
 
@@ -71,11 +77,11 @@ module Generic.Data.Microsurgery
     -- 'renameConstrs' \@('SRename' '[ '(\"Bar\", \"Baz\") ] 'SId')
     -- @
 
-  , RenameFields
+  , RenameFields()
   , renameFields
   , unrenameFields
 
-  , RenameConstrs
+  , RenameConstrs()
   , renameConstrs
   , unrenameConstrs
 
@@ -101,7 +107,7 @@ module Generic.Data.Microsurgery
     -- example of using one-liner and generic-lens with a synthetic type
     -- constructed with 'DOnFields'.
 
-  , OnFields
+  , OnFields()
   , DOnFields
 
   ) where

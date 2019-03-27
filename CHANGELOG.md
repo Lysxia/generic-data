@@ -1,3 +1,7 @@
+# 0.6.0.0
+
+- Add `Surgery` newtype for DerivingVia
+
 # 0.5.0.0
 
 - Specialize `onData` to `Data`
