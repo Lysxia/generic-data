@@ -51,6 +51,7 @@ u = C 33 [99]
 v :: forall x. T x
 v = C 13 [14]
 
+main :: IO ()
 main = defaultMain
   [ bgroup "Show"
       [ bench "handwri" (nf show (u @H))
