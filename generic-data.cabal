@@ -117,6 +117,18 @@ test-suite one-liner-surgery-test
   default-language: Haskell2010
   type: exitcode-stdio-1.0
 
+benchmark bench
+  hs-source-dirs: test
+  main-is: bench.hs
+  build-depends:
+    criterion,
+    deepseq,
+    generic-data,
+    base
+  ghc-options: -Wall
+  default-language: Haskell2010
+  type: exitcode-stdio-1.0
+
 source-repository head
   type:     git
   location: https://github.com/Lysxia/generic-data
