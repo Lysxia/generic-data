@@ -1,3 +1,7 @@
+# 0.6.0.1
+
+- Fix derivation of `Show1` for `(:.:)`
+
 # 0.6.0.0
 
 - Add `Surgery` newtype for DerivingVia
