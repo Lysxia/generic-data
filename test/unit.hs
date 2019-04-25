@@ -5,6 +5,7 @@
 import Control.Applicative
 import Data.Semigroup
 import Data.Monoid (Sum(..))
+import Data.Functor.Classes
 import Test.Tasty
 import Test.Tasty.HUnit
 
@@ -60,6 +61,16 @@ allEs =
     , SE1 False
     , SE1 True
     ]
+
+-- Deriving Show1
+newtype MyCompose f g a = MyCompose (f (g a))
+  deriving Generic1
+
+instance (Functor f, Show1 f, Show1 g) => Show1 (MyCompose f g) where
+  liftShowsPrec = gliftShowsPrec
+
+instance (Functor f, Show1 f, Show1 g, Show a) => Show (MyCompose f g a) where
+  showsPrec = showsPrec1
 
 maybeModuleName :: String
 #if MIN_VERSION_base(4,12,0)
@@ -132,6 +143,10 @@ test = testGroup "unit"
   , testGroup "Show"
       [ testCase "show" $ "P 1 2" @?= show (p' 1 2)
       , testCase "showsPrec" $ "(P 1 2)" @?= showsPrec 11 (p' 1 2) ""
+      ]
+
+  , testGroup "Show1"
+      [ testCase "show1" $ "MyCompose (Just [()])" @?= show (MyCompose (Just [()]))
       ]
 
   , testGroup "Meta"
