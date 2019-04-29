@@ -4,6 +4,33 @@ Utilities for `GHC.Generics`.
 
 ## Generic deriving for standard classes
 
+### Example: generically deriving Semigroup instances for products
+
+Semi-automatic method using `gmappend`
+
+```haskell
+data Foo a = Bar [a] [a] deriving Generic
+
+instance Semigroup (Foo a) where
+  (<>) = gmappend
+```
+
+This library also synergizes with the `DerivingVia` extension
+(introduced in GHC 8.6), thanks to the `Generically` newtype.
+
+```haskell
+data Foo a = Bar [a] [a]
+  deriving Generic
+  deriving Semigroup via (Generically (Foo a))
+```
+
+These examples can be found in `test/example.hs`.
+
+---
+
+Note for completeness, the first example uses the following extensions and
+imports:
+
 ```haskell
 {-# LANGUAGE DeriveGeneric #-}
 
@@ -12,26 +39,22 @@ import Data.Semigroup (Semigroup(..))
 import GHC.Generics
 
 -- generic-data
-import Generic.Data (gmappend, Generically(..))
+import Generic.Data (gmappend)
 import Generic.Data.Orphans ()
+```
 
-data Foo a = Bar [a] [a] deriving Generic
+The second example makes these additions on top:
 
-instance Semigroup (Foo a) where
-  (<>) = gmappend
-
--- also with some additional extensions --
-
+```haskell
 {-# LANGUAGE
     DerivingStrategies,
     DerivingVia #-}  -- since GHC 8.6.1
 
-data Foo a = Bar [a] [a]
-  deriving Generic
-  deriving Semigroup via (Generically (Foo a))
-
--- This example can be found in test/example.hs
+-- In addition to the previous imports
+import Generic.Data (Generically(..))
 ```
+
+### Supported classes
 
 Supported classes that GHC currently can't derive: `Semigroup`, `Monoid`,
 `Applicative`, `Alternative`, `Eq1`, `Ord1`, `Show1`.
@@ -39,8 +62,9 @@ Supported classes that GHC currently can't derive: `Semigroup`, `Monoid`,
 Other classes from base are also supported, even though GHC can already derive
 them:
 
-- `Eq`, `Ord`, `Enum`, `Bounded`, `Show` (standard);
-- `Functor`, `Foldable`, `Traversable` (via extensions, `DeriveFunctor`, etc.).
+- `Eq`, `Ord`, `Enum`, `Bounded`, `Show` (derivable by the standard);
+- `Functor`, `Foldable`, `Traversable` (derivable via extensions,
+  `DeriveFunctor`, etc.).
 
 (`Read` is currently not implemented.)
 
@@ -75,12 +99,11 @@ but as if it were not a record.
 
 ```haskell
 {-# LANGUAGE DeriveGeneric #-}
-
 import GHC.Generic (Generic)
-
 import Generic.Data (gshowsPrec)
 import Generic.Data.Microsurgery (toData, derecordify)
 
+-- An example record type
 newtype T = T { unT :: Int } deriving Generic
 
 -- Naively deriving Show would result in this being shown:
@@ -102,7 +125,6 @@ Alternatively, using `DerivingVia`:
 
 ```haskell
 {-# LANGUAGE DeriveGeneric, DerivingVia #-}
-
 import GHC.Generic (Generic)
 
 -- Constructors must be visible to use DerivingVia
