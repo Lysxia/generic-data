@@ -42,7 +42,7 @@ import Generic.Data.Internal.Generically (Generically(..))
 -- @
 type Surgery (s :: *) (a :: *) = Generically (Surgery' s a)
 
--- | See 'Surgery''.
+-- | See 'Surgery'.
 newtype Surgery' (s :: *) (a :: *) = Surgery' { unSurgery' :: a }
 
 instance (Generic a, Coercible (GSurgery s (Rep a)) (Rep a)) => Generic (Surgery' s a) where
@@ -78,7 +78,7 @@ underecordify = coerce
 -- Concretely, set the last field of 'MetaCons' to 'False' and forget field
 -- names.
 --
--- This is a defunctionalized symbol, to be applied using 'GSurgery'.
+-- This is a defunctionalized symbol, applied using 'GSurgery' or 'Surgery'.
 data Derecordify :: *
 type instance GSurgery Derecordify f = GDerecordify f
 
@@ -112,7 +112,7 @@ untypeage = coerce
 -- >
 -- > data Foo = Bar Baz
 --
--- This is a defunctionalized symbol, to be applied using 'GSurgery'.
+-- This is a defunctionalized symbol, applied using 'GSurgery' or 'Surgery'.
 data Typeage :: *
 type instance GSurgery Typeage (M1 D ('MetaData nm md pk _nt) f) = M1 D ('MetaData nm md pk 'False) f
 
@@ -150,7 +150,7 @@ unrenameConstrs = coerce
 -- >
 -- > data Foo = Bar { bag :: Zap }
 --
--- This is a defunctionalized symbol, to be applied using 'GSurgery'.
+-- This is a defunctionalized symbol, applied using 'GSurgery' or 'Surgery'.
 data RenameFields (rnm :: *) :: *
 type instance GSurgery (RenameFields rnm) f = GRenameFields rnm f
 
@@ -171,7 +171,7 @@ type instance GRenameFields rnm U1 = U1
 -- >
 -- > data Foo = Car { baz :: Zap }
 --
--- This is a defunctionalized symbol, to be applied using 'GSurgery'.
+-- This is a defunctionalized symbol, applied using 'GSurgery' or 'Surgery'.
 data RenameConstrs (rnm :: *) :: *
 type instance GSurgery (RenameConstrs rnm) f = GRenameConstrs rnm f
 
@@ -252,7 +252,7 @@ onData = id
 -- | Apply a type constructor @f@ to every field type of a generic
 -- representation @r@.
 --
--- This is a defunctionalized symbol, to be applied using 'GSurgery'.
+-- This is a defunctionalized symbol, applied using 'GSurgery' or 'Surgery'.
 data OnFields (f :: * -> *) :: *
 type instance GSurgery (OnFields f) g = GOnFields f g
 

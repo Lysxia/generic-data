@@ -31,11 +31,11 @@ newtype Data r p = Data { unData :: r p }
            , Eq, Ord, Eq1, Ord1, Semigroup, Monoid )
 
 -- | Conversion between a generic type and the synthetic type made using its
--- representation.
+-- representation. Inverse of 'fromData'.
 toData :: Generic a => a -> Data (Rep a) p
 toData = Data . from
 
--- | Inverse of 'fromData'.
+-- | Inverse of 'toData'.
 fromData :: Generic a => Data (Rep a) p -> a
 fromData = to . unData
 
