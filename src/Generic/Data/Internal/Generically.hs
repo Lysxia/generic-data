@@ -36,9 +36,10 @@ instance (Generic a, GShow0 (Rep a)) => Show (Generically a) where
 instance (Generic a, Semigroup (Rep a ())) => Semigroup (Generically a) where
   (<>) = gmappend
 
-instance (Generic a, Monoid (Rep a ())) => Monoid (Generically a) where
+instance (Semigroup a, Generic a, Monoid (Rep a ())) => Monoid (Generically a) where
   mempty = gmempty
-  mappend = gmappend'
+  -- Use `a`'s semigroup so implementation is consistent with custom `Semigroup` instances
+  mappend (Generically x) (Generically y) = Generically (x <> y)
 
 instance (Generic a, GEnum StandardEnum (Rep a)) => Enum (Generically a) where
   toEnum = gtoEnum

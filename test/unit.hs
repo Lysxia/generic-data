@@ -16,6 +16,9 @@ import Generic.Data.Orphans ()
 data P a = P a a
   deriving (Generic, Generic1)
 
+instance Semigroup a => Semigroup (P a) where
+  x <> y = unGenerically (Generically x <> Generically y)
+
 type PTy a = a -> a -> Generically (P a)
 
 p :: PTy a
