@@ -113,6 +113,10 @@ module Generic.Data
   , pack
   , unpack
 
+    -- * Generic coercions
+  , gcoerce
+  , gcoerceBinop
+
     -- * Accessing metadata
 
     -- | Using @TypeApplications@.
@@ -163,3 +167,4 @@ import Generic.Data.Internal.Meta
 import Generic.Data.Internal.Show
 import Generic.Data.Internal.Newtype
 import Generic.Data.Internal.Resolvers
+import Generic.Data.Internal.Utils

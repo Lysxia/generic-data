@@ -1,5 +1,6 @@
 {-# LANGUAGE
     BangPatterns,
+    FlexibleContexts,
     PolyKinds #-}
 
 module Generic.Data.Internal.Utils where
@@ -7,9 +8,25 @@ module Generic.Data.Internal.Utils where
 import Data.Coerce
 import GHC.Generics
 
+-- | Convert between types with representationally equivalent generic
+-- representations.
+gcoerce
+  :: (Generic a, Generic b, Coercible (Rep a) (Rep b))
+  => a -> b
+gcoerce = to . coerce1 . from
+
+-- | Compose 'gcoerce' with a binary operation.
+gcoerceBinop
+  :: (Generic a, Generic b, Coercible (Rep a) (Rep b))
+  => (a -> a -> a) -> (b -> b -> b)
+gcoerceBinop f x y = gcoerce (f (gcoerce x) (gcoerce y))
+
 -- | Coerce while preserving the type index.
 coerce' :: Coercible (f x) (g x) => f x -> g x
 coerce' = coerce
+
+coerce1 :: Coercible f g => f x -> g x
+coerce1 = coerce
 
 -- | Elimination of @V1@.
 absurd1 :: V1 x -> a
