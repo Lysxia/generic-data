@@ -1,3 +1,9 @@
+# 0.7.0.0
+
+- Changed `Monoid` instance for `Generically`, to be compatible with users'
+  non-generic instances of `Semigroup`. Thanks to yairchu.
+- Add `gcoerce`, `gcoerceBinop`.
+
 # 0.6.0.1
 
 - Fix derivation of `Show1` for `(:.:)`
