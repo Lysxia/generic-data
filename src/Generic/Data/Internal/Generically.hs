@@ -36,9 +36,11 @@ instance (Generic a, GShow0 (Rep a)) => Show (Generically a) where
 instance (Generic a, Semigroup (Rep a ())) => Semigroup (Generically a) where
   (<>) = gmappend
 
+-- | This uses the 'Semigroup' instance of the wrapped type 'a' to define 'mappend'.
+-- The purpose of this instance is to derive 'mempty', while remaining consistent
+-- with possibly custom 'Semigroup' instances.
 instance (Semigroup a, Generic a, Monoid (Rep a ())) => Monoid (Generically a) where
   mempty = gmempty
-  -- Use `a`'s semigroup so implementation is consistent with custom `Semigroup` instances
   mappend (Generically x) (Generically y) = Generically (x <> y)
 
 instance (Generic a, GEnum StandardEnum (Rep a)) => Enum (Generically a) where
