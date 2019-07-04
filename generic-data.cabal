@@ -26,6 +26,7 @@ library
     Generic.Data.Internal.Compat
     Generic.Data.Internal.Data
     Generic.Data.Internal.Enum
+    Generic.Data.Internal.Error
     Generic.Data.Internal.Functions
     Generic.Data.Internal.Generically
     Generic.Data.Internal.Meta

@@ -14,6 +14,7 @@ import GHC.Generics
 
 import Generic.Data.Internal.Prelude
 import Generic.Data.Internal.Enum
+import Generic.Data.Internal.Error
 import Generic.Data.Internal.Show
 
 -- | Type with instances derived via 'Generic'.
@@ -33,13 +34,13 @@ instance (Generic a, Ord (Rep a ())) => Ord (Generically a) where
 instance (Generic a, GShow0 (Rep a)) => Show (Generically a) where
   showsPrec = gshowsPrec
 
-instance (Generic a, Semigroup (Rep a ())) => Semigroup (Generically a) where
+instance (AssertNoSum Semigroup a, Generic a, Semigroup (Rep a ())) => Semigroup (Generically a) where
   (<>) = gmappend
 
 -- | This uses the 'Semigroup' instance of the wrapped type 'a' to define 'mappend'.
 -- The purpose of this instance is to derive 'mempty', while remaining consistent
 -- with possibly custom 'Semigroup' instances.
-instance (Semigroup a, Generic a, Monoid (Rep a ())) => Monoid (Generically a) where
+instance (AssertNoSum Semigroup a, Semigroup a, Generic a, Monoid (Rep a ())) => Monoid (Generically a) where
   mempty = gmempty
   mappend (Generically x) (Generically y) = Generically (x <> y)
 
