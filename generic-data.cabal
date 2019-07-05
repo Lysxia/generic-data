@@ -26,6 +26,7 @@ library
     Generic.Data.Internal.Compat
     Generic.Data.Internal.Data
     Generic.Data.Internal.Enum
+    Generic.Data.Internal.Error
     Generic.Data.Internal.Functions
     Generic.Data.Internal.Generically
     Generic.Data.Internal.Meta
@@ -113,9 +114,24 @@ test-suite one-liner-surgery-test
     generic-lens >= 1.1.0.0,
     one-liner >= 1.0,
     base
+  ghc-options: -Wall -threaded
+  default-language: Haskell2010
+  type: exitcode-stdio-1.0
+
+test-suite generic-data-doctest
+  hs-source-dirs: test
+  main-is: doctest.hs
+  build-depends:
+    doctest,
+    Glob,
+    QuickCheck,
+    generic-data,
+    base
   ghc-options: -Wall
   default-language: Haskell2010
   type: exitcode-stdio-1.0
+  if !impl(ghc >= 8.6)
+    buildable: False
 
 benchmark bench
   hs-source-dirs: test
