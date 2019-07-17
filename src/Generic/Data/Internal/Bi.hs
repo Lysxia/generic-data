@@ -14,7 +14,7 @@ import GHC.Generics
 class GBifunctor s t a b c d where
   gbimap' :: (a -> b) -> (c -> d) -> s x -> t x
 
-class Monoid m => GBifoldable s a b m where
+class (Semigroup m , Monoid m) => GBifoldable s a b m where
   gbifoldMap' :: (a -> m) -> (b -> m) -> s x -> m
 
 class GBitraversable s t a b c d where
