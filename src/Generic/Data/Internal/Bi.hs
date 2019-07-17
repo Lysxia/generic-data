@@ -5,6 +5,9 @@
 
 module Generic.Data.Internal.Bi (gbimap , gbifoldMap , gbitraverse) where
 
+import Data.Bifunctor
+import Data.Bifoldable
+import Data.Bitraversable
 import GHC.Generics
 
 class GBifunctor s t a b c d where
@@ -92,6 +95,72 @@ instance {-# INCOHERENT #-} GBitraversable (K1 i c) (K1 i d) a b c d where
 
 instance {-# INCOHERENT #-} GBitraversable (K1 i w) (K1 i w) a b c d where
   gbitraverse' _ _ = pure
+
+
+
+
+instance {-# INCOHERENT #-} Bifunctor f
+  => GBifunctor (K1 i (f a c)) (K1 i (f b d)) a b c d where
+  gbimap' f g (K1 a) = K1 (bimap f g a)
+
+instance {-# INCOHERENT #-} Functor f
+  => GBifunctor (K1 i (f c)) (K1 i (f d)) a b c d where
+  gbimap' _ g (K1 a) = K1 (fmap g a)
+
+instance {-# INCOHERENT #-} Functor f
+  => GBifunctor (K1 i (f a)) (K1 i (f b)) a b c d where
+  gbimap' f _ (K1 a) = K1 (fmap f a)
+
+instance {-# INCOHERENT #-} Bifunctor f
+  => GBifunctor (K1 i (f a a)) (K1 i (f b b)) a b c d where
+  gbimap' f _ (K1 a) = K1 (bimap f f a)
+
+instance {-# INCOHERENT #-} Bifunctor f
+  => GBifunctor (K1 i (f c c)) (K1 i (f d d)) a b c d where
+  gbimap' _ g (K1 b) = K1 (bimap g g b)
+
+
+instance {-# INCOHERENT #-} (Bifoldable f , Monoid m)
+  => GBifoldable (K1 i (f a b)) a b m where
+  gbifoldMap' f g (K1 a) = bifoldMap f g a
+
+instance {-# INCOHERENT #-} (Foldable f , Monoid m)
+  => GBifoldable (K1 i (f b)) a b m where
+  gbifoldMap' _ g (K1 a) = foldMap g a 
+
+instance {-# INCOHERENT #-} (Foldable f , Monoid m)
+  => GBifoldable (K1 i (f a)) a b m where
+  gbifoldMap' f _ (K1 a) = foldMap f a
+
+instance {-# INCOHERENT #-} (Bifoldable f , Monoid m)
+  => GBifoldable (K1 i (f a a)) a b m where
+  gbifoldMap' f _ (K1 a) = bifoldMap f f a
+
+instance {-# INCOHERENT #-} (Bifoldable f , Monoid m)
+  => GBifoldable (K1 i (f b b)) a b m where
+  gbifoldMap' _ g (K1 b) = bifoldMap g g b
+
+
+instance {-# INCOHERENT #-} Bitraversable f
+  => GBitraversable (K1 i (f a c)) (K1 i (f b d)) a b c d where
+  gbitraverse' f g (K1 a) = K1 <$> bitraverse f g a
+
+instance {-# INCOHERENT #-} Traversable f
+  => GBitraversable (K1 i (f c)) (K1 i (f d)) a b c d where
+  gbitraverse' _ g (K1 a) = K1 <$> traverse g a
+
+instance {-# INCOHERENT #-} Traversable f
+  => GBitraversable (K1 i (f a)) (K1 i (f b)) a b c d where
+  gbitraverse' f _ (K1 a) = K1 <$> traverse f a
+
+instance {-# INCOHERENT #-} Bitraversable f
+  => GBitraversable (K1 i (f a a)) (K1 i (f b b)) a b c d where
+  gbitraverse' f _ (K1 a) = K1 <$> bitraverse f f a
+
+instance {-# INCOHERENT #-} Bitraversable f
+  => GBitraversable (K1 i (f c c)) (K1 i (f d d)) a b c d where
+  gbitraverse' _ g (K1 b) = K1 <$> bitraverse g g b
+
 
 gbimap :: ( Generic (p a c)
           , Generic (p b d)
