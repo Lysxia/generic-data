@@ -55,7 +55,7 @@ instance (GBitraversable l l' a b c d , GBitraversable r r' a b c d) => GBitrave
 instance GBifunctor U1 U1 a b c d where
   gbimap' _ _ = id
 
-instance Monoid m => GBifoldable U1 a b m where
+instance (Semigroup m , Monoid m) => GBifoldable U1 a b m where
   gbifoldMap' _ _ _ = mempty
 
 instance GBitraversable U1 U1 a b c d where
@@ -64,7 +64,7 @@ instance GBitraversable U1 U1 a b c d where
 instance GBifunctor V1 V1 a b c d where
   gbimap' _ _ _ = undefined
 
-instance Monoid m => GBifoldable V1 a b m where
+instance (Semigroup m , Monoid m) => GBifoldable V1 a b m where
   gbifoldMap' _ _ _ = undefined
 
 instance GBitraversable V1 V1 a b c d where
@@ -79,13 +79,13 @@ instance {-# INCOHERENT #-} GBifunctor (K1 i c) (K1 i d) a b c d where
 instance {-# INCOHERENT #-} GBifunctor (K1 i w) (K1 i w) a b c d where
   gbimap' _ _ = id
 
-instance {-# INCOHERENT #-} Monoid m => GBifoldable (K1 i a) a b m where
+instance {-# INCOHERENT #-} (Semigroup m , Monoid m) => GBifoldable (K1 i a) a b m where
   gbifoldMap' f _ (K1 x) = f x
 
-instance {-# INCOHERENT #-} Monoid m => GBifoldable (K1 i b) a b m where
+instance {-# INCOHERENT #-} (Semigroup m , Monoid m) => GBifoldable (K1 i b) a b m where
   gbifoldMap' _ g (K1 x) = g x
 
-instance {-# INCOHERENT #-} Monoid m => GBifoldable (K1 i w) a b m where
+instance {-# INCOHERENT #-} (Semigroup m , Monoid m) => GBifoldable (K1 i w) a b m where
   gbifoldMap' _ _ _ = mempty
 
 instance {-# INCOHERENT #-} GBitraversable (K1 i a) (K1 i b) a b c d where
@@ -121,23 +121,23 @@ instance {-# INCOHERENT #-} Bifunctor f
   gbimap' _ g (K1 b) = K1 (bimap g g b)
 
 
-instance {-# INCOHERENT #-} (Bifoldable f , Monoid m)
+instance {-# INCOHERENT #-} (Bifoldable f , Semigroup m , Monoid m)
   => GBifoldable (K1 i (f a b)) a b m where
   gbifoldMap' f g (K1 a) = bifoldMap f g a
 
-instance {-# INCOHERENT #-} (Foldable f , Monoid m)
+instance {-# INCOHERENT #-} (Foldable f , Semigroup m , Monoid m)
   => GBifoldable (K1 i (f b)) a b m where
   gbifoldMap' _ g (K1 a) = foldMap g a 
 
-instance {-# INCOHERENT #-} (Foldable f , Monoid m)
+instance {-# INCOHERENT #-} (Foldable f , Semigroup m , Monoid m)
   => GBifoldable (K1 i (f a)) a b m where
   gbifoldMap' f _ (K1 a) = foldMap f a
 
-instance {-# INCOHERENT #-} (Bifoldable f , Monoid m)
+instance {-# INCOHERENT #-} (Bifoldable f , Semigroup m , Monoid m)
   => GBifoldable (K1 i (f a a)) a b m where
   gbifoldMap' f _ (K1 a) = bifoldMap f f a
 
-instance {-# INCOHERENT #-} (Bifoldable f , Monoid m)
+instance {-# INCOHERENT #-} (Bifoldable f , Semigroup m , Monoid m)
   => GBifoldable (K1 i (f b b)) a b m where
   gbifoldMap' _ g (K1 b) = bifoldMap g g b
 
