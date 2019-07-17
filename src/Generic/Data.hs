@@ -87,6 +87,13 @@ module Generic.Data
   , gempty
   , galt
 
+    -- ** 'Data.Bifunctor'
+  , gbimap
+    -- ** 'Data.Bifoldable'
+  , gbifoldMap
+    -- ** 'Data.Bitraversable'
+  , gbitraverse
+
     -- ** 'Data.Functor.Classes.Eq1'
   , gliftEq
 
@@ -160,6 +167,7 @@ module Generic.Data
   , MetaSelStrictness
   ) where
 
+import Generic.Data.Internal.Bi
 import Generic.Data.Internal.Prelude
 import Generic.Data.Internal.Enum
 import Generic.Data.Internal.Generically

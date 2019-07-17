@@ -23,6 +23,7 @@ library
     Generic.Data
     Generic.Data.Types
     Generic.Data.Microsurgery
+    Generic.Data.Internal.Bi
     Generic.Data.Internal.Compat
     Generic.Data.Internal.Data
     Generic.Data.Internal.Enum
