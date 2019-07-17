@@ -8,6 +8,7 @@ module Generic.Data.Internal.Bi (gbimap , gbifoldMap , gbitraverse) where
 import Data.Bifunctor
 import Data.Bifoldable
 import Data.Bitraversable
+import Data.Semigroup
 import GHC.Generics
 
 class GBifunctor s t a b c d where
