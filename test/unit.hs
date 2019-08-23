@@ -1,6 +1,8 @@
-{-# LANGUAGE CPP #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE
+    CPP,
+    DataKinds,
+    DeriveGeneric,
+    TypeApplications #-}
 
 import Control.Applicative
 import Data.Semigroup
@@ -161,5 +163,13 @@ test = testGroup "unit"
       , testCase "conFixity" $ Prefix @?= gconFixity (Just ())
       , testCase "conIsRecord" $ False @?= gconIsRecord (Just ())
       , testCase "conNum" $ 2 @?= gconNum @(Maybe Int)
+      ]
+  , let i = conId (Just ()) in
+    testGroup "ConId"
+      [ testCase "conId" $ "ConId 1" @?= show i
+      , testCase "conIdToInt" $ 1 @?= conIdToInt i
+      , testCase "conIdToString" $ "Just" @?= conIdToString i
+      , testCase "conIdEnum" $ [conId Nothing, conId (Just ())] @?= conIdEnum @(Maybe ())
+      , testCase "conIdNamed" $ i @?= conIdNamed @"Just"
       ]
   ]
