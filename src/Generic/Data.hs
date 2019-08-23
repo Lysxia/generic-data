@@ -143,6 +143,8 @@ module Generic.Data
   , conIdToInt
   , conIdToString
   , conIdEnum
+  , conIdNamed
+  , ConIdNamed
 
   -- ** Using type families
   , MetaOf

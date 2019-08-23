@@ -8,6 +8,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
@@ -19,7 +20,9 @@ module Generic.Data.Internal.Meta where
 
 import Data.Proxy
 import GHC.Generics
-import GHC.TypeLits (Symbol)
+import GHC.TypeLits (Symbol, Nat, KnownNat, type (+), natVal, TypeError, ErrorMessage(..))
+
+import Generic.Data.Internal.Functions
 
 -- | Name of the first data constructor in a type as a string.
 --
@@ -144,9 +147,24 @@ conIdMin = ConId 0
 conIdMax :: forall a. Constructors a => ConId a
 conIdMax = toConId gConIdMax
 
+-- | Get a 'ConId' by name.
+--
+-- @
+-- conIdNamed @"Nothing" = ConId 0 :: ConId (Maybe Int)
+-- conIdNamed @"Just"    = ConId 1 :: ConId (Maybe Int)
+-- @
+conIdNamed :: forall s a. ConIdNamed s a => ConId a
+conIdNamed = ConId (fromInteger (natVal (Proxy @(ConIdNamed' s a))))
+
 -- | Constraint synonym for 'Generic' and 'GConstructors'.
 class (Generic a, GConstructors (Rep a)) => Constructors a
 instance (Generic a, GConstructors (Rep a)) => Constructors a
+
+-- | Constraint synonym for generic types @a@ with a constructor named @n@.
+class (Generic a, KnownNat (ConIdNamed' n a)) => ConIdNamed n a
+instance (Generic a, KnownNat (ConIdNamed' n a)) => ConIdNamed n a
+
+-- *** Constructor information on generic representations
 
 newtype GConId r = GConId Int
   deriving (Eq, Ord)
@@ -208,6 +226,25 @@ instance Constructor c => GConstructors (M1 C c f) where
   gConNum = 1
   gConFixity = conFixity
   gConIsRecord = conIsRecord
+
+-- *** Find a constructor tag by name
+
+type ConIdNamed' n t = GConIdNamedIf n t (GConIdNamed n (Rep t))
+
+type GConIdNamed n f = GConIdNamed' n f 0 'Nothing
+
+type family GConIdNamed' (n :: Symbol) (f :: k -> *) (i :: Nat) (o :: Maybe Nat) :: Maybe Nat where
+  GConIdNamed' n (M1 D _c f) i r = GConIdNamed' n f i r
+  GConIdNamed' n (f :+: g) i r = GConIdNamed' n f i (GConIdNamed' n g (i + NConstructors f) r)
+  GConIdNamed' n (M1 C ('MetaCons n _f _s) _g) i _r = 'Just i
+  GConIdNamed' n (M1 C ('MetaCons _n _f _s) _g) _i r = r
+  GConIdNamed' _n V1 _i r = r
+
+type family GConIdNamedIf (n :: Symbol) (t :: *) (o :: Maybe Nat) :: Nat where
+  GConIdNamedIf _n _t ('Just i) = i
+  GConIdNamedIf  n  t 'Nothing = TypeError
+    ('Text "No constructor named " ':<>: 'ShowType n
+    ':<>: 'Text " in generic type " ':<>: 'ShowType t)
 
 -- * Type families
 
