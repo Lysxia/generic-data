@@ -126,7 +126,7 @@ conIdToInt (ConId i) = i
 conIdToString :: forall a. Constructors a => ConId a -> String
 conIdToString = gConIdToString . fromConId
 
--- | All constructor identifiers.
+-- | All constructor identifiers. This must not be called on an empty type.
 --
 -- @
 -- 'gconNum' \@a = length ('conIdEnum' \@a)
