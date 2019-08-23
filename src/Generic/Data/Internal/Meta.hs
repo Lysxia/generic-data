@@ -24,31 +24,38 @@ import GHC.TypeLits (Symbol, Nat, KnownNat, type (+), natVal, TypeError, ErrorMe
 
 import Generic.Data.Internal.Functions
 
+-- $setup
+-- >>> :set -XDataKinds -XTypeApplications
+-- >>> import Control.Applicative (ZipList)
+-- >>> import Data.Monoid (Sum(..))
+
 -- | Name of the first data constructor in a type as a string.
 --
--- @
--- 'gdatatypeName' @('Maybe' AnyType) = \"Maybe\"
--- @
+-- >>> gdatatypeName @(Maybe Int)
+-- "Maybe"
 gdatatypeName :: forall a. (Generic a, GDatatype (Rep a)) => String
 gdatatypeName = gDatatypeName @(Rep a)
 
 -- | Name of the module where the first type constructor is defined.
 --
--- @
--- 'gmoduleName' @('Maybe' AnyType) = \"GHC.Base\"
--- @
+-- >>> gmoduleName @(ZipList Int)
+-- "Control.Applicative"
 gmoduleName :: forall a. (Generic a, GDatatype (Rep a)) => String
 gmoduleName = gModuleName @(Rep a)
 
 -- | Name of the package where the first type constructor is defined.
 --
--- @
--- 'gpackageName' @('Maybe' AnyType) = \"base\"
--- @
+-- >>> gpackageName @(Maybe Int)
+-- "base"
 gpackageName :: forall a. (Generic a, GDatatype (Rep a)) => String
 gpackageName = gPackageName @(Rep a)
 
 -- | 'True' if the first type constructor is a newtype.
+--
+-- >>> gisNewtype @[Int]
+-- False
+-- >>> gisNewtype @(ZipList Int)
+-- True
 gisNewtype :: forall a. (Generic a, GDatatype (Rep a)) => Bool
 gisNewtype = gIsNewtype @(Rep a)
 
@@ -70,45 +77,42 @@ instance Datatype d => GDatatype (M1 D d f) where
 
 -- | Name of the first constructor in a value.
 --
--- @
--- 'gconName' ('Just' 0) = \"Just\"
--- @
+-- >>> gconName (Just 0)
+-- "Just"
 gconName :: forall a. Constructors a => a -> String
 gconName = conIdToString . conId
 
 -- | The fixity of the first constructor.
 --
--- @
--- 'gconFixity' ('Just' 0) = 'Prefix'
--- 'gconFixity' ([] :*: id) = 'Infix' 'RightAssociative' 6
--- @
+-- >>> gconFixity (Just 0)
+-- Prefix
+-- >>> gconFixity ([] :*: id)
+-- Infix RightAssociative 6
 gconFixity :: forall a. Constructors a => a -> Fixity
 gconFixity = gConFixity . from
 
 -- | 'True' if the constructor is a record.
 --
--- @
--- 'gconIsRecord' ('Just' 0) = 'False'
--- 'gconIsRecord' ('Data.Monoid.Sum' 0) = 'True'
--- -- newtype 'Data.Monoid.Sum' a = Sum { getSum :: a }
--- @
+-- >>> gconIsRecord (Just 0)
+-- False
+-- >>> gconIsRecord (Sum 0)   -- Note:  newtype Sum a = Sum { getSum :: a }
+-- True
 gconIsRecord :: forall a. Constructors a => a -> Bool
 gconIsRecord = gConIsRecord . from
 
 -- | Number of constructors.
 --
--- @
--- 'gconNum' @('Maybe' AnyType) = 2
--- @
+-- >>> gconNum @(Maybe Int)
+-- 2
 gconNum :: forall a. Constructors a => Int
 gconNum = gConNum @(Rep a)
 
 -- | Index of a constructor.
 --
--- @
--- 'gconIndex' Nothing = 0
--- 'gconIndex' (Just "test") = 1
--- @
+-- >>> gconIndex Nothing
+-- 0
+-- >>> gconIndex (Just "test")
+-- 1
 gconIndex :: forall a. Constructors a => a -> Int
 gconIndex = conIdToInt . conId
 
@@ -149,10 +153,10 @@ conIdMax = toConId gConIdMax
 
 -- | Get a 'ConId' by name.
 --
--- @
--- conIdNamed @"Nothing" = ConId 0 :: ConId (Maybe Int)
--- conIdNamed @"Just"    = ConId 1 :: ConId (Maybe Int)
--- @
+-- >>> conIdNamed @"Nothing" :: ConId (Maybe Int)
+-- ConId 0
+-- >>> conIdNamed @"Just"    :: ConId (Maybe Int)
+-- ConId 1
 conIdNamed :: forall s a. ConIdNamed s a => ConId a
 conIdNamed = ConId (fromInteger (natVal (Proxy @(ConIdNamed' s a))))
 
