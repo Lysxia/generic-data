@@ -111,7 +111,7 @@ gconIndex = conIdToInt . conId
 
 -- | An opaque identifier for a constructor.
 newtype ConId a = ConId Int
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Show)
 
 -- | Identifier of a constructor.
 conId :: forall a. Constructors a => a -> ConId a
