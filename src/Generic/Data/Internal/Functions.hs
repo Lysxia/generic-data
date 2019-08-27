@@ -1,5 +1,3 @@
--- | Type level functions on generic representations.
-
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,6 +7,16 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
+
+-- | Type-level functions on generic representations.
+--
+-- === Warning
+--
+-- This is an internal module: it is not subject to any versioning policy,
+-- breaking changes can happen at any time.
+--
+-- If something here seems useful, please report it or create a pull request to
+-- export it from an external module.
 
 module Generic.Data.Internal.Functions where
 

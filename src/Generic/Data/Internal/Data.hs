@@ -1,5 +1,3 @@
--- | Generic representations as data types.
-
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveFoldable #-}
 {-# LANGUAGE DeriveTraversable #-}
@@ -8,6 +6,16 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
+
+-- | Generic representations as data types.
+--
+-- === Warning
+--
+-- This is an internal module: it is not subject to any versioning policy,
+-- breaking changes can happen at any time.
+--
+-- If something here seems useful, please report it or create a pull request to
+-- export it from an external module.
 
 module Generic.Data.Internal.Data where
 

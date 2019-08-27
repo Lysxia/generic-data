@@ -1,9 +1,17 @@
--- | Newtypes with instances implemented using generic combinators.
-
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
+
+-- | Newtypes with instances implemented using generic combinators.
+--
+-- === Warning
+--
+-- This is an internal module: it is not subject to any versioning policy,
+-- breaking changes can happen at any time.
+--
+-- If something here seems useful, please report it or create a pull request to
+-- export it from an external module.
 
 module Generic.Data.Internal.Generically where
 

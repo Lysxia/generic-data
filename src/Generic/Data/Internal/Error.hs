@@ -7,6 +7,16 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
+-- | Error messages.
+--
+-- === Warning
+--
+-- This is an internal module: it is not subject to any versioning policy,
+-- breaking changes can happen at any time.
+--
+-- If something here seems useful, please report it or create a pull request to
+-- export it from an external module.
+
 module Generic.Data.Internal.Error where
 
 import Data.Kind
