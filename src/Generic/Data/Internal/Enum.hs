@@ -8,7 +8,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
 
--- | Generic deriving for 'Enum'.
+-- | Generic deriving for 'Enum', 'Bounded' and 'Ix'.
 --
 -- === Warning
 --
@@ -21,6 +21,7 @@
 module Generic.Data.Internal.Enum where
 
 import GHC.Generics
+import Data.Ix
 
 -- | Generic 'toEnum' generated with the 'StandardEnum' option.
 --
@@ -33,7 +34,7 @@ import GHC.Generics
 --   'enumFromTo' = 'genumFromTo'
 --   'enumFromThenTo' = 'genumFromThenTo'
 -- @
-gtoEnum :: forall a. (Generic a, GEnum StandardEnum (Rep a)) => Int -> a
+gtoEnum :: (Generic a, GEnum StandardEnum (Rep a)) => Int -> a
 gtoEnum = gtoEnum' @StandardEnum "gtoEnum"
 
 -- | Generic 'fromEnum' generated with the 'StandardEnum' option.
@@ -78,7 +79,7 @@ genumFromThenTo = genumFromThenTo' @StandardEnum
 --   'enumFromTo' = 'gfiniteEnumFromTo'
 --   'enumFromThenTo' = 'gfiniteEnumFromThenTo'
 -- @
-gtoFiniteEnum :: forall a. (Generic a, GEnum FiniteEnum (Rep a)) => Int -> a
+gtoFiniteEnum :: (Generic a, GEnum FiniteEnum (Rep a)) => Int -> a
 gtoFiniteEnum = gtoEnum' @FiniteEnum "gtoFiniteEnum"
 
 -- | Generic 'fromEnum' generated with the 'FiniteEnum' option.
@@ -186,6 +187,53 @@ gminBound = to gMinBound
 -- See also 'gminBound'.
 gmaxBound :: (Generic a, GBounded (Rep a)) => a
 gmaxBound = to gMaxBound
+
+-- | Generic 'range'.
+--
+-- @
+-- import "Data.Ix"
+-- instance 'Ix' MyType where
+--   'range' = 'grange'
+--   'index' = 'gindex'
+--   'inRange' = 'ginRange'
+-- @
+grange :: (Generic a, GIx (Rep a)) => (a, a) -> [a]
+grange (m, n) = map to $ gRange (from m, from n)
+
+-- | Generic 'index'.
+--
+-- See also 'grange'.
+gindex :: (Generic a, GIx (Rep a)) => (a, a) -> a -> Int
+gindex b i
+  | ginRange b i = gunsafeIndex b i
+  | otherwise = errorWithoutStackTrace "gindex: out of bounds"
+
+-- | Generic @unsafeIndex@.
+--
+-- The functions @unsafeIndex@ and @unsafeRangeSize@ belong to 'Ix' but are
+-- internal to GHC and hence not exported from the module "Data.Ix". However they
+-- are exported from the module @GHC.Arr@.
+-- See 'grange' for how to define an instance of 'Ix' such that it does not
+-- depend on the stability of GHCs internal API. Unfortunately this results in
+-- additional (unnecessary) bound checks.
+-- With the danger of having no stability guarantees for GHC's internal API one
+-- can alternatively define an instance of 'Ix' as
+--
+-- @
+-- import GHC.Arr
+-- instance 'Ix' MyType where
+--   'range' = 'grange'
+--   unsafeIndex = 'gunsafeIndex'
+--   'inRange' = 'ginRange'
+-- @
+gunsafeIndex :: (Generic a, GIx (Rep a)) => (a, a) -> a -> Int
+gunsafeIndex (m, n) i = gUnsafeIndex (from m, from n) (from i)
+
+-- | Generic 'inRange'.
+--
+-- See also 'grange'.
+ginRange :: (Generic a, GIx (Rep a)) => (a, a) -> a -> Bool
+ginRange (m, n) i = gInRange (from m, from n) (from i)
 
 -- | Generic representation of 'Enum' types.
 --
@@ -300,3 +348,52 @@ instance (GBounded f, GBounded g) => GBounded (f :+: g) where
 instance (GBounded f, GBounded g) => GBounded (f :*: g) where
   gMinBound = gMinBound :*: gMinBound
   gMaxBound = gMaxBound :*: gMaxBound
+
+-- | Generic representation of 'Ix' types.
+--
+class GIx f where
+  gRange :: (f p, f p) -> [f p]
+  gUnsafeIndex :: (f p, f p) -> f p -> Int
+  gInRange :: (f p, f p) -> f p -> Bool
+
+instance GIx f => GIx (M1 i c f) where
+  gRange (M1 m, M1 n) = map M1 $ gRange (m, n)
+  gUnsafeIndex (M1 m, M1 n) (M1 i) = gUnsafeIndex (m, n) i
+  gInRange (M1 m, M1 n) (M1 i) = gInRange (m, n) i
+
+instance (GEnum StandardEnum f, GEnum StandardEnum g) => GIx (f :+: g) where
+  gRange (x, y) = map toE [ i_x .. i_y ]
+    where
+      toE = gToEnum @StandardEnum
+      i_x = gFromEnum @StandardEnum x
+      i_y = gFromEnum @StandardEnum y
+  gUnsafeIndex (m, _) i = fromIntegral (i_i - i_m)
+    where
+      i_m = gFromEnum @StandardEnum m
+      i_i = gFromEnum @StandardEnum i
+  gInRange (m, n) i = i_m <= i_i && i_i <= i_n
+    where
+      i_m = gFromEnum @StandardEnum m
+      i_n = gFromEnum @StandardEnum n
+      i_i = gFromEnum @StandardEnum i
+
+instance (GIx f, GIx g) => GIx (f :*: g) where
+  gRange (m1 :*: m2, n1 :*: n2) =
+    [ i1 :*: i2 | i1 <- gRange (m1, n1), i2 <- gRange (m2, n2) ]
+  gUnsafeIndex (m1 :*: m2, n1 :*: n2) (i1 :*: i2) = int1 * rangeSize2 + int2
+    where
+      int1 = gUnsafeIndex (m1, n1) i1
+      int2 = gUnsafeIndex (m2, n2) i2
+      rangeSize2 = gUnsafeIndex (m2, n2) n2 + 1
+  gInRange (m1 :*: m2, n1 :*: n2) (i1 :*: i2) =
+    gInRange (m1, n1) i1 && gInRange (m2, n2) i2
+  
+instance GIx U1 where
+  gRange (U1, U1) = [U1]
+  gUnsafeIndex (U1, U1) U1 = 0
+  gInRange (U1, U1) U1 = True
+
+instance (Ix c) => GIx (K1 i c) where
+  gRange (K1 m, K1 n) = map K1 $ range (m, n)
+  gUnsafeIndex (K1 m, K1 n) (K1 i) = index (m, n) i 
+  gInRange (K1 m, K1 n) (K1 i) = inRange (m, n) i
