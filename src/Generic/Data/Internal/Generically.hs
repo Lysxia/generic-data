@@ -18,6 +18,7 @@ module Generic.Data.Internal.Generically where
 import Control.Applicative
 import Data.Functor.Classes
 import Data.Semigroup
+import Data.Ix
 import GHC.Generics
 
 import Generic.Data.Internal.Prelude
@@ -69,6 +70,11 @@ instance (Generic a, GEnum StandardEnum (Rep a)) => Enum (Generically a) where
   enumFromThen = genumFromThen
   enumFromTo = genumFromTo
   enumFromThenTo = genumFromThenTo
+
+instance (Generic a, Ord (Rep a ()), GIx (Rep a)) => Ix (Generically a) where
+  range = grange
+  index = gindex
+  inRange = ginRange
 
 instance (Generic a, GBounded (Rep a)) => Bounded (Generically a) where
   minBound = gminBound

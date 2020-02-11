@@ -61,6 +61,14 @@ module Generic.Data
   , gmaxBound
   , GBounded()
 
+    -- ** 'Ix'
+    -- | Can also be derived by GHC as part of the standard.
+  , grange
+  , gindex
+  , ginRange
+  , GIx()
+  , gunsafeIndex
+
     -- * Higher-kinded classes
 
     -- ** 'Functor'
