@@ -149,3 +149,40 @@ instance (Generic1 f, Foldable (Rep1 f)) => Foldable (Generically1 f) where
 instance (Generic1 f, Traversable (Rep1 f)) => Traversable (Generically1 f) where
   traverse = gtraverse
   sequenceA = gsequenceA
+
+-- | Product type with generic instances of 'Semigroup' and 'Monoid'.
+--
+-- This is similar to 'Generic.Data.Generically' in most cases, but
+-- 'GenericProduct' also works for types @T@ with deriving
+-- @via 'GenericProduct' U@, where @U@ is a generic product type coercible to,
+-- but distinct from @T@. In particular, @U@ may not have an instance of
+-- 'Semigroup', which 'Generic.Data.Generically' requires.
+--
+-- === __Example__
+--
+-- >>> :set -XDeriveGeneric -XDerivingVia
+-- >>> data Point a = Point a a deriving Generic
+-- >>> :{
+--   newtype Vector a = Vector (Point a)
+--     deriving (Semigroup, Monoid)
+--       via GenericProduct (Point (Sum a))
+-- :}
+--
+-- If it were @via 'Generic.Data.Generically' (Point (Sum a))@ instead, then
+-- @Vector@'s 'mappend' (the 'Monoid' method) would be defined as @Point@'s
+-- @('<>')@ (the 'Semigroup' method), which might not exist, or might not be
+-- equivalent to @Vector@'s generic 'Semigroup' instance, which would be
+-- unlawful.
+newtype GenericProduct a = GenericProduct { unGenericProduct :: a }
+
+instance Generic a => Generic (GenericProduct a) where
+  type Rep (GenericProduct a) = Rep a
+  to = GenericProduct . to
+  from = from . unGenericProduct
+
+instance (AssertNoSum Semigroup a, Generic a, Semigroup (Rep a ())) => Semigroup (GenericProduct a) where
+  (<>) = gmappend
+
+instance (AssertNoSum Semigroup a, Generic a, Monoid (Rep a ())) => Monoid (GenericProduct a) where
+  mempty = gmempty
+  mappend = gmappend'
