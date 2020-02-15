@@ -112,6 +112,7 @@ module Generic.Data
 
     -- * Carriers of generic instances
   , Generically(..)
+  , GenericProduct(..)
   , FiniteEnumeration(..)
   , Generically1(..)
 
