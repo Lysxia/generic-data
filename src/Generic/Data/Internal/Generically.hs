@@ -43,16 +43,6 @@ instance (Generic a, Ord (Rep a ())) => Ord (Generically a) where
 instance (Generic a, GShow0 (Rep a)) => Show (Generically a) where
   showsPrec = gshowsPrec
 
--- |
--- >>> :set -XDeriveGeneric -XDerivingVia
--- >>> :{
---   data AB = A | B
---     deriving stock Generic
---     deriving Semigroup via Generically AB
--- :}
--- ...
---     • Cannot derive Semigroup instance for AB due to sum type
---     • When deriving the instance for (Semigroup AB)
 instance (AssertNoSum Semigroup a, Generic a, Semigroup (Rep a ())) => Semigroup (Generically a) where
   (<>) = gmappend
 
