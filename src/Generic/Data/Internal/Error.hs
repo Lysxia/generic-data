@@ -36,6 +36,17 @@ class Assert (pred :: Bool) (msg :: ErrorMessage)
 instance Assert 'True msg
 instance (TypeError msg ~ '()) => Assert 'False msg
 
+-- |
+-- >>> :set -XDeriveGeneric -XDerivingVia
+-- >>> import Generic.Data (Generically(..))
+-- >>> :{
+--   data AB = A | B
+--     deriving stock Generic
+--     deriving Semigroup via Generically AB
+-- :}
+-- ...
+--     • Cannot derive Semigroup instance for AB due to sum type
+--     • When deriving the instance for (Semigroup AB)
 type AssertNoSum (constraint :: * -> Constraint) a =
     Assert (Not (HasSum (Rep a)))
     ('Text "Cannot derive " ':<>: 'ShowType constraint ':<>:

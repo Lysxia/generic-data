@@ -210,6 +210,8 @@ gindex b i
 
 -- | Generic @unsafeIndex@.
 --
+-- === __Details__
+--
 -- The functions @unsafeIndex@ and @unsafeRangeSize@ belong to 'Ix' but are
 -- internal to GHC and hence not exported from the module "Data.Ix". However they
 -- are exported from the module @GHC.Arr@.
@@ -251,7 +253,11 @@ data StandardEnum
 
 -- | Extends the 'StandardEnum' option for 'GEnum' to allow all constructors to 
 -- have arbitrary many fields. Each field type must be an instance of 
--- both 'Enum' and 'Bounded'. Two restrictions require the user's caution:
+-- both 'Enum' and 'Bounded'.
+--
+-- === __Details__
+--
+-- Two restrictions require the user's caution:
 --
 -- * The 'Enum' instances of the field types need to start enumerating from 0. 
 -- Particularly 'Int' is an unfit field type, because the enumeration of the 
