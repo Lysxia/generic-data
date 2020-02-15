@@ -1,6 +1,18 @@
+# 0.8.0.0
+
+- Add `GenericProduct`, for deriving `via GenericProduct B` when `B` is not the
+  type `A` you want the derived instance for.
+  Note this used to be `Generically`'s behavior for `Monoid` before 0.7.0.0.
+- Add generic implementations for `Ix`. Thanks to Topsii.
+
+- Add `conIdNamed`, to get a `ConId` by its type-level name
+- Add instance `Show (ConId a)`
+- Improve type errors for deriving `Semigroup` and `Monoid` via `Generically`.
+  Thanks to yairchu.
+
 # 0.7.0.0
 
-- Changed `Monoid` instance for `Generically`, to be compatible with users'
+- Change `Monoid` instance for `Generically`, to be compatible with users'
   non-generic instances of `Semigroup`. Thanks to yairchu.
 - Add `gcoerce`, `gcoerceBinop`.
 
