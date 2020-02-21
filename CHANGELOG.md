@@ -1,3 +1,7 @@
+# 0.8.1.0
+
+- Add `Old` type family mapping newtypes to their underlying type.
+
 # 0.8.0.0
 
 - Add `GenericProduct`, for deriving `via GenericProduct B` when `B` is not the
