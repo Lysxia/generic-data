@@ -119,6 +119,7 @@ module Generic.Data
     -- * Newtype
     -- | Generic pack/unpack.
   , Newtype
+  , Old
   , pack
   , unpack
 
