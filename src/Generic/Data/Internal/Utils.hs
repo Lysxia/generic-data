@@ -1,5 +1,6 @@
 {-# LANGUAGE
     BangPatterns,
+    EmptyCase,
     FlexibleContexts,
     PolyKinds #-}
 
@@ -40,7 +41,7 @@ coerce1 = coerce
 
 -- | Elimination of @V1@.
 absurd1 :: V1 x -> a
-absurd1 !_ = error "impossible"
+absurd1 x = case x of {}
 
 -- | A helper for better type inference.
 from' :: Generic a => a -> Rep a ()
