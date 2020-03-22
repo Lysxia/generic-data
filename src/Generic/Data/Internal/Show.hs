@@ -23,6 +23,7 @@ import Data.Foldable (foldl')
 import Data.Functor.Classes (Show1(..))
 import Data.Functor.Identity
 import Data.Proxy
+import GHC.Lexeme (startsConSym, startsVarSym)
 import GHC.Generics
 import Text.Show.Combinators
 
@@ -82,20 +83,16 @@ class GShowC p c f where
 instance GShowFields p f => GShowC p ('MetaCons s y 'False) f where
   gPrecShowsC p name fixity (M1 x)
     | Infix _ fy <- fixity, k1 : k2 : ks <- fields =
-      foldl' showApp (showInfix name fy k1 k2) ks
+      foldl' showApp (showInfix cname fy k1 k2) ks
     | otherwise = foldl' showApp (showCon cname) fields
     where
-      cname = case fixity of
-        Prefix -> name
-        Infix _ _ -> "(" ++ name ++ ")"
+      cname = surroundConName fixity name
       fields = gPrecShowsFields p x
 
 instance GShowNamed p f => GShowC p ('MetaCons s y 'True) f where
   gPrecShowsC p name fixity (M1 x) = showRecord cname fields
     where
-      cname = case fixity of
-        Prefix -> name
-        Infix _ _ -> "(" ++ name ++ ")"
+      cname = surroundConName fixity name
       fields = gPrecShowsNamed p x
 
 class GShowFields p f where
@@ -117,7 +114,11 @@ instance (GShowNamed p f, GShowNamed p g) => GShowNamed p (f :*: g) where
   gPrecShowsNamed p (x :*: y) = gPrecShowsNamed p x &| gPrecShowsNamed p y
 
 instance (Selector c, GShowSingle p f) => GShowNamed p (M1 S c f) where
-  gPrecShowsNamed p x'@(M1 x) = selName x' `showField` gPrecShowsSingle p x
+  gPrecShowsNamed p x'@(M1 x) = snameParen `showField` gPrecShowsSingle p x
+    where
+      sname = selName x'
+      snameParen | isSymVar sname = "(" ++ sname ++ ")"
+                 | otherwise      = sname
 
 instance GShowNamed p U1 where
   gPrecShowsNamed _ U1 = noFields
@@ -142,3 +143,25 @@ instance (Show1 f, GShowSingle p g)
     where
       showsPrec_ = flip (gPrecShowsSingle p)
       showList_ = showListWith (showsPrec_ 0)
+
+-- Helpers
+
+surroundConName :: Fixity -> String -> String
+surroundConName fixity name =
+  case fixity of
+    Prefix
+      | isSymName -> "(" ++ name ++ ")"
+      | otherwise -> name
+    Infix _ _
+      | isSymName -> name
+      | otherwise -> "`" ++ name ++ "`"
+  where
+    isSymName = isSymDataCon name
+
+isSymDataCon :: String -> Bool
+isSymDataCon ""    = False
+isSymDataCon (c:_) = startsConSym c
+
+isSymVar :: String -> Bool
+isSymVar ""    = False
+isSymVar (c:_) = startsVarSym c

@@ -40,6 +40,7 @@ library
   build-depends:
     base-orphans >= 0.8,
     contravariant,
+    ghc-boot-th,
     show-combinators,
     base >= 4.9 && < 5
   hs-source-dirs:      orphans
@@ -55,6 +56,7 @@ test-suite unit-test
     tasty,
     tasty-hunit,
     generic-data,
+    show-combinators >= 0.2,
     base
   ghc-options: -Wall
   default-language: Haskell2010
