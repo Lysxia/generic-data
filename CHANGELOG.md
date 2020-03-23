@@ -1,3 +1,11 @@
+# next
+
+- Fix a bug where `gshowsPrec` would incorrectly display prefix uses of
+  symbol data constructors or record selectors (e.g., `data R = (:!:) Int Int`
+  or `data S = MkS { (##) :: Int -> Int }`).
+- Fix a bug where `gshowsPrec` would incorrectly display infix uses of
+  alphanumeric data constructors (e.g., ```data T = Int `MkT` Int```).
+
 # 0.8.1.0
 
 - Add `Old` type family mapping newtypes to their underlying type.

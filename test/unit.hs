@@ -65,7 +65,7 @@ e1 = allEs !! 1
 eLast = last allEs
 
 allEs :: [FiniteE]
-allEs = 
+allEs =
     [ SE0 False False
     , SE0 False  True
     , SE0  True False
@@ -83,6 +83,20 @@ instance (Functor f, Show1 f, Show1 g) => Show1 (MyCompose f g) where
 
 instance (Functor f, Show1 f, Show1 g, Show a) => Show (MyCompose f g a) where
   showsPrec = showsPrec1
+
+-- Regression tests for T30
+data T30a = MkT30a { (##) :: () }
+  deriving Generic
+
+data T30b = (:!:) () ()
+          | () `MkT30b` ()
+  deriving Generic
+
+instance Show T30a where
+  showsPrec = gshowsPrec
+
+instance Show T30b where
+  showsPrec = gshowsPrec
 
 maybeModuleName :: String
 #if MIN_VERSION_base(4,12,0)
@@ -157,7 +171,7 @@ test = testGroup "unit"
         ]
       ]
   , testGroup "Ix"
-      [ testGroup "only nullary constructors" 
+      [ testGroup "only nullary constructors"
         [ testCase "range" $ [E0, E1, E2] @=? grange (E0, E2)
         , testCase "index" $ 1 @=? gindex (E1, E3) E2
         , testCase "inRange (within)" $ True @=? ginRange (E1, E3) E2
@@ -175,6 +189,11 @@ test = testGroup "unit"
   , testGroup "Show"
       [ testCase "show" $ "P 1 2" @=? show (p' 1 2)
       , testCase "showsPrec" $ "(P 1 2)" @=? showsPrec 11 (p' 1 2) ""
+      , testGroup "T30"
+        [ testCase "MkT30a" $ "(MkT30a {(##) = ()})" @=? showsPrec 11 (MkT30a {(##) = ()}) ""
+        , testCase "(:!:)" $ "(:!:) () ()" @=? show ((:!:) () ())
+        , testCase "MkT30b" $ "() `MkT30b` ()" @=? show (() `MkT30b` ())
+        ]
       ]
 
   , testGroup "Show1"
