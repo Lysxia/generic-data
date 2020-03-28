@@ -27,9 +27,11 @@ module Generic.Data.Microsurgery
     -- * Deriving via
 
     Surgery
+  , ProductSurgery
   , Surgery'(..)
   , GSurgery
   , Generically(..)
+  , GenericProduct(..)
 
     -- * Synthetic types
 

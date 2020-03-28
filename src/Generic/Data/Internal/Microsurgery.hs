@@ -27,11 +27,13 @@ import GHC.Generics
 import GHC.TypeLits (ErrorMessage(..), Symbol, TypeError)
 
 import Generic.Data.Types (Data)
-import Generic.Data.Internal.Generically (Generically(..))
+import Generic.Data.Internal.Generically (Generically(..), GenericProduct(..))
 
 -- * Surgery
 
 -- | Apply a microsurgery @s@ to a type @a@ for @DerivingVia@.
+--
+-- For the 'Data.Monoid.Monoid' class, see 'ProductSurgery'.
 --
 -- === __Example__
 --
@@ -49,6 +51,10 @@ import Generic.Data.Internal.Generically (Generically(..))
 -- --   show (T {unT = 3}) == "T 3"
 -- @
 type Surgery (s :: *) (a :: *) = Generically (Surgery' s a)
+
+-- | Apply a microsurgery @s@ to a type @a@ for @DerivingVia@ for the
+-- 'Data.Monoid.Monoid' class.
+type ProductSurgery (s :: *) (a :: *) = GenericProduct (Surgery' s a)
 
 -- | See 'Surgery'.
 newtype Surgery' (s :: *) (a :: *) = Surgery' { unSurgery' :: a }

@@ -22,10 +22,13 @@ import Generic.Data.Microsurgery
   )
 
 #if __GLASGOW_HASKELL__ >= 806
+import Data.Monoid (Sum(..))
+
 -- DerivingVia test
 -- Constructors must be visible for Coercible
 import Generic.Data.Microsurgery
-  ( Surgery, Surgery'(..), Generically(..), Derecordify
+  ( Surgery, ProductSurgery, Surgery'(..), Generically(..), GenericProduct(..)
+  , Derecordify, OnFields
   )
 #endif
 
@@ -50,6 +53,7 @@ instance Show U where
 data V = V { v1 :: Int, v2 :: Int }
   deriving Generic
   deriving Show via (Surgery Derecordify V)
+  deriving (Semigroup, Monoid) via (ProductSurgery (OnFields Sum) V)
 #endif
 
 main :: IO ()
