@@ -9,6 +9,7 @@
 -- - 'RenameFields': rename the fields of a record type.
 -- - 'RenameConstrs': rename the constructors.
 -- - 'OnFields': apply a type constructor @f :: Type -> Type@ to every field.
+-- - 'CopyRep': use the generic representation of another type of the same shape.
 -- - 'Typeage': treat a @newtype@ as a @data@ type.
 -- - 'Derecordify': treat a type as if it weren't a record.
 --
@@ -117,6 +118,12 @@ module Generic.Data.Microsurgery
 
   , OnFields()
   , DOnFields
+
+    -- ** Substitute a generic representation from another type
+
+  , CopyRep
+  , copyRep
+  , uncopyRep
 
     -- ** Type aging ("denewtypify")
 
