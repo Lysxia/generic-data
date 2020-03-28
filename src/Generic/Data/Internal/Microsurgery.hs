@@ -35,7 +35,7 @@ import Generic.Data.Internal.Generically (Generically(..), GenericProduct(..))
 --
 -- For the 'Data.Monoid.Monoid' class, see 'ProductSurgery'.
 --
--- === __Example__
+-- === Example
 --
 -- @
 -- {-\# LANGUAGE DerivingVia \#-}
@@ -280,7 +280,7 @@ onData = id
 --
 -- This is a defunctionalized symbol, applied using 'GSurgery' or 'Surgery'.
 --
--- === __Example__
+-- === Example
 --
 -- Derive 'Data.Semigroup.Semigroup' and 'Data.Monoid.Monoid' for
 -- products of 'Prelude.Num' types:
@@ -319,7 +319,7 @@ type DOnFields (f :: * -> *) (a :: *) = Data (GSurgery (OnFields f) (Rep a)) ()
 
 -- | Change the generic representation to that of another type @a@.
 --
--- === __Example__
+-- === Example
 --
 -- @
 -- {-\# LANGUAGE DeriveGeneric, DerivingVia \#-}
