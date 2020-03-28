@@ -1,10 +1,13 @@
-# next
+# 0.8.2.0
 
+- Add microsurgery `CopyRep`.
+- Improve documentation of `Microsurgery` module.
 - Fix a bug where `gshowsPrec` would incorrectly display prefix uses of
   symbol data constructors or record selectors (e.g., `data R = (:!:) Int Int`
-  or `data S = MkS { (##) :: Int -> Int }`).
+  or `data S = MkS { (##) :: Int -> Int }`). Thanks to RyanGlScott.
 - Fix a bug where `gshowsPrec` would incorrectly display infix uses of
   alphanumeric data constructors (e.g., ```data T = Int `MkT` Int```).
+  Thanks to RyanGlScott.
 
 # 0.8.1.0
 
