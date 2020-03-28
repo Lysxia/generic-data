@@ -115,11 +115,75 @@ module Generic.Data.Microsurgery
     -- See also the file @test/one-liner-surgery.hs@ in this package for an
     -- example of using one-liner and generic-lens with a synthetic type
     -- constructed with 'DOnFields'.
+    --
+    -- === Example
+    --
+    -- Derive 'Data.Semigroup.Semigroup' and 'Data.Monoid.Monoid' for
+    -- a product of 'Prelude.Num' types:
+    --
+    -- @
+    -- {-\# LANGUAGE DeriveGeneric, DerivingVia \#-}
+    -- import "Data.Monoid" ('Data.Monoid.Sum'(..))  -- Constructors must be in scope
+    -- import "GHC.Generics" ('GHC.Generics.Generic')
+    -- import "Generic.Data.Microsurgery"
+    --   ( 'ProductSurgery'
+    --   , 'OnFields'
+    --   , 'GenericProduct'(..)  -- Constructors must be in scope
+    --   , 'Surgery''(..)        --
+    --   )
+    --
+    -- data TwoCounters = MkTwoCounters { c1 :: Int, c2 :: Int }
+    --   deriving 'GHC.Generics.Generic'
+    --   deriving ('Data.Semigroup.Semigroup', 'Data.Monoid.Monoid')
+    --     via ('ProductSurgery' ('OnFields' 'Data.Monoid.Sum') TwoCounters)  -- Surgery here
+    -- @
 
   , OnFields()
   , DOnFields
 
     -- ** Substitute a generic representation from another type
+
+    -- |
+    -- === Example
+    --
+    -- Derive 'Data.Semigroup.Semigroup' and 'Data.Monoid.Monoid' for
+    -- a product of 'Prelude.Num' types, but using 'Data.Monoid.Sum' for one
+    -- field and 'Data.Monoid.Product' for the other.
+    -- In other words, we use the fact that @Polar a@ below is isomorphic to
+    -- the monoid @('Data.Monoid.Product' a, 'Data.Monoid.Sum' a)@.
+    --
+    -- @
+    -- {-\# LANGUAGE DeriveGeneric, DerivingVia \#-}
+    -- import "Data.Monoid" ('Data.Monoid.Sum'(..), 'Data.Monoid.Product'(..))  -- Constructors must be in scope
+    -- import "GHC.Generics" ('GHC.Generics.Generic')
+    -- import "Generic.Data.Microsurgery"
+    --   ( 'ProductSurgery'
+    --   , 'CopyRep'
+    --   , 'GenericProduct'(..)  -- Constructors must be in scope
+    --   , 'Surgery''(..)        --
+    --   )
+    --
+    -- data Polar a = Exp { modulus :: a, argument :: a }
+    --   deriving 'GHC.Generics.Generic'
+    --   deriving ('Data.Semigroup.Semigroup', 'Data.Monoid.Monoid')
+    --     via ('ProductSurgery' ('CopyRep' ('Data.Monoid.Product' a, 'Data.Monoid.Sum' a)) (Polar a))  -- Surgery here
+    -- @
+    --
+    -- That is the polar representation of a complex number:
+    --
+    -- > z = modulus * exp(i * argument)
+    --
+    -- The product of complex numbers defines a monoid isomorphic to
+    -- the monoid product @(Product Double, Sum Double)@
+    -- (multiply the moduli, add the arguments).
+    --
+    -- @
+    -- z1 'Data.Semigroup.<>' z2
+    --  = z1 'Prelude.*' z2
+    --  = Exp (modulus z1 'Prelude.*' modulus z2) (argument z1 'Prelude.+' argument z2)
+    --
+    -- 'Data.Monoid.mempty' = 1 = Exp 1 0
+    -- @
 
   , CopyRep
   , copyRep

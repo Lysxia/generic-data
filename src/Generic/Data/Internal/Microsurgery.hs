@@ -279,29 +279,6 @@ onData = id
 -- >   , b :: f Int }
 --
 -- This is a defunctionalized symbol, applied using 'GSurgery' or 'Surgery'.
---
--- === Example
---
--- Derive 'Data.Semigroup.Semigroup' and 'Data.Monoid.Monoid' for
--- products of 'Prelude.Num' types:
---
--- @
--- {-\# LANGUAGE DeriveGeneric, DerivingVia \#-}
--- import "Data.Monoid" ('Data.Monoid.Sum'(..))  -- Constructors must be in scope
--- import "GHC.Generics" ('Generic')
--- import "Generic.Data.Microsurgery"
---   ( 'ProductSurgery'
---   , 'OnFields'
---   , 'GenericProduct'(..)  -- Constructors must be in scope
---   , 'Surgery''(..)        --
---   )
---
--- data TwoCounters = MkTwoCounters { c1 :: Int, c2 :: Int }
---   deriving 'Generic'
---   deriving ('Data.Semigroup.Semigroup', 'Data.Monoid.Monoid')
---     via ('ProductSurgery' ('OnFields' 'Data.Monoid.Sum') TwoCounters)
--- @
---
 data OnFields (f :: * -> *) :: *
 type instance GSurgery (OnFields f) g = GOnFields f g
 
@@ -318,38 +295,6 @@ type instance GOnFields f V1 = V1
 type DOnFields (f :: * -> *) (a :: *) = Data (GSurgery (OnFields f) (Rep a)) ()
 
 -- | Change the generic representation to that of another type @a@.
---
--- === Example
---
--- @
--- {-\# LANGUAGE DeriveGeneric, DerivingVia \#-}
--- import "Data.Monoid" ('Data.Monoid.Sum'(..), 'Data.Monoid.Product'(..))  -- Constructors must be in scope
--- import "GHC.Generics" ('Generic')
--- import "Generic.Data.Microsurgery"
---   ( 'ProductSurgery'
---   , 'CopyRep'
---   , 'GenericProduct'(..)  -- Constructors must be in scope
---   , 'Surgery''(..)        --
---   )
---
--- -- Polar representation of a complex number:
--- --   modulus * exp(i * argument)
--- --
--- -- The product of complex numbers defines a monoid isomorphic to
--- -- the monoid product (Product Double, Sum Double)
--- -- (multiply the moduli, add the arguments).
--- --
--- -- c1 'Data.Semigroup.<>' c2
--- --  = c1 'Prelude.*' c2
--- --  = Exp (modulus c1 'Prelude.*' modulus c2) (argument c1 'Prelude.+' argument c2)
--- --
--- -- 'mempty' = 1 = Exp 1 0
---
--- data Polar a = Exp { modulus :: a, argument :: a }
---   deriving 'Generic'
---   deriving ('Data.Semigroup.Semigroup', 'Data.Monoid.Monoid')
---     via ('ProductSurgery' ('CopyRep' (Product a, Sum a)) (Polar a))
--- @
 data CopyRep (a :: *) :: *
 type instance GSurgery (CopyRep a) _ = Rep a
 
