@@ -18,6 +18,14 @@
 -- in <https://hackage.haskell.org/package/generic-lens generic-lens>
 -- (read more about this just below) and
 -- <https://hackage.haskell.org/package/one-liner one-liner>.
+--
+-- Surgeries can be used:
+--
+-- - to derive type class instances with the @DerivingVia@ extension,
+--   using the 'Surgery' or 'ProductSurgery' type synonyms
+--   (for classes with instances for 'Generically' or 'GenericProduct');
+-- - with the 'Data' \"synthetic type\" for more involved transformations,
+--   for example using lenses in the next section.
 
 module Generic.Data.Microsurgery
   ( -- * Surgeries with generic-lens
