@@ -23,7 +23,7 @@ import Data.Foldable (foldl')
 import Data.Functor.Classes (Show1(..))
 import Data.Functor.Identity
 import Data.Proxy
-import GHC.Lexeme (startsConSym, startsVarSym)
+import Generic.Data.Internal.Utils (isSymDataCon, isSymVar)
 import GHC.Generics
 import Text.Show.Combinators
 
@@ -157,11 +157,3 @@ surroundConName fixity name =
       | otherwise -> "`" ++ name ++ "`"
   where
     isSymName = isSymDataCon name
-
-isSymDataCon :: String -> Bool
-isSymDataCon ""    = False
-isSymDataCon (c:_) = startsConSym c
-
-isSymVar :: String -> Bool
-isSymVar ""    = False
-isSymVar (c:_) = startsVarSym c

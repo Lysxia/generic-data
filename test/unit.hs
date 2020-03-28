@@ -11,6 +11,7 @@ import Data.Monoid (Sum(..))
 import Data.Functor.Classes
 import Test.Tasty
 import Test.Tasty.HUnit
+import Text.Read
 
 import GHC.Generics
 import Generic.Data
@@ -78,6 +79,29 @@ allEs =
 newtype MyCompose f g a = MyCompose (f (g a))
   deriving Generic1
 
+instance (Functor f, Eq1 f, Eq1 g) => Eq1 (MyCompose f g) where
+  liftEq = gliftEq
+
+instance (Functor f, Eq1 f, Eq1 g, Eq a) => Eq (MyCompose f g a) where
+  (==) = eq1
+
+instance (Functor f, Read1 f, Read1 g) => Read1 (MyCompose f g) where
+#if MIN_VERSION_base(4,10,0)
+  liftReadPrec = gliftReadPrec
+  liftReadListPrec = liftReadListPrecDefault
+#else
+  liftReadsPrec rp rl = readPrec_to_S $
+    gliftReadPrec (readS_to_Prec rp) (readS_to_Prec (const rl))
+#endif
+
+instance (Functor f, Read1 f, Read1 g, Read a) => Read (MyCompose f g a) where
+#if MIN_VERSION_base(4,10,0)
+  readPrec = readPrec1
+  readListPrec = readListPrecDefault
+#else
+  readsPrec = readsPrec1
+#endif
+
 instance (Functor f, Show1 f, Show1 g) => Show1 (MyCompose f g) where
   liftShowsPrec = gliftShowsPrec
 
@@ -92,8 +116,22 @@ data T30b = (:!:) () ()
           | () `MkT30b` ()
   deriving Generic
 
+instance Eq T30a where
+  (==) = geq
+
+instance Read T30a where
+  readPrec = greadPrec
+  readListPrec = readListPrecDefault
+
 instance Show T30a where
   showsPrec = gshowsPrec
+
+instance Eq T30b where
+  (==) = geq
+
+instance Read T30b where
+  readPrec = greadPrec
+  readListPrec = readListPrecDefault
 
 instance Show T30b where
   showsPrec = gshowsPrec
@@ -186,6 +224,14 @@ test = testGroup "unit"
         ]
       , testCase "single nullary constructor" $ 0 @=? gindex (Unit, Unit) Unit
       ]
+  , testGroup "Read"
+      [ testCase "read" $ p' 1 2 @=? read "(P 1 2)"
+      , testGroup "T30"
+        [ testCase "MkT30a" $ MkT30a {(##) = ()} @=? read "(MkT30a {(##) = ()})"
+        , testCase "(:!:)" $ (:!:) () () @=? read "(:!:) () ()"
+        , testCase "MkT30b" $ (() `MkT30b` ()) @=? read "() `MkT30b` ()"
+        ]
+      ]
   , testGroup "Show"
       [ testCase "show" $ "P 1 2" @=? show (p' 1 2)
       , testCase "showsPrec" $ "(P 1 2)" @=? showsPrec 11 (p' 1 2) ""
@@ -196,6 +242,9 @@ test = testGroup "unit"
         ]
       ]
 
+  , testGroup "Read1"
+      [ testCase "read1" $ MyCompose (Just [()]) @?= read "(MyCompose (Just [()]))"
+      ]
   , testGroup "Show1"
       [ testCase "show1" $ "MyCompose (Just [()])" @?= show (MyCompose (Just [()]))
       ]
