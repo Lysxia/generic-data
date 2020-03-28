@@ -1,14 +1,31 @@
 {-# LANGUAGE ExplicitNamespaces #-}
 
--- | Simple operations on generic representations, that only change the
--- type-level metadata used by certain generic functions.
+-- | Simple operations on generic representations:
+-- modify 'GHC.Generics.Generic' instances to tweak the behavior of generic
+-- implementations as if you had declared a slightly different type.
 --
--- More complex ones can be found in
+-- This module provides the following microsurgeries:
+--
+-- - 'RenameFields': rename the fields of a record type.
+-- - 'RenameConstrs': rename the constructors.
+-- - 'OnFields': apply a type constructor @f :: Type -> Type@ to every field.
+-- - 'Typeage': treat a @newtype@ as a @data@ type.
+-- - 'Derecordify': treat a type as if it weren't a record.
+--
+-- More complex surgeries can be found in
 -- <https://hackage.haskell.org/package/generic-data-surgery generic-data-surgery>
 -- but also, perhaps surprisingly,
 -- in <https://hackage.haskell.org/package/generic-lens generic-lens>
 -- (read more about this just below) and
 -- <https://hackage.haskell.org/package/one-liner one-liner>.
+--
+-- Surgeries can be used:
+--
+-- - to derive type class instances with the @DerivingVia@ extension,
+--   using the 'Surgery' or 'ProductSurgery' type synonyms
+--   (for classes with instances for 'Generically' or 'GenericProduct');
+-- - with the 'Data' \"synthetic type\" for more involved transformations,
+--   for example using lenses in the next section.
 
 module Generic.Data.Microsurgery
   ( -- * Surgeries with generic-lens
@@ -18,9 +35,11 @@ module Generic.Data.Microsurgery
     -- * Deriving via
 
     Surgery
+  , ProductSurgery
   , Surgery'(..)
   , GSurgery
   , Generically(..)
+  , GenericProduct(..)
 
     -- * Synthetic types
 
@@ -48,18 +67,6 @@ module Generic.Data.Microsurgery
     -- genericSerialize . f . 'toData'
     -- 'fromData' . unf . genericDeserialize
     -- @
-
-    -- ** Derecordify
-
-  , Derecordify()
-  , derecordify
-  , underecordify
-
-    -- ** Type aging ("denewtypify")
-
-  , Typeage()
-  , typeage
-  , untypeage
 
     -- ** Renaming of fields and constructors
     -- | These surgeries require @DataKinds@ and @TypeApplications@.
@@ -110,6 +117,18 @@ module Generic.Data.Microsurgery
 
   , OnFields()
   , DOnFields
+
+    -- ** Type aging ("denewtypify")
+
+  , Typeage()
+  , typeage
+  , untypeage
+
+    -- ** Derecordify
+
+  , Derecordify()
+  , derecordify
+  , underecordify
 
   ) where
 

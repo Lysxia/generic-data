@@ -27,11 +27,13 @@ import GHC.Generics
 import GHC.TypeLits (ErrorMessage(..), Symbol, TypeError)
 
 import Generic.Data.Types (Data)
-import Generic.Data.Internal.Generically (Generically(..))
+import Generic.Data.Internal.Generically (Generically(..), GenericProduct(..))
 
 -- * Surgery
 
 -- | Apply a microsurgery @s@ to a type @a@ for @DerivingVia@.
+--
+-- For the 'Data.Monoid.Monoid' class, see 'ProductSurgery'.
 --
 -- === __Example__
 --
@@ -49,6 +51,10 @@ import Generic.Data.Internal.Generically (Generically(..))
 -- --   show (T {unT = 3}) == "T 3"
 -- @
 type Surgery (s :: *) (a :: *) = Generically (Surgery' s a)
+
+-- | Apply a microsurgery @s@ to a type @a@ for @DerivingVia@ for the
+-- 'Data.Monoid.Monoid' class.
+type ProductSurgery (s :: *) (a :: *) = GenericProduct (Surgery' s a)
 
 -- | See 'Surgery'.
 newtype Surgery' (s :: *) (a :: *) = Surgery' { unSurgery' :: a }
@@ -260,7 +266,42 @@ onData = id
 -- | Apply a type constructor @f@ to every field type of a generic
 -- representation @r@.
 --
+-- > data Color = RGB
+-- >   { r :: Int
+-- >   , g :: Int
+-- >   , b :: Int }
+-- >
+-- > -- becomes --
+-- >
+-- > data Color f = RGB
+-- >   { r :: f Int
+-- >   , g :: f Int
+-- >   , b :: f Int }
+--
 -- This is a defunctionalized symbol, applied using 'GSurgery' or 'Surgery'.
+--
+-- === __Example__
+--
+-- Derive 'Data.Semigroup.Semigroup' and 'Data.Monoid.Monoid' for
+-- products of 'Prelude.Num' types:
+--
+-- @
+-- {-\# LANGUAGE DeriveGeneric, DerivingVia \#-}
+-- import "Data.Monoid" ('Data.Monoid.Sum'(..))  -- Constructors must be in scope
+-- import "GHC.Generics" ('Generic')
+-- import "Generic.Data.Microsurgery"
+--   ( 'ProductSurgery'
+--   , 'OnFields'
+--   , 'GenericProduct'(..)  -- Constructors must be in scope
+--   , 'Surgery''(..)        --
+--   )
+--
+-- data TwoCounters = MkTwoCounters { c1 :: Int, c2 :: Int }
+--   deriving 'Generic'
+--   deriving ('Data.Semigroup.Semigroup', 'Data.Monoid.Monoid')
+--     via ('ProductSurgery' ('OnFields' 'Data.Monoid.Sum') TwoCounters)
+-- @
+--
 data OnFields (f :: * -> *) :: *
 type instance GSurgery (OnFields f) g = GOnFields f g
 
