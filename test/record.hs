@@ -12,6 +12,7 @@ import Data.Functor.Classes
 import Data.Semigroup
 import Data.Monoid (Alt(..))
 import GHC.Generics (Generic)
+import Text.Read
 
 import Generic.Data
 import Generic.Data.Orphans ()
@@ -20,6 +21,10 @@ data MyRecord f = MyRecord
   { _field1 :: f Int
   , _field2 :: f Bool
   } deriving Generic
+
+instance Read1 f => Read (MyRecord f) where
+  readPrec = coerce (greadPrec @(MyRecord (Id1 f)))
+  readListPrec = readListPrecDefault
 
 instance Show1 f => Show (MyRecord f) where
   showsPrec = coerce (gshowsPrec @(MyRecord (Id1 f)))

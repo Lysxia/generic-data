@@ -20,10 +20,12 @@ import Data.Functor.Classes
 import Data.Semigroup
 import Data.Ix
 import GHC.Generics
+import Text.Read
 
 import Generic.Data.Internal.Prelude
 import Generic.Data.Internal.Enum
 import Generic.Data.Internal.Error
+import Generic.Data.Internal.Read
 import Generic.Data.Internal.Show
 
 -- | Type with instances derived via 'Generic'.
@@ -39,6 +41,10 @@ instance (Generic a, Eq (Rep a ())) => Eq (Generically a) where
 
 instance (Generic a, Ord (Rep a ())) => Ord (Generically a) where
   compare = gcompare
+
+instance (Generic a, GRead0 (Rep a)) => Read (Generically a) where
+  readPrec = greadPrec
+  readListPrec = readListPrecDefault
 
 instance (Generic a, GShow0 (Rep a)) => Show (Generically a) where
   showsPrec = gshowsPrec
@@ -110,6 +116,23 @@ instance (Generic1 f, Ord1 (Rep1 f)) => Ord1 (Generically1 f) where
 
 instance (Generic1 f, Ord1 (Rep1 f), Ord a) => Ord (Generically1 f a) where
   compare = compare1
+
+instance (Generic1 f, GRead1 (Rep1 f)) => Read1 (Generically1 f) where
+#if MIN_VERSION_base(4,10,0)
+  liftReadPrec = gliftReadPrec
+  liftReadListPrec = liftReadListPrecDefault
+#else
+  liftReadsPrec rp rl = readPrec_to_S $
+    gliftReadPrec (readS_to_Prec rp) (readS_to_Prec (const rl))
+#endif
+
+instance (Generic1 f, GRead1 (Rep1 f), Read a) => Read (Generically1 f a) where
+#if MIN_VERSION_base(4,10,0)
+  readPrec = readPrec1
+  readListPrec = readListPrecDefault
+#else
+  readsPrec = readsPrec1
+#endif
 
 instance (Generic1 f, GShow1 (Rep1 f)) => Show1 (Generically1 f) where
   liftShowsPrec = gliftShowsPrec

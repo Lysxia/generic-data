@@ -30,6 +30,11 @@ module Generic.Data
     -- | Can also be derived by GHC as part of the standard.
   , gcompare
 
+    -- ** 'Read'
+    -- | Can also be derived by GHC as part of the standard.
+  , greadPrec
+  , GRead0
+
     -- ** 'Show'
     -- | Can also be derived by GHC as part of the standard.
   , gshowsPrec
@@ -100,6 +105,10 @@ module Generic.Data
 
     -- ** 'Data.Functor.Classes.Ord1'
   , gliftCompare
+
+    -- ** 'Data.Functor.Classes.Read1'
+  , gliftReadPrec
+  , GRead1
 
     -- ** 'Data.Functor.Classes.Show1'
   , gliftShowsPrec
@@ -176,6 +185,7 @@ import Generic.Data.Internal.Prelude
 import Generic.Data.Internal.Enum
 import Generic.Data.Internal.Generically
 import Generic.Data.Internal.Meta
+import Generic.Data.Internal.Read
 import Generic.Data.Internal.Show
 import Generic.Data.Internal.Newtype
 import Generic.Data.Internal.Resolvers

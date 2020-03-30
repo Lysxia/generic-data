@@ -2,7 +2,8 @@
     BangPatterns,
     EmptyCase,
     FlexibleContexts,
-    PolyKinds #-}
+    PolyKinds,
+    Trustworthy #-}
 
 -- | Utilities.
 --
@@ -18,6 +19,7 @@ module Generic.Data.Internal.Utils where
 
 import Data.Coerce
 import GHC.Generics
+import GHC.Lexeme (startsConSym, startsVarSym)
 
 -- | Convert between types with representationally equivalent generic
 -- representations.
@@ -54,3 +56,15 @@ to' = to
 -- | Lift binary combinators generically.
 liftG2 :: Generic1 f => (Rep1 f a -> Rep1 f b -> Rep1 f c) -> f a -> f b -> f c
 liftG2 = \(<?>) a b -> to1 (from1 a <?> from1 b)
+
+-- | Returns 'True' if the argument is a symbolic data constructor name
+-- (e.g., @(:+:)@). Returns 'False' otherwise.
+isSymDataCon :: String -> Bool
+isSymDataCon ""    = False
+isSymDataCon (c:_) = startsConSym c
+
+-- | Returns 'True' if the argument is a symbolic value name (e.g., @(+++)@).
+-- Returns 'False' otherwise.
+isSymVar :: String -> Bool
+isSymVar ""    = False
+isSymVar (c:_) = startsVarSym c

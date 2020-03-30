@@ -34,6 +34,7 @@ library
     Generic.Data.Internal.Microsurgery
     Generic.Data.Internal.Newtype
     Generic.Data.Internal.Prelude
+    Generic.Data.Internal.Read
     Generic.Data.Internal.Resolvers
     Generic.Data.Internal.Show
     Generic.Data.Internal.Utils
