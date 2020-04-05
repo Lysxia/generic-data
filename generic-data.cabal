@@ -10,8 +10,8 @@ license:             MIT
 license-file:        LICENSE
 author:              Li-yao Xia
 maintainer:          lysxia@gmail.com
-copyright:           2018 Li-yao Xia
-category:            Other
+copyright:           2018-2020 Li-yao Xia
+category:            Generics
 build-type:          Simple
 extra-source-files:  README.md, CHANGELOG.md
 cabal-version:       >=1.10
