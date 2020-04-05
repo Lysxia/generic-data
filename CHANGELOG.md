@@ -1,3 +1,7 @@
+# 0.8.3.0
+
+- Add generic `Read`. Thanks to RyanGlScott.
+
 # 0.8.2.0
 
 - Add microsurgery `CopyRep`.
