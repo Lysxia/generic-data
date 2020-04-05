@@ -62,11 +62,9 @@ Supported classes that GHC currently can't derive: `Semigroup`, `Monoid`,
 Other classes from base are also supported, even though GHC can already derive
 them:
 
-- `Eq`, `Ord`, `Enum`, `Bounded`, `Show` (derivable by the standard);
+- `Eq`, `Ord`, `Enum`, `Bounded`, `Show`, `Read` (derivable by the standard);
 - `Functor`, `Foldable`, `Traversable` (derivable via extensions,
   `DeriveFunctor`, etc.).
-
-(`Read` is currently not implemented.)
 
 To derive type classes outside of the standard library, it might be worth
 taking a look at [one-liner](https://hackage.haskell.org/package/one-liner).
