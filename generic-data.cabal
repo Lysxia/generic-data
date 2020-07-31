@@ -41,8 +41,10 @@ library
     Generic.Data.Internal.Read
     Generic.Data.Internal.Resolvers
     Generic.Data.Internal.Show
+    Generic.Data.Internal.Traversable
     Generic.Data.Internal.Utils
   build-depends:
+    ap-normalize >= 0.1 && < 0.2,
     base-orphans >= 0.8,
     contravariant,
     ghc-boot-th,

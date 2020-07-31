@@ -1,7 +1,9 @@
-{-# LANGUAGE CPP #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE
+  CPP,
+  FlexibleContexts,
+  TypeFamilies,
+  UndecidableInstances,
+  UndecidableSuperClasses #-}
 
 -- | Newtypes with instances implemented using generic combinators.
 --
@@ -22,11 +24,12 @@ import Data.Ix
 import GHC.Generics
 import Text.Read
 
-import Generic.Data.Internal.Prelude
+import Generic.Data.Internal.Prelude hiding (gfoldMap, gtraverse, gsequenceA)
 import Generic.Data.Internal.Enum
 import Generic.Data.Internal.Error
 import Generic.Data.Internal.Read
 import Generic.Data.Internal.Show
+import Generic.Data.Internal.Traversable (GFoldable, GTraversable, gfoldMap, gtraverse, gsequenceA)
 
 -- | Type with instances derived via 'Generic'.
 newtype Generically a = Generically { unGenerically :: a }
@@ -155,13 +158,15 @@ instance (Generic1 f, Alternative (Rep1 f)) => Alternative (Generically1 f) wher
   empty = gempty
   (<|>) = galt
 
-instance (Generic1 f, Foldable (Rep1 f)) => Foldable (Generically1 f) where
+instance (Generic1 f, GFoldable (Rep1 f)) => Foldable (Generically1 f) where
   foldMap = gfoldMap
   foldr = gfoldr
 
-instance (Generic1 f, Traversable (Rep1 f)) => Traversable (Generically1 f) where
+instance (Generic1 f, Functor (Rep1 f), GFoldable (Rep1 f), GTraversable (Rep1 f))
+  => Traversable (Generically1 f) where
   traverse = gtraverse
   sequenceA = gsequenceA
+
 
 -- | Product type with generic instances of 'Semigroup' and 'Monoid'.
 --
