@@ -41,6 +41,7 @@ library
     Generic.Data.Internal.Read
     Generic.Data.Internal.Resolvers
     Generic.Data.Internal.Show
+    Generic.Data.Internal.Traversable
     Generic.Data.Internal.Utils
   build-depends:
     base-orphans >= 0.8,

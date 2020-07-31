@@ -181,12 +181,13 @@ module Generic.Data
   , MetaSelStrictness
   ) where
 
-import Generic.Data.Internal.Prelude
+import Generic.Data.Internal.Prelude hiding (gfoldMap, gtraverse, gsequenceA)
 import Generic.Data.Internal.Enum
 import Generic.Data.Internal.Generically
 import Generic.Data.Internal.Meta
 import Generic.Data.Internal.Read
 import Generic.Data.Internal.Show
+import Generic.Data.Internal.Traversable
 import Generic.Data.Internal.Newtype
 import Generic.Data.Internal.Resolvers
 import Generic.Data.Internal.Utils

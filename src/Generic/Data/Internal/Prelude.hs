@@ -141,6 +141,7 @@ galt = liftG2 (<|>)
 -- instance 'Foldable' MyTypeF where
 --   'foldMap' = 'gfoldMap'
 -- @
+{-# DEPRECATED gfoldMap "This definition has been replaced with 'Generic.Data.Internal.gfoldMap'." #-}
 gfoldMap :: (Generic1 f, Foldable (Rep1 f), Monoid m) => (a -> m) -> f a -> m
 gfoldMap = \f -> foldMap f . from1
 
@@ -154,6 +155,7 @@ gfoldMap = \f -> foldMap f . from1
 -- See also 'gfoldMap'.
 gfoldr :: (Generic1 f, Foldable (Rep1 f)) => (a -> b -> b) -> b -> f a -> b
 gfoldr = \f b -> foldr f b . from1
+-- Note: this one is not deprecated because inlining Just Works.
 
 -- * 'Traversable'
 
@@ -163,6 +165,7 @@ gfoldr = \f b -> foldr f b . from1
 -- instance 'Traversable' MyTypeF where
 --   'traverse' = 'gtraverse'
 -- @
+{-# DEPRECATED gtraverse "This definition has been replaced with 'Generic.Data.Internal.gtraverse'." #-}
 gtraverse
   :: (Generic1 f, Traversable (Rep1 f), Applicative m)
   => (a -> m b) -> f a -> m (f b)
@@ -176,6 +179,8 @@ gtraverse = \f -> fmap to1 . traverse f . from1
 -- @
 --
 -- See also 'gtraverse'.
+--
+{-# DEPRECATED gsequenceA "This definition has been replaced with 'Generic.Data.Internal.gsequenceA'." #-}
 gsequenceA
   :: (Generic1 f, Traversable (Rep1 f), Applicative m)
   => f (m a) -> m (f a)
