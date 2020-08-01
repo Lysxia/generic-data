@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -dsuppress-all #-}
+{-# OPTIONS_GHC -funfolding-use-threshold=1000 #-}
 {-# LANGUAGE
     BangPatterns,
     DeriveFunctor,
@@ -11,10 +12,14 @@
     TemplateHaskell
     #-}
 
+{-# LANGUAGE TypeOperators, TypeFamilies #-}
+
 import Control.Applicative (liftA2)
 import Data.Coerce (coerce)
 import GHC.Generics (Generic, Generic1)
 import Data.Semigroup (Sum(..), All(..))
+
+import GHC.Generics -- TODO remove
 
 import Test.Inspection
 
@@ -90,6 +95,28 @@ data Big a
   | Big4 a a a a
   | Big8 Int a [a] [Int] [a] a a a
   deriving (Generic1, Eq, Ord, Functor, Foldable, Traversable)
+
+instance Generic (Big a) where
+  type Rep (Big a) =
+        U1
+    :+: K1 () a
+    :+: (K1 () a :*: K1 () a)
+    :+: (K1 () a :*: K1 () a :*: K1 () a :*: K1 () a)
+    :+: (   K1 () Int :*: K1 () a :*: K1 () [a] :*: K1 () [Int]
+        :*: K1 () ([a]) :*: K1 () a :*: K1 () a :*: K1 () a)
+  from Big0 = L1 U1
+  from (Big1 x) = R1 (L1 (K1 x))
+  from (Big2 x1 x2) = R1 (R1 (L1 (K1 x1 :*: K1 x2)))
+  from (Big4 x1 x2 x3 x4) = R1 (R1 (R1 (L1 (K1 x1 :*: K1 x2 :*: K1 x3 :*: K1 x4))))
+  from (Big8 x1 x2 x3 x4 x5 x6 x7 x8) = R1 (R1 (R1 (R1 (K1 x1 :*: K1 x2 :*: K1 x3 :*: K1 x4 :*: K1 x5 :*: K1 x6 :*: K1 x7 :*: K1 x8))))
+  {-# INLINE from #-}
+
+  to (L1 _) = Big0
+  to (R1 (L1 (K1 x))) = Big1 x
+  to (R1 (R1 (L1 (K1 x1 :*: K1 x2)))) = Big2 x1 x2
+  to (R1 (R1 (R1 (L1 (K1 x1 :*: K1 x2 :*: K1 x3 :*: K1 x4))))) = Big4 x1 x2 x3 x4
+  to (R1 (R1 (R1 (R1 (K1 x1 :*: K1 x2 :*: K1 x3 :*: K1 x4 :*: K1 x5 :*: K1 x6 :*: K1 x7 :*: K1 x8))))) = Big8 x1 x2 x3 x4 x5 x6 x7 x8
+  {-# INLINE to #-}
 
 -- Empty
 
@@ -413,6 +440,69 @@ mk_liftA2 ''Ary4
   [| \ f (Ary4 x1 y1 fz z1) (Ary4 x2 y2 xz z2) ->
        Ary4 (f x1 x2) (f y1 y2) (fz <> xz) (liftA2 f z1 z2) |]
 inspect $ 'liftA2Ary4R ==- 'liftA2Ary4G
+
+-- Big
+
+-- The simplifier is good enough to reassociate (&&)
+mk_eq ''Big
+  [| \ x y -> case (x, y) of
+       (Big0, Big0) -> True
+       (Big1 x1, Big1 y1) ->
+         x1 == y1
+       (Big2 x1 x2, Big2 y1 y2) ->
+         x1 == y1 && x2 == y2
+       (Big4 x1 x2 x3 x4, Big4 y1 y2 y3 y4) ->
+         x1 == y1 && x2 == y2 && x3 == y3 && x4 == y4
+       (Big8 x1 x2 x3 x4 x5 x6 x7 x8, Big8 y1 y2 y3 y4 y5 y6 y7 y8) ->
+         x1 == y1 && x2 == y2 && x3 == y3 && x4 == y4 &&
+         x5 == y5 && x6 == y6 && x7 == y7 && x8 == y8
+       (_, _) -> False |]
+inspect $ 'eqBigR === 'eqBigS
+inspect $ 'eqBigR =/= 'eqBigG -- TODO
+
+{-
+-- The simplifier is good enough to reassociate (<>)
+mk_compare ''Big
+  [| \ (Big4 x1 x2 x3 x4) (Big4 y1 y2 y3 y4) ->
+       compare x1 y1 <> compare x2 y2 <> compare x3 y3 <> compare x4 y4 |]
+inspect $ 'compareBigR === 'compareBigS
+inspect $ 'compareBigR === 'compareBigG
+
+mk_fmap ''Big
+  [| \ f (Big4 x y z t) -> Big (f x) (f y) z (fmap f t) |]
+inspect $ 'fmapBigR ==- 'fmapBigS
+inspect $ 'fmapBigR ==- 'fmapBigG
+
+mk_foldMap ''Big
+  [| \ f (Big4 x y _ z) -> f x `mappend` (f y `mappend` foldMap f z) |]
+inspect $ 'foldMapBigR ==- 'foldMapBigS
+inspect $ 'foldMapBigR ==- 'foldMapBigG
+
+mk_foldr ''Big
+  [| \ f r (Big4 x y _ t) -> f x (f y (foldr f r t)) |]
+inspect $ 'foldrBigR ==- 'foldrBigS
+inspect $ 'foldrBigR ==- 'foldrBigG
+
+mk_traverse ''Big
+  [| \ f (Big4 x y z t) ->
+       liftA2 (\x' y' -> Big x' y' z) (f x) (f y) <*> (traverse f t) |]
+inspect $ 'traverseBigR ==- 'traverseBigS
+inspect $ 'traverseBigR ==- 'traverseBigG
+
+mk_sequenceA ''Big [| \ (Big4 x y z t) -> liftA2 (\x' y' -> Big x' y' z) x y <*> sequenceA t |]
+inspect $ 'sequenceABigRS ==- 'sequenceABigS
+inspect $ 'sequenceABigR ==- 'sequenceABigG
+
+mk_ap ''Big
+  [| \ (Big4 f1 f2 fz f3) (Big4 x1 x2 xz x3) ->
+       Big (f1 x1) (f2 x2) (fz <> xz) (f3 <*> x3) |]
+inspect $ 'apBigR ==- 'apBigG
+
+mk_liftA2 ''Big
+  [| \ f (Big4 x1 y1 fz z1) (Big4 x2 y2 xz z2) ->
+       Big (f x1 x2) (f y1 y2) (fz <> xz) (liftA2 f z1 z2) |]
+inspect $ 'liftA2BigR ==- 'liftA2BigG
+-}
 
 -- dummy
 main :: IO ()
