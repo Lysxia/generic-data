@@ -1,7 +1,7 @@
 module Main (main) where
 
-import System.FilePath.Glob (glob)
 import Test.DocTest (doctest)
+import Build_doctests (flags, pkgs, module_sources)
 
 main :: IO ()
-main = glob "src/**/*.hs" >>= doctest
+main = doctest (flags ++ pkgs ++ module_sources)
