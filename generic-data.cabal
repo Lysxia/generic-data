@@ -12,11 +12,15 @@ author:              Li-yao Xia
 maintainer:          lysxia@gmail.com
 copyright:           2018-2020 Li-yao Xia
 category:            Generics
-build-type:          Simple
+build-type:          Custom
 extra-source-files:  README.md, CHANGELOG.md
 cabal-version:       >=1.10
 tested-with:         GHC == 8.0.2, GHC == 8.2.2, GHC == 8.4.3, GHC == 8.6.1,
                      GHC == 8.6.3, GHC == 8.6.5, GHC == 8.8.2
+
+custom-setup
+  setup-depends:
+    base, Cabal, cabal-doctest >= 1.0.6 && < 1.1
 
 library
   hs-source-dirs:      src
@@ -127,7 +131,6 @@ test-suite generic-data-doctest
   main-is: doctest.hs
   build-depends:
     doctest,
-    Glob,
     QuickCheck,
     generic-data,
     base
