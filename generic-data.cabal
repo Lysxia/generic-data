@@ -128,6 +128,23 @@ test-suite one-liner-surgery-test
   default-language: Haskell2010
   type: exitcode-stdio-1.0
 
+test-suite generic-data-inspection-test
+  hs-source-dirs: test
+  main-is: inspection.hs
+  other-modules:
+    Inspection.Boilerplate
+  build-depends:
+    generic-data,
+    inspection-testing,
+    template-haskell,
+    unordered-containers,
+    base
+  ghc-options: -Wall -threaded
+  default-language: Haskell2010
+  type: exitcode-stdio-1.0
+  if impl(ghc < 8.2) || os(windows)
+    buildable: False
+
 test-suite generic-data-doctest
   hs-source-dirs: test
   main-is: doctest.hs
