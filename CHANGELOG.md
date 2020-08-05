@@ -1,3 +1,22 @@
+# 0.9.0.0
+
+- Improved definition of `gfoldMap`, `gtraverse`, and `sequenceA`.
+  The optimized Core of `Traversable` instances eliminates all `GHC.Generic` instance
+  boilerplate. In many cases, it is identical to the result of GHC's `DeriveFoldable`
+  and `DeriveTraversable` extensions (note: this was already not a problem for
+  `gfmap`).
+
+  It's worth noting that there are currently issues with inlining which prevent
+  optimizations that *generic-data* would ideally rely on.
+
+    + The biggest issue is that GHC will not even inline the `to` and `from`
+      methods of the `Generic` instance it derives for large types (this shows
+      up at around 5 constructors and 10 fields, which is indeed not really
+      big). This will be fixed by a patch for GHC (WIP):
+      https://gitlab.haskell.org/ghc/ghc/-/merge_requests/2965
+
+    + There appear to be some more inlining issues beyond that (issue #40).
+
 # 0.8.3.0
 
 - Add generic `Read`. Thanks to RyanGlScott.
