@@ -1,5 +1,7 @@
 -- | Generic combinators to derive type class instances.
 --
+-- = Overview
+--
 -- /base/ classes that GHC can not derive instances for, as of version 8.2:
 --
 -- - 'Data.Semigroup.Semigroup', 'Monoid', 'Applicative',
@@ -11,6 +13,58 @@
 --
 -- GHC can derive instances for other classes here, although there may be
 -- types supported by one method but not the other or vice versa.
+--
+-- == __Minor discrepancies__
+--
+-- Here are documented some corner cases of deriving, both by GHC and
+-- generic-data. They are all minor and unlikely to cause problems in
+-- practice.
+--
+-- === Empty types
+--
+-- - Some of the derived methods are lazy, which might result in errors
+--   being silenced, though unlikely.
+-- - The only generic-data implementation which differs from GHC stock
+--   instances is 'gfoldMap'.
+--
+-- +------------------+-----------+--------------+-----------------------+
+-- | Class method     | GHC stock | generic-data | Comment               |
+-- +------------------+-----------+--------------+-----------------------+
+-- | @('==')@         | lazy      | lazy         | 'True'                |
+-- +------------------+-----------+--------------+-----------------------+
+-- | 'compare'        | lazy      | lazy         | 'EQ'                  |
+-- +------------------+-----------+--------------+-----------------------+
+-- | 'fmap'           | strict    | strict       | must be bottom anyway |
+-- +------------------+-----------+--------------+-----------------------+
+-- | 'foldMap'        | lazy      | strict       | 'mempty' if lazy      |
+-- +------------------+-----------+--------------+-----------------------+
+-- | 'foldr'          | lazy      | lazy         | returns accumulator   |
+-- +------------------+-----------+--------------+-----------------------+
+-- | 'traverse'       | strict    | strict       |                       |
+-- +------------------+-----------+--------------+-----------------------+
+-- | 'sequenceA'      | strict    | strict       |                       |
+-- +------------------+-----------+--------------+-----------------------+
+--
+-- === Single-constructor single-field types
+--
+-- @data@ types with one constructor and one field are extremely rare.
+-- @newtype@ is almost always more appropriate (for which there is no issue).
+--
+-- That said, for @data@ types both strict and lazy, all generic-data
+-- implementations are lazy (they don't even force the constructor),
+-- whereas GHC stock implementations, when they exist, are strict.
+--
+-- === Functor composition
+--
+-- Fields of functors involving the composition of two or more
+-- functors @f (g (h a))@ cannot be handled nicely using @GHC.Generics@.
+-- Some overhead cannot be safely avoided.
+--
+-- This is due to a particular encoding choice of @GHC.Generics@, where
+-- composition are nested to the right instead of to the left. @f (g (h _))@ is
+-- represented by the functor @f ':.:' (g ':.:' 'Rec1' h)@. A better choice is to
+-- encode it as @('Rec1' f ':.:' g) ':.:' h@, because that is coercible back to
+-- @f (g (h _))@.
 
 module Generic.Data
   ( -- * Regular classes
