@@ -13,7 +13,7 @@ import Test.Tasty
 import Test.Tasty.HUnit
 import Text.Read
 
-import GHC.Generics
+import GHC.Generics (Fixity(Prefix))
 import Generic.Data
 import Generic.Data.Orphans ()
 
@@ -259,12 +259,23 @@ test = testGroup "unit"
       , testCase "conIsRecord" $ False @=? gconIsRecord (Just ())
       , testCase "conNum" $ 2 @=? gconNum @(Maybe Int)
       ]
+  , testGroup "ConId"
+      [ testCase "conIdEnum" $ [conId Nothing, conId (Just ())] @?= conIdEnum @(Maybe ())
+      , testCase "conIdMin" $ conId (Nothing :: Maybe ()) @?= conIdMin
+      , testCase "conIdMax" $ conId (Just ()) @?= conIdMax
+      ]
+  , let i = conId (Nothing :: Maybe ()) in
+    testGroup "ConId (Nothing)"
+      [ testCase "conId" $ "ConId 0" @?= show i
+      , testCase "conIdToInt" $ 0 @?= conIdToInt i
+      , testCase "conIdToString" $ "Nothing" @?= conIdToString i
+      , testCase "conIdNamed" $ i @?= conIdNamed @"Nothing"
+      ]
   , let i = conId (Just ()) in
-    testGroup "ConId"
+    testGroup "ConId (Just)"
       [ testCase "conId" $ "ConId 1" @?= show i
       , testCase "conIdToInt" $ 1 @?= conIdToInt i
       , testCase "conIdToString" $ "Just" @?= conIdToString i
-      , testCase "conIdEnum" $ [conId Nothing, conId (Just ())] @?= conIdEnum @(Maybe ())
       , testCase "conIdNamed" $ i @?= conIdNamed @"Just"
       ]
   ]

@@ -221,6 +221,11 @@ module Generic.Data
   , conIdNamed
   , ConIdNamed
 
+  , conIdMin
+  , conIdMax
+  , NonEmptyType
+  , IsEmptyType
+
   -- ** Using type families
   , MetaOf
   , MetaDataName
@@ -235,6 +240,12 @@ module Generic.Data
   , MetaSelUnpack
   , MetaSelSourceStrictness
   , MetaSelStrictness
+
+    -- * The @Generic@ class
+
+    -- | Reexported from "GHC.Generics".
+  , Generic()
+  , Generic1()
   ) where
 
 import Generic.Data.Internal.Prelude hiding (gfoldMap, gtraverse, gsequenceA)
@@ -247,3 +258,5 @@ import Generic.Data.Internal.Traversable
 import Generic.Data.Internal.Newtype
 import Generic.Data.Internal.Resolvers
 import Generic.Data.Internal.Utils
+
+import GHC.Generics (Generic, Generic1)

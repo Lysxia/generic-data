@@ -10,11 +10,10 @@
 
 -- @DataKinds@ and @TypeApplications@ for @renameFields@ and @renameConstrs@
 
-import GHC.Generics (Generic)
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import Generic.Data (gshowsPrec)
+import Generic.Data (Generic, gshowsPrec)
 import Generic.Data.Microsurgery
   ( toData
   , derecordify, typeage, renameFields, renameConstrs

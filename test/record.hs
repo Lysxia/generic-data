@@ -11,7 +11,6 @@ import Data.Coerce
 import Data.Functor.Classes
 import Data.Semigroup
 import Data.Monoid (Alt(..))
-import GHC.Generics (Generic)
 import Text.Read
 
 import Generic.Data

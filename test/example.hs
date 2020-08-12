@@ -8,8 +8,7 @@
 #endif
 
 import Data.Semigroup (Semigroup(..))
-import GHC.Generics
-import Generic.Data (gmappend, Generically(..))
+import Generic.Data (Generic, gmappend, Generically(..))
 import Generic.Data.Orphans ()
 
 data Foo a = Bar [a] [a] deriving Generic

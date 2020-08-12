@@ -8,13 +8,12 @@
 
 import Data.Coerce (coerce)
 import Data.Functor.Identity (Identity(..))
-import GHC.Generics (Generic)
 import Test.Tasty
 import Test.Tasty.HUnit
 
 import Data.Generics.Product (field_)
 
-import Generic.Data (gshowsPrec, Opaque(Opaque))
+import Generic.Data (Generic, gshowsPrec, Opaque(Opaque))
 import Generic.Data.Microsurgery (onData, toData)
 
 data T = R { f :: Int -> Int } deriving Generic
