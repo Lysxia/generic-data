@@ -221,6 +221,11 @@ module Generic.Data
   , conIdNamed
   , ConIdNamed
 
+  , conIdMin
+  , conIdMax
+  , NonEmptyType
+  , IsEmptyType
+
   -- ** Using type families
   , MetaOf
   , MetaDataName

@@ -261,6 +261,8 @@ test = testGroup "unit"
       ]
   , testGroup "ConId"
       [ testCase "conIdEnum" $ [conId Nothing, conId (Just ())] @?= conIdEnum @(Maybe ())
+      , testCase "conIdMin" $ conId (Nothing :: Maybe ()) @?= conIdMin
+      , testCase "conIdMax" $ conId (Just ()) @?= conIdMax
       ]
   , let i = conId (Nothing :: Maybe ()) in
     testGroup "ConId (Nothing)"

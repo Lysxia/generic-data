@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-simplifiable-class-constraints #-}
 
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE EmptyCase #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -142,7 +143,7 @@ conIdToInt (ConId i) = i
 conIdToString :: forall a. Constructors a => ConId a -> String
 conIdToString = gConIdToString . fromConId
 
--- | All constructor identifiers. This must not be called on an empty type.
+-- | All constructor identifiers.
 --
 -- @
 -- 'gconNum' \@a = length ('conIdEnum' \@a)
@@ -152,12 +153,12 @@ conIdEnum = fmap ConId [0 .. n-1]
   where
     n = gConNum @(Rep a)
 
--- | This must not be called on an empty type.
-conIdMin :: forall a. Constructors a => ConId a
+-- | The first constructor. This must not be called on an empty type.
+conIdMin :: forall a. (Constructors a, NonEmptyType "conIdMin" a) => ConId a
 conIdMin = ConId 0
 
--- | This must not be called on an empty type.
-conIdMax :: forall a. Constructors a => ConId a
+-- | The last constructor. This must not be called on an empty type.
+conIdMax :: forall a. (Constructors a, NonEmptyType "conIdMax" a) => ConId a
 conIdMax = toConId gConIdMax
 
 -- | Get a 'ConId' by name.
@@ -240,6 +241,13 @@ instance Constructor c => GConstructors (M1 C c f) where
   gConFixity = conFixity
   gConIsRecord = conIsRecord
 
+instance GConstructors V1 where
+  gConIdToString x = x `seq` error "gConIdToString: empty type"  -- Input should be empty.
+  gConId v = case v of {}
+  gConNum = 0
+  gConFixity v = case v of {}
+  gConIsRecord v = case v of {}
+
 -- *** Find a constructor tag by name
 
 type ConIdNamed' n t = GConIdNamedIf n t (GConIdNamed n (Rep t))
@@ -258,6 +266,60 @@ type family GConIdNamedIf (n :: Symbol) (t :: *) (o :: Maybe Nat) :: Nat where
   GConIdNamedIf  n  t 'Nothing = TypeError
     ('Text "No constructor named " ':<>: 'ShowType n
     ':<>: 'Text " in generic type " ':<>: 'ShowType t)
+
+-- *** Check that a type is not empty
+
+-- | Constraint that a generic type @a@ is not empty.
+-- Producing an error message otherwise.
+--
+-- The 'Symbol' parameter 'fname' is used only for error messages.
+--
+-- It is implied by the simpler constraint @'IsEmptyType' a ~ 'False@
+class    NonEmptyType_ fname a => NonEmptyType fname a
+instance NonEmptyType_ fname a => NonEmptyType fname a
+
+-- | Internal definition of 'NonEmptyType'.
+-- It is implied by the simpler constraint @'IsEmptyType' a ~ 'False@.
+--
+-- >>> :set -XTypeFamilies
+-- >>> :{
+-- conIdMin' :: (Constructors a, IsEmptyType a ~ 'False) => ConId a
+-- conIdMin' = conIdMin
+-- :}
+--
+-- >>> :{
+-- conIdMax' :: (Constructors a, IsEmptyType a ~ 'False) => ConId a
+-- conIdMax' = conIdMax
+-- :}
+type NonEmptyType_ fname a = (ErrorIfEmpty fname a (IsEmptyType a) ~ '())
+
+-- 'True' if the generic representation is @M1 D _ V1@.
+type family GIsEmptyType (r :: k -> *) :: Bool where
+  GIsEmptyType (M1 D _d V1) = 'True
+  GIsEmptyType (M1 D _d (M1 C _c _f)) = 'False
+  GIsEmptyType (M1 D _d (_f :+: _g)) = 'False
+
+-- | 'True' if the generic type @a@ is empty.
+type IsEmptyType a = IsEmptyType_ a
+
+-- | Internal definition of 'IsEmptyType'.
+type IsEmptyType_ a = GIsEmptyType (Rep a)
+
+-- | Throw an error if the boolean @b@ is true, meaning that the type @a@ is empty.
+--
+-- Example:
+--
+-- > ghci> data E deriving Generic
+-- > ghci> conIdMin :: ConId E
+--
+-- Error message:
+--
+-- > The function 'conIdMin' cannot be used with the empty type E
+type family ErrorIfEmpty (fname :: Symbol) (a :: *) (b :: Bool) :: () where
+  ErrorIfEmpty fname a 'True = TypeError
+    ('Text "The function '" ':<>: 'Text fname
+    ':<>: 'Text "' cannot be used with the empty type " ':<>: 'ShowType a)
+  ErrorIfEmpty fname a 'False = '()
 
 -- * Type families
 
