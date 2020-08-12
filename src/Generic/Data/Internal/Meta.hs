@@ -2,6 +2,7 @@
 
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE EmptyCase #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -147,9 +148,9 @@ conIdToString = gConIdToString . fromConId
 -- 'gconNum' \@a = length ('conIdEnum' \@a)
 -- @
 conIdEnum :: forall a. Constructors a => [ConId a]
-conIdEnum = fmap ConId [0 .. n]
+conIdEnum = fmap ConId [0 .. n-1]
   where
-    ConId n = conIdMax @a
+    n = gConNum @(Rep a)
 
 -- | This must not be called on an empty type.
 conIdMin :: forall a. Constructors a => ConId a
@@ -219,9 +220,9 @@ instance (GConstructors f, GConstructors g) => GConstructors (f :+: g) where
     if i < nf then
       gConIdToString @f (GConId i)
     else
-      gConIdToString @g (GConId (i - nf - 1))
+      gConIdToString @g (GConId (i - nf))
     where
-      GConId nf = gConIdMax @f
+      nf = gConNum @f
   gConId (L1 x) = reGConId (gConId x)
   gConId (R1 y) = let GConId i = gConId y in GConId (nf + 1 + i)
     where
