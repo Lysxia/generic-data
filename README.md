@@ -36,7 +36,6 @@ imports:
 
 -- base
 import Data.Semigroup (Semigroup(..))
-import GHC.Generics
 
 -- generic-data
 import Generic.Data (gmappend)
@@ -97,8 +96,7 @@ but as if it were not a record.
 
 ```haskell
 {-# LANGUAGE DeriveGeneric #-}
-import GHC.Generic (Generic)
-import Generic.Data (gshowsPrec)
+import Generic.Data (Generic, gshowsPrec)
 import Generic.Data.Microsurgery (toData, derecordify)
 
 -- An example record type
@@ -123,7 +121,7 @@ Alternatively, using `DerivingVia`:
 
 ```haskell
 {-# LANGUAGE DeriveGeneric, DerivingVia #-}
-import GHC.Generic (Generic)
+import Generic.Data (Generic)  -- Reexported from GHC.Generics
 
 -- Constructors must be visible to use DerivingVia
 import Generic.Data.Microsurgery (Surgery, Surgery'(..), Generically(..), Derecordify)
@@ -162,6 +160,8 @@ Other relevant links.
   [first-class-families](https://hackage.haskell.org/package/first-class-families)
   (second one written by me)
   libraries for dependently-typed programming in Haskell.
+- [coercible-utils](https://hackage.haskell.org/package/coercible-utils):
+  utilities for coercible types.
 
 ---
 
