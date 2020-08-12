@@ -10,7 +10,6 @@
   #-}
 
 import Data.Semigroup (Sum(..))
-import GHC.Generics (Generic)
 import Text.Show (showParen, showString)
 
 import Control.DeepSeq

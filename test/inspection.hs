@@ -15,8 +15,8 @@
 {-# LANGUAGE TypeOperators, TypeFamilies #-}
 
 import Control.Applicative (liftA2)
-import Data.Coerce (coerce)
 import GHC.Generics
+import Data.Coerce (coerce)
 import Data.Semigroup (Sum(..), All(..))
 
 import Test.Inspection

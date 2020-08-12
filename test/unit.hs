@@ -13,7 +13,7 @@ import Test.Tasty
 import Test.Tasty.HUnit
 import Text.Read
 
-import GHC.Generics
+import GHC.Generics (Fixity(Prefix))
 import Generic.Data
 import Generic.Data.Orphans ()
 
