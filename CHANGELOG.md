@@ -1,3 +1,12 @@
+# 0.9.1.0
+
+- Fix `conIdToString` (it was completely broken)
+- Add `conIdMin` and `conIdMax` representing the leftmost and rightmost
+  constructors of a data type.
+- Add `NonEmptyType` and `IsEmptyType` to express the constraint that
+  a generic type must or must not be empty.
+- Reexport `Generic` and `Generic1` for convenience.
+
 # 0.9.0.0
 
 - Improved definition of `gfoldMap`, `gtraverse`, and `sequenceA`.
