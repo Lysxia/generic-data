@@ -32,6 +32,38 @@ import Generic.Data.Internal.Show
 import Generic.Data.Internal.Traversable (GFoldable, GTraversable, gfoldMap, gtraverse, gsequenceA)
 
 -- | Type with instances derived via 'Generic'.
+--
+-- === Examples
+--
+-- ==== __Deriving 'Eq', 'Ord', 'Show', 'Read'__
+--
+-- >>> :set -XDerivingVia -XDeriveGeneric
+-- >>> :{
+-- data T = C Int Bool
+--   deriving Generic
+--   deriving (Eq, Ord, Show, Read) via (Generically T)
+-- :}
+--
+-- ==== __Deriving 'Semigroup', 'Monoid'__
+--
+-- The type must have only one constructor.
+--
+-- >>> :{
+-- data U = D [Int] (Sum Int)
+--   deriving Generic
+--   deriving (Semigroup, Monoid) via (Generically U)
+-- :}
+--
+-- ==== __Deriving 'Enum', 'Bounded'__
+--
+-- The type must have only nullary constructors.
+-- To lift that restriction, see 'FiniteEnumeration'.
+--
+-- >>> :{
+-- data V = X | Y | Z
+--   deriving Generic
+--   deriving (Eq, Ord, Enum, Bounded) via (Generically V)
+-- :}
 newtype Generically a = Generically { unGenerically :: a }
 
 instance Generic a => Generic (Generically a) where
@@ -80,6 +112,17 @@ instance (Generic a, GBounded (Rep a)) => Bounded (Generically a) where
   maxBound = gmaxBound
 
 -- | Type with 'Enum' instance derived via 'Generic' with 'FiniteEnum' option.
+-- This allows deriving 'Enum' for types whose constructors have fields.
+--
+-- Some caution is advised; see details in 'FiniteEnum'.
+--
+-- === __Example__
+--
+-- >>> :{
+-- data Booool = Booool Bool Bool
+--   deriving Generic
+--   deriving (Enum, Bounded) via (FiniteEnumeration Booool)
+-- :}
 newtype FiniteEnumeration a = FiniteEnumeration { unFiniteEnumeration :: a }
 
 instance Generic a => Generic (FiniteEnumeration a) where
@@ -95,7 +138,57 @@ instance (Generic a, GEnum FiniteEnum (Rep a)) => Enum (FiniteEnumeration a) whe
   enumFromTo = gfiniteEnumFromTo
   enumFromThenTo = gfiniteEnumFromThenTo
 
+-- | The same instance as 'Generically', for convenience.
+instance (Generic a, GBounded (Rep a)) => Bounded (FiniteEnumeration a) where
+  minBound = gminBound
+  maxBound = gmaxBound
+
 -- | Type with instances derived via 'Generic1'.
+--
+-- === Examples
+--
+-- ==== __Deriving 'Functor', 'Applicative', 'Alternative'__
+--
+-- 'Applicative' can be derived for types with only one
+-- constructor, aka. products.
+--
+-- >>> :{
+-- data F a = F1 a | F2 (Maybe a) | F3 [Either Bool a] (Int, a)
+--   deriving Generic1
+--   deriving Functor via (Generically1 F)
+-- :}
+--
+-- >>> :{
+-- data G a = G a (Maybe a) [a] (IO a)
+--   deriving Generic1
+--   deriving (Functor, Applicative) via (Generically1 G)
+-- :}
+--
+-- >>> :{
+-- data G' a = G' (Maybe a) [a]
+--   deriving Generic1
+--   deriving (Functor, Applicative, Alternative) via (Generically1 G')
+-- :}
+--
+-- ==== __Deriving 'Foldable'__
+--
+-- >>> import Generic.Data.Orphans ()
+-- >>> :{
+-- data H a = H1 a | H2 (Maybe a)
+--   deriving Generic1
+--   deriving (Functor, Foldable) via (Generically1 H)
+-- :}
+--
+-- Note: we can't use @DerivingVia@ for 'Traversable'.
+-- One may implement 'Traversable' explicitly using 'gtraverse'.
+--
+-- ==== __Deriving 'Eq1', 'Ord1'__
+--
+-- >>> :{
+-- data I a = I [a] (Maybe a)
+--   deriving Generic1
+--   deriving (Eq1, Ord1) via (Generically1 I)
+-- :}
 newtype Generically1 f a = Generically1 { unGenerically1 :: f a }
 
 instance Generic (f a) => Generic (Generically1 f a) where
