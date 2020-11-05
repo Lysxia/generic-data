@@ -56,21 +56,30 @@
 --
 -- === Functor composition
 --
--- Fields of functors involving the composition of two or more
--- functors @f (g (h a))@ cannot be handled nicely using @GHC.Generics@.
--- Some overhead cannot be safely avoided.
+-- Fields of functors involving the composition of two or more functors
+-- @f (g (h a))@ result in some overhead using "GHC.Generics.Generic1".
 --
 -- This is due to a particular encoding choice of @GHC.Generics@, where
 -- composition are nested to the right instead of to the left. @f (g (h _))@ is
--- represented by the functor @f ':.:' (g ':.:' 'Rec1' h)@. A better choice is to
--- encode it as @('Rec1' f ':.:' g) ':.:' h@, because that is coercible back to
--- @f (g (h _))@.
+-- represented by the functor @f ':.:' (g ':.:' 'Rec1' h)@, so one must use
+-- `fmap` on `f` to convert that back to `f (g (h _))`. A better choice would
+-- have been to encode it as @('Rec1' f ':.:' g) ':.:' h@, because that is
+-- coercible back to @f (g (h _))@.
 
 module Generic.Data
-  ( -- * Regular classes
+  ( -- * Newtypes for Deriving Via
+    Generically(..)
+  , GenericProduct(..)
+  , FiniteEnumeration(..)
+  , Generically1(..)
+
+    -- * Regular classes
+
+    -- | Default implementations for classes indexed by types
+    -- (kind @Type@).
 
     -- ** 'Data.Semigroup.Semigroup'
-    gmappend
+  , gmappend
 
     -- ** 'Monoid'
   , gmempty
@@ -130,6 +139,9 @@ module Generic.Data
 
     -- * Higher-kinded classes
 
+    -- | Default implementations for classes indexed by type constructors
+    -- (kind @Type -> Type@).
+
     -- ** 'Functor'
     -- | Can also be derived by GHC (@DeriveFunctor@ extension).
   , gfmap
@@ -174,12 +186,6 @@ module Generic.Data
   , Id1(..)
   , Opaque(..)
   , Opaque1(..)
-
-    -- * Carriers of generic instances
-  , Generically(..)
-  , GenericProduct(..)
-  , FiniteEnumeration(..)
-  , Generically1(..)
 
     -- * Newtype
     -- | Generic pack/unpack.
