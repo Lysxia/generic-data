@@ -1,3 +1,7 @@
+# 0.9.2.0
+
+- Add instance of `Bounded` for `FiniteEnumeration` (the same as `Generically`)
+
 # 0.9.1.0
 
 - Fix `conIdToString` (it was completely broken)
