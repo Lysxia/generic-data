@@ -253,26 +253,26 @@ data StandardEnum
 
 -- | Extends the 'StandardEnum' option for 'GEnum' to allow all constructors to 
 -- have arbitrary many fields. Each field type must be an instance of 
--- both 'Enum' and 'Bounded'.
+-- both 'Enum' and 'Bounded'. Avoid fields of types 'Int' and 'Word'.
 --
 -- === __Details__
 --
--- Two restrictions require the user's caution:
+-- Two restrictions require the user's attention:
 --
 -- * The 'Enum' instances of the field types need to start enumerating from 0. 
--- Particularly 'Int' is an unfit field type, because the enumeration of the 
+-- In particular, 'Int' is an unfit field type, because the enumeration of the
 -- negative values starts before 0. 
 --
 -- * There can only be up to @'maxBound' :: 'Int'@ values (because the implementation
 -- represents the cardinality explicitly as an 'Int'). This restriction makes
--- 'Word' an invalid field type. Notably, it is insufficient for each
+-- 'Word' an invalid field type as well. Notably, it is insufficient for each
 -- individual field types to stay below this limit. Instead it applies to the
 -- generic type as a whole.
 --
--- The resulting 'GEnum' instance starts enumerating from @0@ up to
--- @(cardinality - 1)@ and respects the generic 'Ord' instance (defined by
--- 'Generic.Data.gcompare'). The values from different constructors are enumerated
--- sequentially; they are not interleaved.
+-- Elements are numbered by 'toEnum', from @0@ up to @(cardinality - 1)@.
+-- The resulting ordering matches the generic 'Ord' instance defined by
+-- 'Generic.Data.gcompare'.
+-- The values from different constructors are enumerated sequentially.
 --
 -- @
 -- data Example = C0 Bool Bool | C1 Bool
