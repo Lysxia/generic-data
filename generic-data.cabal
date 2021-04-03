@@ -12,15 +12,11 @@ author:              Li-yao Xia
 maintainer:          lysxia@gmail.com
 copyright:           2018-2020 Li-yao Xia
 category:            Generics
-build-type:          Custom
+build-type:          Simple
 extra-source-files:  README.md, CHANGELOG.md
 cabal-version:       >=1.10
 tested-with:         GHC == 8.0.2, GHC == 8.2.2, GHC == 8.4.3, GHC == 8.6.1,
                      GHC == 8.6.3, GHC == 8.6.5, GHC == 8.8.2
-
-custom-setup
-  setup-depends:
-    base, Cabal, cabal-doctest >= 1.0.6 && < 1.1
 
 library
   hs-source-dirs:      src
@@ -143,20 +139,6 @@ test-suite generic-data-inspection-test
   default-language: Haskell2010
   type: exitcode-stdio-1.0
   if impl(ghc < 8.2) || os(windows)
-    buildable: False
-
-test-suite generic-data-doctest
-  hs-source-dirs: test
-  main-is: doctest.hs
-  build-depends:
-    doctest,
-    QuickCheck,
-    generic-data,
-    base
-  ghc-options: -Wall
-  default-language: Haskell2010
-  type: exitcode-stdio-1.0
-  if !impl(ghc >= 8.6)
     buildable: False
 
 benchmark bench

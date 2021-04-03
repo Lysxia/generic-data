@@ -31,13 +31,16 @@ import Generic.Data.Internal.Read
 import Generic.Data.Internal.Show
 import Generic.Data.Internal.Traversable (GFoldable, GTraversable, gfoldMap, gtraverse, gsequenceA)
 
+-- $setup
+-- >>> :set -XDerivingVia -XDeriveGeneric
+-- >>> import GHC.Generics (Generic, Generic1)
+
 -- | Type with instances derived via 'Generic'.
 --
 -- === Examples
 --
 -- ==== __Deriving 'Eq', 'Ord', 'Show', 'Read'__
 --
--- >>> :set -XDerivingVia -XDeriveGeneric
 -- >>> :{
 -- data T = C Int Bool
 --   deriving Generic
@@ -48,6 +51,7 @@ import Generic.Data.Internal.Traversable (GFoldable, GTraversable, gfoldMap, gtr
 --
 -- The type must have only one constructor.
 --
+-- >>> import Data.Monoid (Sum)
 -- >>> :{
 -- data U = D [Int] (Sum Int)
 --   deriving Generic
@@ -164,6 +168,7 @@ instance (Generic a, GBounded (Rep a)) => Bounded (FiniteEnumeration a) where
 --   deriving (Functor, Applicative) via (Generically1 G)
 -- :}
 --
+-- >>> import Control.Applicative (Alternative)
 -- >>> :{
 -- data G' a = G' (Maybe a) [a]
 --   deriving Generic1
@@ -184,6 +189,7 @@ instance (Generic a, GBounded (Rep a)) => Bounded (FiniteEnumeration a) where
 --
 -- ==== __Deriving 'Eq1', 'Ord1'__
 --
+-- >>> import Data.Functor.Classes (Eq1, Ord1)
 -- >>> :{
 -- data I a = I [a] (Maybe a)
 --   deriving Generic1
@@ -271,7 +277,7 @@ instance (Generic1 f, Functor (Rep1 f), GFoldable (Rep1 f), GTraversable (Rep1 f
 --
 -- === __Example__
 --
--- >>> :set -XDeriveGeneric -XDerivingVia
+-- >>> import Data.Monoid (Sum(..))
 -- >>> data Point a = Point a a deriving Generic
 -- >>> :{
 --   newtype Vector a = Vector (Point a)

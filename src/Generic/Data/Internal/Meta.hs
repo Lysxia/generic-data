@@ -94,6 +94,7 @@ gconName = conIdToString . conId
 
 -- | The fixity of the first constructor.
 --
+-- >>> import GHC.Generics ((:*:)(..))
 -- >>> gconFixity (Just 0)
 -- Prefix
 -- >>> gconFixity ([] :*: id)
