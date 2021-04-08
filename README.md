@@ -38,7 +38,7 @@ imports:
 import Data.Semigroup (Semigroup(..))
 
 -- generic-data
-import Generic.Data (gmappend)
+import Generic.Data (Generic, gmappend)
 import Generic.Data.Orphans ()
 ```
 
