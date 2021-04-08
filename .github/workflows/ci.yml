@@ -66,7 +66,7 @@ jobs:
     - name: Test
       run: |
         cabal test all
-        cabal-docspec
+        if [ "${{ matrix.ghc }}" != "8.0" ] ; then cabal-docspec ; fi
 
   stack:
     name: stack / ghc ${{ matrix.ghc }}
