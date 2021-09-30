@@ -1,5 +1,5 @@
 name:                generic-data
-version:             0.9.2.0
+version:             0.9.2.1
 synopsis:            Deriving instances with GHC.Generics and related utilities
 description:
   Generic implementations of standard type classes.
