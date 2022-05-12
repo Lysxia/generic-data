@@ -56,6 +56,12 @@ type Surgery (s :: *) (a :: *) = Generically (Surgery' s a)
 -- 'Data.Monoid.Monoid' class.
 type ProductSurgery (s :: *) (a :: *) = GenericProduct (Surgery' s a)
 
+-- | Plural of 'Surgery'. Apply a list of microsurgeries.
+type Surgeries (s :: [*]) (a :: *) = Surgery (Cat s) a
+
+-- | Plural of 'ProductSurgery'. Apply a list of microsurgeries.
+type ProductSurgeries (s :: [*]) (a :: *) = ProductSurgery (Cat s) a
+
 -- | See 'Surgery'.
 newtype Surgery' (s :: *) (a :: *) = Surgery' { unSurgery' :: a }
 
@@ -290,9 +296,67 @@ type instance GOnFields f (K1 i a) = K1 i (f a)
 type instance GOnFields f U1 = U1
 type instance GOnFields f V1 = V1
 
--- | Apply a type constructor to every field type of a type @a@ to make a
+-- | Apply a type constructor @f@ to every field type of a type @a@ to make a
 -- synthetic type.
 type DOnFields (f :: * -> *) (a :: *) = Data (GSurgery (OnFields f) (Rep a)) ()
+
+-- | Apply a type constructor @f@ to the field named @s@ in a generic record @r@.
+--
+-- > data Vec a = Vec
+-- >   { len :: Int
+-- >   , contents :: [a] }
+-- >
+-- > -- with (OnField "len" Sum) becomes --
+-- >
+-- > data Vec a = Vec
+-- >   { len :: Sum Int
+-- >   , contents :: [a] }
+--
+-- This is a defunctionalized symbol, applied using 'GSurgery' or 'Surgery'.
+data OnField (s :: Symbol) (f :: * -> *) :: *
+type instance GSurgery (OnField s f) g = GOnField s f g
+
+type family GOnField (x :: Symbol) (f :: * -> *) (g :: k -> *) :: k -> * where
+  GOnField x f (M1 S ('MetaSel ('Just x) a b c) (K1 i t)) = M1 S ('MetaSel ('Just x) a b c) (K1 i (f t))
+  GOnField x f (M1 S m r) = M1 S m r
+  GOnField x f (M1 C m r) = M1 C m (GOnField x f r)
+  GOnField x f (M1 D m r) = M1 D m (GOnField x f r)
+  GOnField x f (r :+: s) = GOnField x f r :+: GOnField x f s
+  GOnField x f (r :*: s) = GOnField x f r :*: GOnField x f s
+  GOnField x f (K1 i a) = K1 i (f a)
+  GOnField x f U1 = U1
+  GOnField x f V1 = V1
+
+-- | Infix name for 'OnField'. To be used with 'Surgeries' or 'Cat'.
+--
+-- === __Examples__
+--
+-- @
+-- data Vec a = Vec
+--   { len :: Int
+--   , contents :: [a] }
+--   deriving (Semigroup, Monoid) via 'Surgeries' '[\"len\" '%~' 'Data.Monoid.Sum'] (Vec a)
+-- @
+--
+-- @
+-- data Unshowable = Unshowable
+--   { fun :: Int -> Int
+--   , io :: IO Bool
+--   , int :: Int }
+--   deriving Show via 'Surgeries' '[\"fun\" '%~' 'Generic.Data.Opaque', \"io\" '%~' 'Generic.Data.Opaque'] Unshowable
+--
+-- -- show (Unshowable id (pure True) 42) = \"Unshowable _ _ 42\"
+-- @
+type (%~) = OnField
+infixr 4 %~
+
+-- | Compose surgeries together.
+data Cat (ss :: [*]) :: *
+type instance GSurgery (Cat '[]) g = g
+type instance GSurgery (Cat (s ': ss)) g = GSurgery s (GSurgery (Cat ss) g)
+
+-- | Make a synthetic type ('Data') by chaining multiple surgeries.
+type DCat (ss :: [*]) (a :: *) = Data (GSurgery (Cat ss) (Rep a)) ()
 
 -- | Change the generic representation to that of another type @a@.
 data CopyRep (a :: *) :: *
