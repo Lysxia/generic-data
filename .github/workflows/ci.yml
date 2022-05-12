@@ -20,6 +20,7 @@ jobs:
           - "8.8"
           - "8.10"
           - "9.0"
+          - "9.2"
     steps:
     - name: Set environment
       run: |
@@ -67,6 +68,12 @@ jobs:
       run: |
         cabal test all
         if [ "${{ matrix.ghc }}" != "8.0" ] ; then cabal-docspec ; fi
+
+    - name: Test inspect
+      if: matrix.ghc == '8.10' || matrix.ghc == '9.0'
+      run: |
+        rm cabal.project.freeze
+        cabal test .:inspect --flags="enable-inspect"
 
   stack:
     name: stack / ghc ${{ matrix.ghc }}
