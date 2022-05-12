@@ -38,8 +38,8 @@ import Text.Read.Lex (Lexeme(..))
 --
 -- @
 -- instance 'Read' MyType where
---   'readPrec' = 'greadPrec'
---   'readListPrec' = 'readListPrecDefault'
+--   'readPrec' = 'Text.Read.greadPrec'
+--   'readListPrec' = 'Text.Read.readListPrecDefault'
 -- @
 greadPrec :: (Generic a, GRead0 (Rep a)) => ReadPrec a
 greadPrec = to <$> gPrecRead Proxy

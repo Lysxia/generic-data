@@ -273,7 +273,7 @@ type family GConIdNamedIf (n :: Symbol) (t :: *) (o :: Maybe Nat) :: Nat where
 -- | Constraint that a generic type @a@ is not empty.
 -- Producing an error message otherwise.
 --
--- The 'Symbol' parameter 'fname' is used only for error messages.
+-- The 'Symbol' parameter @fname@ is used only for error messages.
 --
 -- It is implied by the simpler constraint @'IsEmptyType' a ~ 'False@
 class    NonEmptyType_ fname a => NonEmptyType fname a

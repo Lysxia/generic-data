@@ -91,7 +91,7 @@ instance (Generic a, GShow0 (Rep a)) => Show (Generically a) where
 instance (AssertNoSum Semigroup a, Generic a, Semigroup (Rep a ())) => Semigroup (Generically a) where
   (<>) = gmappend
 
--- | This uses the 'Semigroup' instance of the wrapped type 'a' to define 'mappend'.
+-- | This uses the 'Semigroup' instance of the wrapped type @a@ to define 'mappend'.
 -- The purpose of this instance is to derive 'mempty', while remaining consistent
 -- with possibly custom 'Semigroup' instances.
 instance (AssertNoSum Semigroup a, Semigroup a, Generic a, Monoid (Rep a ())) => Monoid (Generically a) where

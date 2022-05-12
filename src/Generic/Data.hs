@@ -61,9 +61,9 @@
 --
 -- This is due to a particular encoding choice of @GHC.Generics@, where
 -- composition are nested to the right instead of to the left. @f (g (h _))@ is
--- represented by the functor @f ':.:' (g ':.:' 'Rec1' h)@, so one must use
--- `fmap` on `f` to convert that back to `f (g (h _))`. A better choice would
--- have been to encode it as @('Rec1' f ':.:' g) ':.:' h@, because that is
+-- represented by the functor @f 'GHC.Generics.:.:' (g 'GHC.Generics.:.:' 'GHC.Generics.Rec1' h)@, so one must use
+-- 'fmap' on @f@ to convert that back to @f (g (h _))@. A better choice would
+-- have been to encode it as @('GHC.Generics.Rec1' f 'GHC.Generics.:.:' g) 'GHC.Generics.:.:' h@, because that is
 -- coercible back to @f (g (h _))@.
 
 module Generic.Data
@@ -129,7 +129,7 @@ module Generic.Data
   , gmaxBound
   , GBounded()
 
-    -- ** 'Ix'
+    -- ** 'Data.Ix.Ix'
     -- | Can also be derived by GHC as part of the standard.
   , grange
   , gindex
