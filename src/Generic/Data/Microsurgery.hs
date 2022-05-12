@@ -37,6 +37,8 @@ module Generic.Data.Microsurgery
 
     Surgery
   , ProductSurgery
+  , Surgeries
+  , ProductSurgeries
   , Surgery'(..)
   , GSurgery
   , Generically(..)
@@ -140,6 +142,12 @@ module Generic.Data.Microsurgery
 
   , OnFields()
   , DOnFields
+
+  , OnField()
+  , type (%~)
+
+  , Cat()
+  , DCat()
 
     -- ** Substitute a generic representation from another type
 
