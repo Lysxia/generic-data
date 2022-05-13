@@ -313,6 +313,7 @@ type DOnFields (f :: * -> *) (a :: *) = Data (GSurgery (OnFields f) (Rep a)) ()
 -- >   , contents :: [a] }
 --
 -- This is a defunctionalized symbol, applied using 'GSurgery' or 'Surgery'.
+-- See also the synonym @('%~')@.
 data OnField (s :: Symbol) (f :: * -> *) :: *
 type instance GSurgery (OnField s f) g = GOnField s f g
 
@@ -331,18 +332,25 @@ type family GOnField (x :: Symbol) (f :: * -> *) (g :: k -> *) :: k -> * where
 --
 -- === __Examples__
 --
+-- Transform one @Int@ field into @'Data.Monoid.Sum' Int@ for deriving 'Monoid':
+--
 -- @
 -- data Vec a = Vec
 --   { len :: Int
 --   , contents :: [a] }
---   deriving (Semigroup, Monoid) via 'Surgeries' '[\"len\" '%~' 'Data.Monoid.Sum'] (Vec a)
+--   deriving Generic
+--   deriving (Eq, Show) via Generically (Vec a)
+--   deriving (Semigroup, Monoid) via 'ProductSurgeries' '[\"len\" '%~' 'Data.Monoid.Sum'] (Vec a)
 -- @
+--
+-- Wrap unshowable fields in 'Generic.Data.Opaque' for deriving 'Show':
 --
 -- @
 -- data Unshowable = Unshowable
 --   { fun :: Int -> Int
 --   , io :: IO Bool
 --   , int :: Int }
+--   deriving Generic
 --   deriving Show via 'Surgeries' '[\"fun\" '%~' 'Generic.Data.Opaque', \"io\" '%~' 'Generic.Data.Opaque'] Unshowable
 --
 -- -- show (Unshowable id (pure True) 42) = \"Unshowable _ _ 42\"

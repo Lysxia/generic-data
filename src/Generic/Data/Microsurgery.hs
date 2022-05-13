@@ -107,8 +107,8 @@ module Generic.Data.Microsurgery
     -- ** Wrap every field in a type constructor
 
     -- | Give every field a type @f FieldType@ (where @f@ is a parameter), to
-    -- obtain a family of types with a shared structure. This
-    -- \"higher-kindification\" technique is presented in the following
+    -- obtain a family of types with a shared structure. Some applications of
+    -- this \"higher-kindification\" technique may be found in the following
     -- blogposts:
     --
     -- - https://www.benjamin.pizza/posts/2017-12-15-functor-functors.html
@@ -124,6 +124,15 @@ module Generic.Data.Microsurgery
     -- a product of 'Prelude.Num' types:
     --
     -- @
+    -- data TwoCounters = MkTwoCounters { c1 :: Int, c2 :: Int }
+    --   deriving 'GHC.Generics.Generic'
+    --   deriving ('Data.Semigroup.Semigroup', 'Data.Monoid.Monoid')
+    --     via ('ProductSurgery' ('OnFields' 'Data.Monoid.Sum') TwoCounters)  -- Surgery here
+    -- @
+    --
+    -- ==== __Extensions and imports__
+    --
+    -- @
     -- {-\# LANGUAGE DeriveGeneric, DerivingVia \#-}
     -- import "Data.Monoid" ('Data.Monoid.Sum'(..))  -- Constructors must be in scope
     -- import "GHC.Generics" ('GHC.Generics.Generic')
@@ -133,11 +142,6 @@ module Generic.Data.Microsurgery
     --   , 'GenericProduct'(..)  -- Constructors must be in scope
     --   , 'Surgery''(..)        --
     --   )
-    --
-    -- data TwoCounters = MkTwoCounters { c1 :: Int, c2 :: Int }
-    --   deriving 'GHC.Generics.Generic'
-    --   deriving ('Data.Semigroup.Semigroup', 'Data.Monoid.Monoid')
-    --     via ('ProductSurgery' ('OnFields' 'Data.Monoid.Sum') TwoCounters)  -- Surgery here
     -- @
 
   , OnFields()
