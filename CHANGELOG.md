@@ -1,3 +1,21 @@
+# 1.0.0.0
+
+- `Generically` and `Generically1` are in *base* 4.17 (GHC 9.4.1)!
+
+    + *generic-data* reexports `Generically` and `Generically1` if using *base* >= 4.17.
+      The following instances remain as orphans: `Eq`, `Ord`, `Read`, `Show`,
+      `Enum`, `Ix`, `Bounded`, `Foldable`, `Traversable`, `Read1`, `Show1`.
+    + base 4.17 includes instances for the non-stock-derivable classes:
+      `Semigroup` and `Monoid` for `Generically`; `Eq1`, `Ord1`, `Functor`,
+      `Applicative`, and `Alternative` for `Generically1`.
+    + Note: the `Semigroup` and `Monoid` instances of *base*'s `Generically`
+      are those of *generic-data*'s `GenericProduct` (which is subtly different
+      from `Generically`'s previous instance in *generic-data*).
+    + `Generically` and `Generically1` are no longer defined using record syntax,
+      so the `unGenerically`(`1`) field accessor no longer exists.
+      The field accessors for `FiniteEnumeration` and `GenericProduct` were also
+      removed for uniformity.
+
 # 0.9.2.1
 
 - No external changes.
