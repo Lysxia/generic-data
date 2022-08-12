@@ -21,7 +21,8 @@ data P a = P a a
   deriving (Generic, Generic1)
 
 instance Semigroup a => Semigroup (P a) where
-  x <> y = unGenerically (Generically x <> Generically y)
+  x <> y = case Generically x <> Generically y of
+    Generically z -> z
 
 type PTy a = a -> a -> Generically (P a)
 
