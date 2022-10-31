@@ -78,7 +78,7 @@ module Generic.Data
     -- | Default implementations for classes indexed by types
     -- (kind @Type@).
 
-    -- ** 'Data.Semigroup.Semigroup'
+    -- ** 'Semigroup'
   , gmappend
 
     -- ** 'Monoid'
@@ -105,7 +105,7 @@ module Generic.Data
 
     -- ** 'Enum'
   , GEnum()
-    -- *** StandardEnum option
+    -- *** 'StandardEnum' option
     -- | Can also be derived by GHC as part of the standard.
   , StandardEnum()
   , gtoEnum
@@ -114,7 +114,7 @@ module Generic.Data
   , genumFromThen
   , genumFromTo
   , genumFromThenTo
-    -- *** FiniteEnum option
+    -- *** 'FiniteEnum' option
   , FiniteEnum()
   , gtoFiniteEnum
   , gfromFiniteEnum
@@ -129,7 +129,7 @@ module Generic.Data
   , gmaxBound
   , GBounded()
 
-    -- ** 'Data.Ix.Ix'
+    -- ** 'Ix'
     -- | Can also be derived by GHC as part of the standard.
   , grange
   , gindex
@@ -164,21 +164,21 @@ module Generic.Data
   , gap
   , gliftA2
 
-    -- ** 'Control.Applicative.Alternative'
+    -- ** 'Alternative'
   , gempty
   , galt
 
-    -- ** 'Data.Functor.Classes.Eq1'
+    -- ** 'Eq1'
   , gliftEq
 
-    -- ** 'Data.Functor.Classes.Ord1'
+    -- ** 'Ord1'
   , gliftCompare
 
-    -- ** 'Data.Functor.Classes.Read1'
+    -- ** 'Read1'
   , gliftReadPrec
   , GRead1
 
-    -- ** 'Data.Functor.Classes.Show1'
+    -- ** 'Show1'
   , gliftShowsPrec
   , GShow1
 
