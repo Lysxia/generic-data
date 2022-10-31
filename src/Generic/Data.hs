@@ -1,18 +1,12 @@
 -- | Generic combinators to derive type class instances.
 --
--- = Overview
+-- == Orphans
 --
--- /base/ classes that GHC can not derive instances for, as of version 8.2:
+-- The 'Data.Generic.Orphans' module should be imported to derive the following
+-- classes using this library:
 --
--- - 'Data.Semigroup.Semigroup', 'Monoid', 'Applicative',
---   'Control.Applicative.Alternative', 'Data.Functor.Classes.Eq1',
---   'Data.Functor.Classes.Ord1', 'Data.Functor.Classes.Show1'.
---
--- On /base/ < 4.12 (i.e., GHC < 8.6), import "Generic.Data.Orphans" to obtain
--- instances needed internally to derive those.
---
--- GHC can derive instances for other classes here, although there may be
--- types supported by one method but not the other or vice versa.
+-- - 'Eq1' and 'Ord1'
+-- - 'Semigroup' and 'Monoid' on GHC 8.4 or older (base <= 4.11)
 --
 -- == __Minor discrepancies__
 --
