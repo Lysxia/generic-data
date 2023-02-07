@@ -247,11 +247,13 @@ instance Generic1 f => Generic1 (Generically1 f) where
   to1 = Generically1 . to1
   from1 (Generically1 x) = from1 x
 
+#if !MIN_VERSION_base(4,18,0)
 instance (Generic1 f, Eq1 (Rep1 f), Eq a) => Eq (Generically1 f a) where
   (==) = eq1
 
 instance (Generic1 f, Ord1 (Rep1 f), Ord a) => Ord (Generically1 f a) where
   compare = compare1
+#endif
 
 instance (Generic1 f, GRead1 (Rep1 f)) => Read1 (Generically1 f) where
 #if MIN_VERSION_base(4,10,0)
