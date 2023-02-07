@@ -46,7 +46,7 @@ library
     contravariant,
     ghc-boot-th,
     show-combinators,
-    base >= 4.9 && < 5
+    base >= 4.9 && < 4.19
   hs-source-dirs:      orphans
   exposed-modules:
     Generic.Data.Orphans
