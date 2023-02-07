@@ -1,3 +1,7 @@
+# 1.0.0.1
+
+- Compatibility with *base* 4.18 (GHC 9.6)
+
 # 1.0.0.0
 
 - `Generically` and `Generically1` are in *base* 4.17 (GHC 9.4.1)!
