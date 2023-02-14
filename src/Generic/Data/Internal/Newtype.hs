@@ -20,7 +20,7 @@
 module Generic.Data.Internal.Newtype where
 
 import Data.Coerce (Coercible, coerce)
-import Data.Kind (Constraint)
+import Data.Kind (Constraint, Type)
 import GHC.Generics (Generic(..), D1, C1, S1, K1)
 import GHC.TypeLits (TypeError, ErrorMessage(..))
 
@@ -39,7 +39,7 @@ instance (Generic a, Coercible a (Old a), Newtype' a) => Newtype a
 -- @
 type Old a = GOld (Rep a)
 
-type family GOld (f :: * -> *) where
+type family GOld (f :: Type -> Type) where
   GOld (D1 _d (C1 _c (S1 _s (K1 _i b)))) = b
 
 -- | Use 'Newtype' instead.
