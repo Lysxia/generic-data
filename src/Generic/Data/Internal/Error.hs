@@ -47,7 +47,7 @@ instance (TypeError msg ~ '()) => Assert 'False msg
 -- ...
 --     • Cannot derive Semigroup instance for AB due to sum type
 --     • When deriving the instance for (Semigroup AB)
-type AssertNoSum (constraint :: * -> Constraint) a =
+type AssertNoSum (constraint :: Type -> Constraint) a =
     Assert (Not (HasSum (Rep a)))
     ('Text "Cannot derive " ':<>: 'ShowType constraint ':<>:
         'Text " instance for " ':<>: 'ShowType a ':<>: 'Text " due to sum type")

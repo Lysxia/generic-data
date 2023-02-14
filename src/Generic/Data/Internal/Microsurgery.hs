@@ -23,6 +23,7 @@
 module Generic.Data.Internal.Microsurgery where
 
 import Data.Coerce (Coercible, coerce)
+import Data.Kind (Type)
 import GHC.Generics
 import GHC.TypeLits (ErrorMessage(..), Symbol, TypeError)
 
@@ -50,20 +51,20 @@ import Generic.Data.Internal.Generically (Generically(..), GenericProduct(..))
 -- -- T won't be shown as a record:
 -- --   show (T {unT = 3}) == "T 3"
 -- @
-type Surgery (s :: *) (a :: *) = Generically (Surgery' s a)
+type Surgery (s :: Type) (a :: Type) = Generically (Surgery' s a)
 
 -- | Apply a microsurgery @s@ to a type @a@ for @DerivingVia@ for the
 -- 'Data.Monoid.Monoid' class.
-type ProductSurgery (s :: *) (a :: *) = GenericProduct (Surgery' s a)
+type ProductSurgery (s :: Type) (a :: Type) = GenericProduct (Surgery' s a)
 
 -- | Plural of 'Surgery'. Apply a list of microsurgeries.
-type Surgeries (s :: [*]) (a :: *) = Surgery (Cat s) a
+type Surgeries (s :: [Type]) (a :: Type) = Surgery (Cat s) a
 
 -- | Plural of 'ProductSurgery'. Apply a list of microsurgeries.
-type ProductSurgeries (s :: [*]) (a :: *) = ProductSurgery (Cat s) a
+type ProductSurgeries (s :: [Type]) (a :: Type) = ProductSurgery (Cat s) a
 
 -- | See 'Surgery'.
-newtype Surgery' (s :: *) (a :: *) = Surgery' { unSurgery' :: a }
+newtype Surgery' (s :: Type) (a :: Type) = Surgery' { unSurgery' :: a }
 
 instance (Generic a, Coercible (GSurgery s (Rep a)) (Rep a)) => Generic (Surgery' s a) where
   type Rep (Surgery' s a) = GSurgery s (Rep a)
@@ -72,7 +73,7 @@ instance (Generic a, Coercible (GSurgery s (Rep a)) (Rep a)) => Generic (Surgery
 
 -- | Apply a microsurgery represented by a symbol @s@ (declared as a dummy data
 -- type) to a generic representation @f@.
-type family GSurgery (s :: *) (f :: k -> *) :: k -> *
+type family GSurgery (s :: Type) (f :: k -> Type) :: k -> Type
 
 -- * Derecordify
 
@@ -99,10 +100,10 @@ underecordify = coerce
 -- names.
 --
 -- This is a defunctionalized symbol, applied using 'GSurgery' or 'Surgery'.
-data Derecordify :: *
+data Derecordify :: Type
 type instance GSurgery Derecordify f = GDerecordify f
 
-type family GDerecordify (f :: k -> *) :: k -> *
+type family GDerecordify (f :: k -> Type) :: k -> Type
 type instance GDerecordify (M1 D m f) = M1 D m (GDerecordify f)
 type instance GDerecordify (f :+: g) = GDerecordify f :+: GDerecordify g
 type instance GDerecordify (f :*: g) = GDerecordify f :*: GDerecordify g
@@ -133,7 +134,7 @@ untypeage = coerce
 -- > data Foo = Bar Baz
 --
 -- This is a defunctionalized symbol, applied using 'GSurgery' or 'Surgery'.
-data Typeage :: *
+data Typeage :: Type
 type instance GSurgery Typeage (M1 D ('MetaData nm md pk _nt) f) = M1 D ('MetaData nm md pk 'False) f
 
 -- * Renaming
@@ -171,10 +172,10 @@ unrenameConstrs = coerce
 -- > data Foo = Bar { bag :: Zap }
 --
 -- This is a defunctionalized symbol, applied using 'GSurgery' or 'Surgery'.
-data RenameFields (rnm :: *) :: *
+data RenameFields (rnm :: Type) :: Type
 type instance GSurgery (RenameFields rnm) f = GRenameFields rnm f
 
-type family GRenameFields (rnm :: *) (f :: k -> *) :: k -> *
+type family GRenameFields (rnm :: Type) (f :: k -> Type) :: k -> Type
 type instance GRenameFields rnm (M1 D m f) = M1 D m (GRenameFields rnm f)
 type instance GRenameFields rnm (f :+: g) = GRenameFields rnm f :+: GRenameFields rnm g
 type instance GRenameFields rnm (f :*: g) = GRenameFields rnm f :*: GRenameFields rnm g
@@ -192,10 +193,10 @@ type instance GRenameFields rnm U1 = U1
 -- > data Foo = Car { baz :: Zap }
 --
 -- This is a defunctionalized symbol, applied using 'GSurgery' or 'Surgery'.
-data RenameConstrs (rnm :: *) :: *
+data RenameConstrs (rnm :: Type) :: Type
 type instance GSurgery (RenameConstrs rnm) f = GRenameConstrs rnm f
 
-type family GRenameConstrs (rnm :: *) (f :: k -> *) :: k -> *
+type family GRenameConstrs (rnm :: Type) (f :: k -> Type) :: k -> Type
 type instance GRenameConstrs rnm (M1 D m f) = M1 D m (GRenameConstrs rnm f)
 type instance GRenameConstrs rnm (f :+: g) = GRenameConstrs rnm f :+: GRenameConstrs rnm g
 type instance GRenameConstrs rnm (f :*: g) = GRenameConstrs rnm f :*: GRenameConstrs rnm g
@@ -213,7 +214,7 @@ type instance GRenameConstrs rnm V1 = V1
 -- data FooToBar
 -- type instance FooToBar '@@' \"foo\" = \"bar\"
 -- @
-type family (f :: *) @@ (s :: Symbol) :: Symbol
+type family (f :: Type) @@ (s :: Symbol) :: Symbol
 
 -- | Identity function @'Symbol' -> 'Symbol'@.
 data SId
@@ -228,11 +229,11 @@ data SConst (s :: Symbol)
 type instance SConst z @@ _s = z
 
 -- | Define a function for a fixed set of strings, and fall back to @f@ for the others.
-data SRename (xs :: [(Symbol, Symbol)]) (f :: *)
+data SRename (xs :: [(Symbol, Symbol)]) (f :: Type)
 type instance SRename xs f @@ s = SRename' xs f s
 
 -- | Closed type family for 'SRename'.
-type family SRename' (xs :: [(Symbol, Symbol)]) (f :: *) (s :: Symbol) where
+type family SRename' (xs :: [(Symbol, Symbol)]) (f :: Type) (s :: Symbol) where
   SRename' '[] f s = f @@ s
   SRename' ('( s,  t) ': _xs) _f s = t
   SRename' ('(_r, _t) ':  xs)  f s = SRename' xs f s
@@ -243,7 +244,7 @@ type family SRename' (xs :: [(Symbol, Symbol)]) (f :: *) (s :: Symbol) where
 
 -- | Unify the "spines" of two generic representations (the "spine" is
 -- everything except the field types).
-class UnifyRep (f :: k -> *) (g :: k -> *)
+class UnifyRep (f :: k -> Type) (g :: k -> Type)
 instance (g' ~ M1 s c g, UnifyRep f g) => UnifyRep (M1 s c f) g'
 instance (g' ~ (g1 :+: g2), UnifyRep f1 g1, UnifyRep f2 g2)
   => UnifyRep (f1 :+: f2) g'
@@ -285,10 +286,10 @@ onData = id
 -- >   , b :: f Int }
 --
 -- This is a defunctionalized symbol, applied using 'GSurgery' or 'Surgery'.
-data OnFields (f :: * -> *) :: *
+data OnFields (f :: Type -> Type) :: Type
 type instance GSurgery (OnFields f) g = GOnFields f g
 
-type family GOnFields (f :: * -> *) (g :: k -> *) :: k -> *
+type family GOnFields (f :: Type -> Type) (g :: k -> Type) :: k -> Type
 type instance GOnFields f (M1 s m r) = M1 s m (GOnFields f r)
 type instance GOnFields f (r :+: s) = GOnFields f r :+: GOnFields f s
 type instance GOnFields f (r :*: s) = GOnFields f r :*: GOnFields f s
@@ -298,7 +299,7 @@ type instance GOnFields f V1 = V1
 
 -- | Apply a type constructor @f@ to every field type of a type @a@ to make a
 -- synthetic type.
-type DOnFields (f :: * -> *) (a :: *) = Data (GSurgery (OnFields f) (Rep a)) ()
+type DOnFields (f :: Type -> Type) (a :: Type) = Data (GSurgery (OnFields f) (Rep a)) ()
 
 -- | Apply a type constructor @f@ to the field named @s@ in a generic record @r@.
 --
@@ -314,10 +315,10 @@ type DOnFields (f :: * -> *) (a :: *) = Data (GSurgery (OnFields f) (Rep a)) ()
 --
 -- This is a defunctionalized symbol, applied using 'GSurgery' or 'Surgery'.
 -- See also the synonym @('%~')@.
-data OnField (s :: Symbol) (f :: * -> *) :: *
+data OnField (s :: Symbol) (f :: Type -> Type) :: Type
 type instance GSurgery (OnField s f) g = GOnField s f g
 
-type family GOnField (x :: Symbol) (f :: * -> *) (g :: k -> *) :: k -> * where
+type family GOnField (x :: Symbol) (f :: Type -> Type) (g :: k -> Type) :: k -> Type where
   GOnField x f (M1 S ('MetaSel ('Just x) a b c) (K1 i t)) = M1 S ('MetaSel ('Just x) a b c) (K1 i (f t))
   GOnField x f (M1 S m r) = M1 S m r
   GOnField x f (M1 C m r) = M1 C m (GOnField x f r)
@@ -359,15 +360,15 @@ type (%~) = OnField
 infixr 4 %~
 
 -- | Compose surgeries together.
-data Cat (ss :: [*]) :: *
+data Cat (ss :: [Type]) :: Type
 type instance GSurgery (Cat '[]) g = g
 type instance GSurgery (Cat (s ': ss)) g = GSurgery s (GSurgery (Cat ss) g)
 
 -- | Make a synthetic type ('Data') by chaining multiple surgeries.
-type DCat (ss :: [*]) (a :: *) = Data (GSurgery (Cat ss) (Rep a)) ()
+type DCat (ss :: [Type]) (a :: Type) = Data (GSurgery (Cat ss) (Rep a)) ()
 
 -- | Change the generic representation to that of another type @a@.
-data CopyRep (a :: *) :: *
+data CopyRep (a :: Type) :: Type
 type instance GSurgery (CopyRep a) _ = Rep a
 
 copyRep :: forall a f p.

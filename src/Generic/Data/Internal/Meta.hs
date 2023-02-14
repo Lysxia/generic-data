@@ -29,6 +29,7 @@
 module Generic.Data.Internal.Meta where
 
 import Data.Proxy
+import Data.Kind (Type)
 import GHC.Generics
 import GHC.TypeLits (Symbol, Nat, KnownNat, type (+), natVal, TypeError, ErrorMessage(..))
 
@@ -255,14 +256,14 @@ type ConIdNamed' n t = GConIdNamedIf n t (GConIdNamed n (Rep t))
 
 type GConIdNamed n f = GConIdNamed' n f 0 'Nothing
 
-type family GConIdNamed' (n :: Symbol) (f :: k -> *) (i :: Nat) (o :: Maybe Nat) :: Maybe Nat where
+type family GConIdNamed' (n :: Symbol) (f :: k -> Type) (i :: Nat) (o :: Maybe Nat) :: Maybe Nat where
   GConIdNamed' n (M1 D _c f) i r = GConIdNamed' n f i r
   GConIdNamed' n (f :+: g) i r = GConIdNamed' n f i (GConIdNamed' n g (i + NConstructors f) r)
   GConIdNamed' n (M1 C ('MetaCons n _f _s) _g) i _r = 'Just i
   GConIdNamed' n (M1 C ('MetaCons _n _f _s) _g) _i r = r
   GConIdNamed' _n V1 _i r = r
 
-type family GConIdNamedIf (n :: Symbol) (t :: *) (o :: Maybe Nat) :: Nat where
+type family GConIdNamedIf (n :: Symbol) (t :: Type) (o :: Maybe Nat) :: Nat where
   GConIdNamedIf _n _t ('Just i) = i
   GConIdNamedIf  n  t 'Nothing = TypeError
     ('Text "No constructor named " ':<>: 'ShowType n
@@ -295,7 +296,7 @@ instance NonEmptyType_ fname a => NonEmptyType fname a
 type NonEmptyType_ fname a = (ErrorIfEmpty fname a (IsEmptyType a) ~ '())
 
 -- 'True' if the generic representation is @M1 D _ V1@.
-type family GIsEmptyType (r :: k -> *) :: Bool where
+type family GIsEmptyType (r :: k -> Type) :: Bool where
   GIsEmptyType (M1 D _d V1) = 'True
   GIsEmptyType (M1 D _d (M1 C _c _f)) = 'False
   GIsEmptyType (M1 D _d (_f :+: _g)) = 'False
@@ -316,7 +317,7 @@ type IsEmptyType_ a = GIsEmptyType (Rep a)
 -- Error message:
 --
 -- > The function 'conIdMin' cannot be used with the empty type E
-type family ErrorIfEmpty (fname :: Symbol) (a :: *) (b :: Bool) :: () where
+type family ErrorIfEmpty (fname :: Symbol) (a :: Type) (b :: Bool) :: () where
   ErrorIfEmpty fname a 'True = TypeError
     ('Text "The function '" ':<>: 'Text fname
     ':<>: 'Text "' cannot be used with the empty type " ':<>: 'ShowType a)
@@ -325,7 +326,7 @@ type family ErrorIfEmpty (fname :: Symbol) (a :: *) (b :: Bool) :: () where
 -- * Type families
 
 -- | 'Meta' field of the 'M1' type constructor.
-type family MetaOf (f :: * -> *) :: Meta where
+type family MetaOf (f :: Type -> Type) :: Meta where
   MetaOf (M1 i d f) = d
 
 -- Variable names borrowed from the documentation on 'Meta'.
@@ -382,5 +383,5 @@ type family MetaSelStrictness (m :: Meta) :: DecidedStrictness where
 type DummyMeta = 'MetaData "" "" "" 'False
 
 -- | Remove an 'M1' type constructor.
-type family   UnM1 (f :: k -> *) :: k -> *
+type family   UnM1 (f :: k -> Type) :: k -> Type
 type instance UnM1 (M1 i c f) = f
