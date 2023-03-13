@@ -233,6 +233,12 @@ instance (Generic1 f, Applicative (Rep1 f)) => Applicative (Generically1 f) wher
 instance (Generic1 f, Alternative (Rep1 f)) => Alternative (Generically1 f) where
   empty = gempty
   (<|>) = galt
+
+instance (Generic1 f, Eq1 (Rep1 f), Eq a) => Eq (Generically1 f a) where
+  (==) = eq1
+
+instance (Generic1 f, Ord1 (Rep1 f), Ord a) => Ord (Generically1 f a) where
+  compare = compare1
 #endif
 
 -- | This is a hack to implicitly wrap/unwrap in the instances of 'Generically1'.
@@ -246,14 +252,6 @@ instance Generic1 f => Generic1 (Generically1 f) where
   type Rep1 (Generically1 f) = Rep1 f
   to1 = Generically1 . to1
   from1 (Generically1 x) = from1 x
-
-#if !MIN_VERSION_base(4,18,0)
-instance (Generic1 f, Eq1 (Rep1 f), Eq a) => Eq (Generically1 f a) where
-  (==) = eq1
-
-instance (Generic1 f, Ord1 (Rep1 f), Ord a) => Ord (Generically1 f a) where
-  compare = compare1
-#endif
 
 instance (Generic1 f, GRead1 (Rep1 f)) => Read1 (Generically1 f) where
 #if MIN_VERSION_base(4,10,0)
