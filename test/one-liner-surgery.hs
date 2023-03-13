@@ -17,6 +17,7 @@
 import Control.Applicative ((<|>))
 import Data.Coerce (coerce)
 import Data.Functor.Identity (Identity(..))
+import Data.Kind (Type)
 import GHC.Generics (Generic)
 import Text.Read (readMaybe)
 import Test.Tasty
@@ -69,7 +70,7 @@ class    (a ~ Maybe (UnMaybe a)) => IsMaybe a
 instance (a ~ Maybe (UnMaybe a)) => IsMaybe a
 
 -- | Helper for 'IsMaybe' above.
-type family UnMaybe (a :: *) :: * where
+type family UnMaybe (a :: Type) :: Type where
   UnMaybe (Maybe b) = b
 
 -- |
