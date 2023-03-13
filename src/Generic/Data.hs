@@ -260,3 +260,4 @@ import Generic.Data.Internal.Resolvers
 import Generic.Data.Internal.Utils
 
 import GHC.Generics (Generic, Generic1)
+import Data.Orphans ()  -- Eq and Ord of Generically1
