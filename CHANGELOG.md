@@ -1,3 +1,9 @@
+# 1.1.0.0
+
+- Remove `Eq` and `Ord` for `Generically1` instances.
+  They are now available in *base* 4.18, and *base-orphans* 0.8.8
+  for backwards compatibility.
+
 # 1.0.0.1
 
 - Compatibility with *base* 4.18 (GHC 9.6)
