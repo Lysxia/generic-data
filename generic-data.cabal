@@ -147,7 +147,7 @@ benchmark bench
   hs-source-dirs: test
   main-is: bench.hs
   build-depends:
-    criterion,
+    tasty-bench,
     deepseq,
     generic-data,
     base
