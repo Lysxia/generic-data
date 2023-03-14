@@ -13,7 +13,7 @@ import Data.Semigroup (Sum(..))
 import Text.Show (showParen, showString)
 
 import Control.DeepSeq
-import Criterion.Main
+import Test.Tasty.Bench
 
 import Generic.Data
 import Generic.Data.Microsurgery
