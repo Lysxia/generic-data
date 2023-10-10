@@ -1,0 +1,4 @@
+branches: master
+
+-- 2023-10-11: linear-base isn't available for GHC 9.8 yet
+tests: < 9.8
