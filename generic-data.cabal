@@ -44,10 +44,11 @@ library
   build-depends:
     ap-normalize >= 0.1 && < 0.2,
     base-orphans >= 0.8.8,
-    contravariant,
     ghc-boot-th,
     show-combinators,
     base >= 4.9 && < 4.21
+  if impl(ghc < 9.6)
+    build-depends: contravariant
   hs-source-dirs:      orphans
   exposed-modules:
     Generic.Data.Orphans
