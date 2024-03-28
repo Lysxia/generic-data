@@ -138,10 +138,19 @@ instance Show T30b where
   showsPrec = gshowsPrec
 
 maybeModuleName :: String
-#if MIN_VERSION_base(4,12,0)
+#if MIN_VERSION_base(4,20,0)
+maybeModuleName = "GHC.Internal.Maybe"
+#elif MIN_VERSION_base(4,12,0)
 maybeModuleName = "GHC.Maybe"
 #else
 maybeModuleName = "GHC.Base"
+#endif
+
+maybePackageName :: String
+#if MIN_VERSION_base(4,20,0)
+maybePackageName = "ghc-internal"
+#else
+maybePackageName = "base"
 #endif
 
 main :: IO ()
@@ -253,7 +262,7 @@ test = testGroup "unit"
   , testGroup "Meta"
       [ testCase "datatypeName" $ "Maybe" @=? gdatatypeName @(Maybe Int)
       , testCase "moduleName" $ maybeModuleName @=? gmoduleName @(Maybe Int)
-      , testCase "packageName" $ "base" @=? gpackageName @(Maybe Int)
+      , testCase "packageName" $ maybePackageName @=? gpackageName @(Maybe Int)
       , testCase "isNewtype" $ False @=? gisNewtype @(Maybe Int)
       , testCase "conName" $ "Just" @=? gconName (Just ())
       , testCase "conFixity" $ Prefix @=? gconFixity (Just ())
