@@ -17,8 +17,8 @@ extra-source-files:  README.md, CHANGELOG.md
 cabal-version:       >=1.10
 tested-with:         GHC == 8.0.2, GHC == 8.2.2, GHC == 8.4.4,
                      GHC == 8.6.5, GHC == 8.10.7, GHC == 9.0.2,
-                     GHC == 9.2.8, GHC == 9.4.8, GHC == 9.6.4,
-                     GHC == 9.8.2, GHC == 9.10.0
+                     GHC == 9.2.8, GHC == 9.4.8, GHC == 9.6.6,
+                     GHC == 9.8.2, GHC == 9.10.1
 
 library
   hs-source-dirs:      src
