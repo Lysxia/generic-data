@@ -1,4 +1,4 @@
 branches: master
 
--- 2024-03-28: linear-base isn't available for GHC 9.10 yet
-tests: < 9.10
+-- -- 2024-03-28: linear-base isn't available for GHC 9.10 yet
+-- tests: < 9.10
