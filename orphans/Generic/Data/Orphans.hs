@@ -1,14 +1,19 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE EmptyCase #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeOperators #-}
 
--- | Orphan instances. They should probably be upstreamed.
+-- | Orphan instances.
+--
+-- The orphan instances in this module have been upstreamed in base 4.21 (GHC 9.12).
+-- This module is empty starting from that version. It remains for backwards compatiblity.
 
 module Generic.Data.Orphans where
 
+#if __GLASGOW_HASKELL__ < 912
 import Data.Functor.Classes
 import Data.Orphans ()
 import Data.Semigroup
@@ -71,3 +76,4 @@ instance (Eq1 f, Eq1 g) => Eq1 (f :.: g) where
 instance (Ord1 f, Ord1 g) => Ord1 (f :.: g) where
   liftCompare compare' (Comp1 x1) (Comp1 x2) =
     (liftCompare . liftCompare) compare' x1 x2
+#endif

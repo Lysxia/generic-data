@@ -46,7 +46,7 @@ library
     base-orphans >= 0.8.8,
     ghc-boot-th,
     show-combinators,
-    base >= 4.9 && < 4.21
+    base >= 4.9 && < 4.22
   if impl(ghc < 9.6)
     build-depends: contravariant
   hs-source-dirs:      orphans
