@@ -1,4 +1,7 @@
-# Generic data types in Haskell [![Hackage](https://img.shields.io/hackage/v/generic-data.svg)](https://hackage.haskell.org/package/generic-data) [![GitHub CI](https://github.com/Lysxia/generic-data/workflows/CI/badge.svg)](https://github.com/Lysxia/generic-data/actions)
+# Generic data types in Haskell
+
+[![Hackage](https://img.shields.io/hackage/v/generic-data.svg)](https://hackage.haskell.org/package/generic-data)
+[![GitHub CI](https://github.com/Lysxia/generic-data/actions/workflows/haskell-ci.yml/badge.svg)](https://github.com/Lysxia/generic-data/actions)
 
 Utilities for `GHC.Generics`.
 
