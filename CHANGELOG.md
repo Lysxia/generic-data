@@ -1,8 +1,14 @@
+# 1.1.0.1
+
+- Compatibility with *base* 4.21 (GHC 9.12)
+- Avoid dependency on *contravariant*
+
 # 1.1.0.0
 
 - Remove `Eq` and `Ord` for `Generically1` instances.
   They are now available in *base* 4.18, and *base-orphans* 0.8.8
   for backwards compatibility.
+- (Revisions) Also compatible with *base* 4.20 (GHC 9.10) and 4.19 (GHC 9.8)
 
 # 1.0.0.1
 
