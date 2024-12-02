@@ -112,13 +112,13 @@ instance (Generic a, GRead0 (Rep a)) => Read (Generically a) where
 instance (Generic a, GShow0 (Rep a)) => Show (Generically a) where
   showsPrec = gshowsPrec
 
-instance (Generic a, GEnum StandardEnum (Rep a)) => Enum (Generically a) where
-  toEnum = gtoEnum
-  fromEnum = gfromEnum
-  enumFrom = genumFrom
-  enumFromThen = genumFromThen
-  enumFromTo = genumFromTo
-  enumFromThenTo = genumFromThenTo
+instance (Generic a, GEnum FiniteEnum (Rep a)) => Enum (Generically a) where
+  toEnum = gtoFiniteEnum
+  fromEnum = gfromFiniteEnum
+  enumFrom = gfiniteEnumFrom
+  enumFromThen = gfiniteEnumFromThen
+  enumFromTo = gfiniteEnumFromTo
+  enumFromThenTo = gfiniteEnumFromThenTo
 
 instance (Generic a, Ord (Rep a ()), GIx (Rep a)) => Ix (Generically a) where
   range = grange
