@@ -1,3 +1,8 @@
+# 1.1.0.2 -- 2024-12-07
+
+- Compatibility with *base-orphans* 0.9.3
+- Tested with GHC 8.0 - 9.12.0
+
 # 1.1.0.1
 
 - Compatibility with *base* 4.21 (GHC 9.12)
