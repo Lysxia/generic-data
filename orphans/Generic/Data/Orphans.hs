@@ -9,11 +9,12 @@
 -- | Orphan instances.
 --
 -- The orphan instances in this module have been upstreamed in base 4.21 (GHC 9.12).
+-- The base_orphans package includes these instances from version 0.9.3 onward.
 -- This module is empty starting from that version. It remains for backwards compatiblity.
 
 module Generic.Data.Orphans where
 
-#if __GLASGOW_HASKELL__ < 912
+#if __GLASGOW_HASKELL__ < 912 && !MIN_VERSION_base_orphans(0,9,3)
 import Data.Functor.Classes
 import Data.Orphans ()
 import Data.Semigroup
