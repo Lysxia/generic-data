@@ -252,8 +252,12 @@ class GEnum opts f where
 data StandardEnum
 
 -- | Extends the 'StandardEnum' option for 'GEnum' to allow all constructors to 
--- have arbitrary many fields. Each field type must be an instance of 
--- both 'Enum' and 'Bounded'. Avoid fields of types 'Int' and 'Word'.
+-- have arbitrary many fields.
+--
+-- For deriving via, use the newtype 'Generic.Data.FiniteEnumeration'.
+--
+-- Each field type must be an instance of both 'Enum' and 'Bounded'.
+-- Avoid fields of types 'Int' and 'Word'.
 --
 -- === __Details__
 --
