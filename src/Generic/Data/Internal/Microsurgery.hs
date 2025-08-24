@@ -25,7 +25,7 @@ module Generic.Data.Internal.Microsurgery where
 import Data.Coerce (Coercible, coerce)
 import Data.Kind (Type)
 import GHC.Generics
-import GHC.TypeLits (ErrorMessage(..), Symbol, TypeError)
+import GHC.TypeLits (ErrorMessage(..), AppendSymbol, Symbol, TypeError)
 
 import Generic.Data.Types (Data)
 import Generic.Data.Internal.Generically (Generically(..), GenericProduct(..))
@@ -180,6 +180,7 @@ type instance GRenameFields rnm (M1 D m f) = M1 D m (GRenameFields rnm f)
 type instance GRenameFields rnm (f :+: g) = GRenameFields rnm f :+: GRenameFields rnm g
 type instance GRenameFields rnm (f :*: g) = GRenameFields rnm f :*: GRenameFields rnm g
 type instance GRenameFields rnm (M1 C m f) = M1 C m (GRenameFields rnm f)
+type instance GRenameFields rnm (M1 S ('MetaSel 'Nothing su ss ds) f) = M1 S ('MetaSel 'Nothing su ss ds) f
 type instance GRenameFields rnm (M1 S ('MetaSel ('Just nm) su ss ds) f) = M1 S ('MetaSel ('Just (rnm @@ nm)) su ss ds) f
 type instance GRenameFields rnm V1 = V1
 type instance GRenameFields rnm U1 = U1
@@ -202,6 +203,10 @@ type instance GRenameConstrs rnm (f :+: g) = GRenameConstrs rnm f :+: GRenameCon
 type instance GRenameConstrs rnm (f :*: g) = GRenameConstrs rnm f :*: GRenameConstrs rnm g
 type instance GRenameConstrs rnm (M1 C ('MetaCons nm fi ir) f) = M1 C ('MetaCons (rnm @@ nm) fi ir) f
 type instance GRenameConstrs rnm V1 = V1
+
+-- | Rename a type (for use with <https://hackage.haskell.org/package/generic-data-th generic-data-th>)
+data RenameType (rnm :: Type) :: Type
+type instance GSurgery (RenameType rnm) (M1 i (MetaData name mdl pkg nt) f) = M1 i (MetaData (rnm @@ name) mdl pkg nt) f
 
 -- ** Defining symbol functions
 
@@ -237,6 +242,14 @@ type family SRename' (xs :: [(Symbol, Symbol)]) (f :: Type) (s :: Symbol) where
   SRename' '[] f s = f @@ s
   SRename' ('( s,  t) ': _xs) _f s = t
   SRename' ('(_r, _t) ':  xs)  f s = SRename' xs f s
+
+-- | Append a suffix to a 'Symbol'.
+data SAppend (suffix :: Symbol)
+type instance SAppend suffix @@ s = AppendSymbol s suffix
+
+-- | Prepend a prefix to a 'Symbol'.
+data SPrepend (prefix :: Symbol)
+type instance SPrepend prefix @@ s = AppendSymbol prefix s
 
 -- * Other
 

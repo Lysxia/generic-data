@@ -96,6 +96,8 @@ module Generic.Data.Microsurgery
   , renameConstrs
   , unrenameConstrs
 
+  , RenameType()
+
     -- *** Renaming functions
 
   , type (@@)
@@ -103,6 +105,8 @@ module Generic.Data.Microsurgery
   , SError
   , SConst
   , SRename
+  , SAppend
+  , SPrepend
 
     -- ** Wrap every field in a type constructor
 
