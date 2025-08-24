@@ -47,7 +47,7 @@ library
     ghc-boot-th,
     show-combinators,
     base >= 4.9 && < 4.22
-  if impl(ghc < 9.6)
+  if impl(ghc < 8.6)
     build-depends: contravariant
   hs-source-dirs:      orphans
   exposed-modules:
