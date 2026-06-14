@@ -39,7 +39,6 @@ instance Alternative f => Semigroup (MyRecord f) where
 
 instance Alternative f => Monoid (MyRecord f) where
   mempty = coerce (gmempty @(MyRecord (Alt f)))
-  mappend = (<>)
 
 main :: IO ()
 main = return () -- Just make this compile
