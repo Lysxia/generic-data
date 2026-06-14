@@ -320,4 +320,3 @@ instance (AssertNoSum Semigroup a, Generic a, Semigroup (Rep a ())) => Semigroup
 
 instance (AssertNoSum Semigroup a, Generic a, Monoid (Rep a ())) => Monoid (GenericProduct a) where
   mempty = gmempty
-  mappend = gmappend'
